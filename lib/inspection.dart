@@ -19,8 +19,7 @@ class _InspectionPageState extends State<InspectionPage> {
   bool loading = false;
   String? error;
   bool showScanner = false;
-
-  bool showSearch = true; // ✅ NEW
+  bool showSearch = true;
 
   final box = Hive.box('inspectionBox');
   List<String> suggestions = [];
@@ -41,7 +40,7 @@ class _InspectionPageState extends State<InspectionPage> {
     );
   }
 
-  // ✅ SCAN → DIRECT FETCH
+  // ✅ ONLY STORE SCANNED ID
   void onDetect(BarcodeCapture capture) {
     final raw = capture.barcodes.first.rawValue;
     if (raw == null) return;
@@ -50,16 +49,16 @@ class _InspectionPageState extends State<InspectionPage> {
 
     setState(() {
       showScanner = false;
+      idController.text = cleaned;
+      scannedId = cleaned;
     });
-
-    fetchDetails(cleaned);
   }
 
   Future<void> fetchDetails(String input) async {
     setState(() {
       loading = true;
       error = null;
-      showSearch = false; // ✅ HIDE SEARCH AFTER SEARCH
+      showSearch = false;
     });
 
     try {
@@ -70,7 +69,7 @@ class _InspectionPageState extends State<InspectionPage> {
         setState(() {
           loading = false;
           error = "No data found for $id";
-          showSearch = true; // show again if no data
+          showSearch = true;
         });
         return;
       }
@@ -147,6 +146,7 @@ class _InspectionPageState extends State<InspectionPage> {
     );
   }
 
+  // ✅ FIXED TABLE (FULL SCREEN + SCROLL)
   Widget buildTable() {
     if (item == null) {
       return const Center(
@@ -169,39 +169,45 @@ class _InspectionPageState extends State<InspectionPage> {
             ],
           ),
         ),
+
         const SizedBox(height: 8),
+
+        // ✅ FULL SCREEN SCROLLABLE LIST
         Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              children: entries.map((e) {
-                return Container(
-                  margin:
-                  const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: const [
-                      BoxShadow(color: Colors.black12, blurRadius: 4),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(flex: 3, child: Text(e.key.toString())),
-                      Expanded(flex: 4, child: Text(e.value.toString())),
-                      Expanded(
-                        flex: 2,
-                        child: IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () => editField(
-                              e.key.toString(), e.value.toString()),
+          child: ListView.builder(
+            itemCount: entries.length,
+            itemBuilder: (context, i) {
+              final e = entries[i];
+
+              return Container(
+                margin: const EdgeInsets.symmetric(
+                    vertical: 4, horizontal: 6),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black12, blurRadius: 4),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(flex: 3, child: Text(e.key.toString())),
+                    Expanded(flex: 4, child: Text(e.value.toString())),
+                    Expanded(
+                      flex: 2,
+                      child: IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () => editField(
+                          e.key.toString(),
+                          e.value.toString(),
                         ),
                       ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -232,8 +238,6 @@ class _InspectionPageState extends State<InspectionPage> {
         backgroundColor: Colors.red,
         actions: [
           IconButton(icon: const Icon(Icons.save), onPressed: saveData),
-
-          // ✅ RESET BUTTON → SHOW SEARCH AGAIN
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
@@ -242,105 +246,117 @@ class _InspectionPageState extends State<InspectionPage> {
                 scannedId = null;
                 idController.clear();
                 error = null;
-                showSearch = true; // 👈 SHOW SEARCH AGAIN
+                showSearch = true;
               });
             },
           ),
         ],
       ),
 
-      body: Column(
-        children: [
-          // ✅ SHOW SEARCH ONLY WHEN TRUE
-          if (showSearch)
-            Container(
-              margin: const EdgeInsets.all(10),
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: idController,
-                    onChanged: updateSuggestions,
-                    decoration: InputDecoration(
-                      hintText: "Enter Barcode or SOS Code",
-                      border: const OutlineInputBorder(),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.qr_code_scanner,
-                            color: Colors.red),
-                        onPressed: () {
-                          setState(() => showScanner = !showScanner);
-                        },
-                      ),
-                    ),
-                  ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    if (showSearch)
+                      Container(
+                        margin: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          children: [
+                            TextField(
+                              controller: idController,
+                              onChanged: updateSuggestions,
+                              decoration: InputDecoration(
+                                hintText: "Enter Barcode or SOS Code",
+                                border: const OutlineInputBorder(),
+                                suffixIcon: IconButton(
+                                  icon: const Icon(Icons.qr_code_scanner,
+                                      color: Colors.red),
+                                  onPressed: () {
+                                    setState(
+                                            () => showScanner = !showScanner);
+                                  },
+                                ),
+                              ),
+                            ),
 
-                  if (suggestions.isNotEmpty)
-                    SizedBox(
-                      height: 100,
-                      child: ListView.builder(
-                        itemCount: suggestions.length,
-                        itemBuilder: (_, i) => ListTile(
-                          title: Text(suggestions[i]),
-                          onTap: () {
-                            idController.text = suggestions[i];
-                            fetchDetails(suggestions[i]);
-                            setState(() => suggestions.clear());
-                          },
+                            if (suggestions.isNotEmpty)
+                              SizedBox(
+                                height: 100,
+                                child: ListView.builder(
+                                  itemCount: suggestions.length,
+                                  itemBuilder: (_, i) => ListTile(
+                                    title: Text(suggestions[i]),
+                                    onTap: () {
+                                      idController.text = suggestions[i];
+                                      fetchDetails(suggestions[i]);
+                                      setState(() => suggestions.clear());
+                                    },
+                                  ),
+                                ),
+                              ),
+
+                            const SizedBox(height: 10),
+
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red),
+                              onPressed: () {
+                                final input = _clean(idController.text);
+                                if (input.isEmpty) return;
+                                fetchDetails(input);
+                              },
+                              child: const Text("Search"),
+                            ),
+                          ],
                         ),
                       ),
+
+                    if (showScanner) buildScannerBox(),
+
+                    // ✅ FULL SCREEN FIX (NO HALF PAGE ISSUE)
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.65,
+                      child: loading
+                          ? const Center(child: CircularProgressIndicator())
+                          : error != null
+                          ? Center(
+                        child: Text(error!,
+                            style: const TextStyle(
+                                color: Colors.red)),
+                      )
+                          : buildTable(),
                     ),
-
-                  const SizedBox(height: 10),
-
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red),
-                    onPressed: () {
-                      final input = _clean(idController.text);
-                      if (input.isEmpty) return;
-
-                      fetchDetails(input);
-                    },
-                    child: const Text("Search"),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
 
-          if (showScanner) buildScannerBox(),
-
-          Expanded(
-            child: loading
-                ? const Center(child: CircularProgressIndicator())
-                : error != null
-                ? Center(
-              child: Text(error!,
-                  style: const TextStyle(color: Colors.red)),
-            )
-                : buildTable(),
-          ),
-
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.all(12),
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.all(12),
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                icon: const Icon(Icons.list),
+                label: const Text(
+                  "Open Checklist",
+                  style: TextStyle(fontSize: 18),
+                ),
+                onPressed: openChecklistPage,
               ),
-              icon: const Icon(Icons.list),
-              label: const Text(
-                "Open Checklist",
-                style: TextStyle(fontSize: 18),
-              ),
-              onPressed: openChecklistPage,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -17,8 +17,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   bool isLoading = true;
 
-  int touchedIndex = -1; // 👈 for click interaction
-
   @override
   void initState() {
     super.initState();
@@ -44,35 +42,116 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     });
   }
 
-  // ================= PIE =================
+  // ================= COLORS =================
+  final activeColor = const Color(0xFF2E7D32);
+  final serviceColor = const Color(0xFFFF8F00);
+  final inspectionColor = const Color(0xFF1565C0);
+  final expiredColor = const Color(0xFFC62828);
+
+  // ================= PIE DATA =================
   List<PieChartSectionData> getSections() {
     final data = [
-      {"value": activeList.length, "color": Colors.green},
-      {"value": serviceList.length, "color": Colors.orange},
-      {"value": inspectionList.length, "color": Colors.blue},
-      {"value": expiredList.length, "color": Colors.red},
+      {"label": "Active", "value": activeList.length, "color": activeColor},
+      {"label": "Need Service", "value": serviceList.length, "color": serviceColor},
+      {"label": "Due Inspection", "value": inspectionList.length, "color": inspectionColor},
+      {"label": "Expired", "value": expiredList.length, "color": expiredColor},
     ];
 
     return List.generate(data.length, (i) {
-      final isTouched = i == touchedIndex;
+      final value = data[i]["value"] as int;
+      final label = data[i]["label"] as String;
 
       return PieChartSectionData(
-        value: (data[i]["value"] as int).toDouble(),
+        value: value.toDouble(),
         color: data[i]["color"] as Color,
-        radius: isTouched ? 90 : 80, // 👈 highlight effect
-        title: (data[i]["value"] == 0)
-            ? ""
-            : "${data[i]["value"]}",
+        radius: 70,
+
+        // 🔥 NAME + VALUE INSIDE SLICE
+        title: "$label\n$value",
+
         titleStyle: const TextStyle(
-          fontSize: 12,
+          fontSize: 10,
           fontWeight: FontWeight.bold,
           color: Colors.white,
         ),
+
+        titlePositionPercentageOffset: 0.55,
       );
     });
   }
 
-  // ================= POPUP =================
+  // ================= ICONS =================
+  IconData getIcon(String type) {
+    switch (type) {
+      case "Active":
+        return Icons.check_circle;
+      case "Need Service":
+        return Icons.handyman;
+      case "Due Inspection":
+        return Icons.fact_check;
+      case "Expired":
+        return Icons.warning;
+      default:
+        return Icons.circle;
+    }
+  }
+
+  Color getColor(String type) {
+    switch (type) {
+      case "Active":
+        return activeColor;
+      case "Need Service":
+        return serviceColor;
+      case "Due Inspection":
+        return inspectionColor;
+      case "Expired":
+        return expiredColor;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // ================= TOTAL COUNT =================
+  Widget totalCard() {
+    int total = activeList.length +
+        serviceList.length +
+        inspectionList.length +
+        expiredList.length;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 10,
+          )
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            "TOTAL FIRE EXTINGUISHERS",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text(
+            "$total",
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.red,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ================= DETAILS POPUP =================
   void showDetailsPopup(Map<String, dynamic> item) {
     showDialog(
       context: context,
@@ -112,8 +191,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
   }
 
-  // ================= FULL PAGE =================
-  void openFullPage(String title, List<Map<String, dynamic>> list) {
+  // ================= LIST PAGE =================
+  void openIdList(String title, List<Map<String, dynamic>> list) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -125,9 +204,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               final item = list[index];
 
               return Card(
-                margin: const EdgeInsets.all(8),
+                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 child: ListTile(
-                  leading: const Icon(Icons.qr_code),
+                  leading: Icon(
+                    Icons.local_fire_department,
+                    color: getColor(title),
+                    size: 26,
+                  ),
                   title: Text("ID: ${item["id"]}"),
                   subtitle: Text(item["equipment_code"] ?? ""),
                   trailing: const Icon(Icons.arrow_forward_ios),
@@ -141,36 +224,46 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
   }
 
-  // ================= CARD =================
-  Widget buildCard(String title, int count, Color color, List list) {
+  // ================= BUTTON CARD =================
+  Widget buildCard(String title, int count, List<Map<String, dynamic>> list) {
+    final color = getColor(title);
+    final icon = getIcon(title);
+
     return Expanded(
       child: GestureDetector(
-        onTap: () => openFullPage(title, list.cast<Map<String, dynamic>>()),
+        onTap: () => openIdList(title, list),
         child: Container(
           margin: const EdgeInsets.all(8),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            color: color.withOpacity(0.08),
-            border: Border.all(color: color),
+            gradient: LinearGradient(
+              colors: [
+                color.withOpacity(0.95),
+                color.withOpacity(0.65),
+              ],
+            ),
           ),
           child: Column(
             children: [
+              Icon(icon, color: Colors.white, size: 30),
+              const SizedBox(height: 6),
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: color,
+                style: const TextStyle(
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                  fontSize: 13,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 "$count",
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
             ],
@@ -183,132 +276,88 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // ================= UI =================
   @override
   Widget build(BuildContext context) {
-    int total = activeList.length +
-        serviceList.length +
-        inspectionList.length +
-        expiredList.length;
-
-    // 👇 center text logic
-    String centerTitle = "Total";
-    int centerValue = total;
-
-    if (touchedIndex == 0) {
-      centerTitle = "Active";
-      centerValue = activeList.length;
-    } else if (touchedIndex == 1) {
-      centerTitle = "Needs Service";
-      centerValue = serviceList.length;
-    } else if (touchedIndex == 2) {
-      centerTitle = "Inspection";
-      centerValue = inspectionList.length;
-    } else if (touchedIndex == 3) {
-      centerTitle = "Expired";
-      centerValue = expiredList.length;
-    }
-
     return Scaffold(
+      backgroundColor: Colors.grey.shade100,
+
       appBar: AppBar(
         title: const Text(
-          "Pie Chart",
-          style: TextStyle(color: Colors.red),
+          "FIRE EXTINGUISHER HEALTH",
+          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.black),
-            onPressed: fetchData,
-          )
-        ],
       ),
-      backgroundColor: Colors.grey.shade100,
+
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-        children: [
-          const SizedBox(height: 60),
-
-          // PIE
-          Stack(
-            alignment: Alignment.center,
+          : SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
             children: [
+
+              const SizedBox(height: 20),
+
+              // ================= PIE WITH CENTER =================
               SizedBox(
-                height: 220,
-                child: PieChart(
-                  PieChartData(
-                    sections: getSections(),
-                    centerSpaceRadius: 50,
-                    sectionsSpace: 2,
-                    pieTouchData: PieTouchData(
-                      touchCallback: (event, response) {
-                        setState(() {
-                          if (!event.isInterestedForInteractions ||
-                              response == null ||
-                              response.touchedSection == null) {
-                            touchedIndex = -1;
-                            return;
-                          }
-                          touchedIndex = response
-                              .touchedSection!.touchedSectionIndex;
-                        });
-                      },
-                    ),
-                  ),
-                ),
-              ),
-
-              // CENTER BOX
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.shade300,
-                      blurRadius: 6,
-                    )
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                height: 240,
+                child: Stack(
+                  alignment: Alignment.center,
                   children: [
-                    Text(centerTitle,
-                        style: const TextStyle(fontSize: 12)),
-                    Text(
-                      "$centerValue",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                    PieChart(
+                      PieChartData(
+                        sections: getSections(),
+                        centerSpaceRadius: 60,
                       ),
+                    ),
+
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(
+                          Icons.local_fire_department,
+                          color: Colors.red,
+                          size: 28,
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          "Fire\nExtinguishers",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     )
                   ],
                 ),
               ),
-            ],
-          ),
 
-          const SizedBox(height: 80),
+              const SizedBox(height: 20),
 
-          // CARDS
-          Row(
-            children: [
-              buildCard("Active", activeList.length,
-                  Colors.green, activeList),
-              buildCard("Needs Service", serviceList.length,
-                  Colors.orange, serviceList),
+              // ================= TOTAL =================
+              totalCard(),
+
+              const SizedBox(height: 25),
+
+              // ================= BUTTONS =================
+              Row(
+                children: [
+                  buildCard("Active", activeList.length, activeList),
+                  buildCard("Need Service", serviceList.length, serviceList),
+                ],
+              ),
+
+              Row(
+                children: [
+                  buildCard("Due Inspection", inspectionList.length, inspectionList),
+                  buildCard("Expired", expiredList.length, expiredList),
+                ],
+              ),
+
+              const SizedBox(height: 20),
             ],
           ),
-          Row(
-            children: [
-              buildCard("Due Inspection", inspectionList.length,
-                  Colors.blue, inspectionList),
-              buildCard("Expired", expiredList.length,
-                  Colors.red, expiredList),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -40,16 +40,57 @@ class _MaintenancePageState extends State<MaintenancePage> {
   List upcomingList() =>
       data.where((e) =>
       e["status_text"] != "Today" &&
-          e["status_text"] != "Tomorrow").toList();
+          e["status_text"] != "Tomorrow")
+          .toList();
 
   Color statusColor(String status) {
-    if (status.toLowerCase() == "today") return Colors.red;
-    if (status.toLowerCase() == "tomorrow") return Colors.orange;
-    return Colors.green;
+    if (status.toLowerCase() == "today") return const Color(0xFFD32F2F); // strong red
+    if (status.toLowerCase() == "tomorrow") return const Color(0xFFF57C00); // strong orange
+    return const Color(0xFF2E7D32); // strong green
   }
 
   String safe(Map item, String key) {
     return item[key]?.toString() ?? "-";
+  }
+
+  // 🔥 STRONG COLOR CARD
+  Widget topCard(String title, int count, Color color, IconData icon) {
+    return Expanded(
+      child: Container(
+        height: 80,
+        margin: const EdgeInsets.symmetric(horizontal: 6),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.5),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 24),
+            const SizedBox(height: 6),
+            Text(
+              "$count",
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: Colors.white,
+              ),
+            ),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 12, color: Colors.white70),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void showDetails(Map item) {
@@ -63,44 +104,22 @@ class _MaintenancePageState extends State<MaintenancePage> {
         return DraggableScrollableSheet(
           expand: false,
           initialChildSize: 0.7,
-          minChildSize: 0.3,
-          maxChildSize: 0.95,
           builder: (context, scrollController) {
-            return Container(
+            return Padding(
               padding: const EdgeInsets.all(16),
               child: SingleChildScrollView(
                 controller: scrollController,
                 child: DataTable(
-                  columnSpacing: 20,
                   columns: const [
                     DataColumn(label: Text("Field")),
                     DataColumn(label: Text("Value")),
                   ],
-                  rows: [
-                    row("ID", item["id"]),
-                    row("Barcode", item["barcode"]),
-                    row("Equipment Code", item["equipment_code"]),
-                    row("Serial Number", item["serial_number"]),
-                    row("Type", item["extinguisher_type"]),
-                    row("Capacity", item["capacity_kg"]),
-                    row("Location", item["location_name"]),
-                    row("Building", item["building_name"]),
-                    row("Floor", item["floor_name"]),
-                    row("Zone", item["zone_name"]),
-                    row("Department", item["department_name"]),
-                    row("Manufacturer", item["manufacturer_name"]),
-                    row("Installed", item["installed_on"]),
-                    row("Last Service", item["last_service_on"]),
-                    row("Next Inspection", item["next_inspection_due"]),
-                    row("Expiry", item["expiry_date"]),
-                    row("Pressure", item["pressure_status"]),
-                    row("Hose", item["hose_status"]),
-                    row("Pin Seal", item["pin_seal_status"]),
-                    row("Body", item["body_status"]),
-                    row("Score", item["readiness_score"]),
-                    row("Status", item["operational_status"]),
-                    row("Remarks", item["remarks"]),
-                  ],
+                  rows: item.entries.map((e) {
+                    return DataRow(cells: [
+                      DataCell(Text(e.key)),
+                      DataCell(Text(e.value?.toString() ?? "-")),
+                    ]);
+                  }).toList(),
                 ),
               ),
             );
@@ -110,138 +129,136 @@ class _MaintenancePageState extends State<MaintenancePage> {
     );
   }
 
-  DataRow row(String key, dynamic value) {
-    return DataRow(cells: [
-      DataCell(Text(key)),
-      DataCell(Text(value?.toString() ?? "-")),
-    ]);
-  }
-
   @override
   Widget build(BuildContext context) {
+    final todayCount = filter("Today").length;
+    final tomorrowCount = filter("Tomorrow").length;
+    final upcomingCount = upcomingList().length;
+    final totalCount = data.length;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
 
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SafeArea(
-        child: Column(
-          children: [
-            // ✅ BACK BUTTON + TITLE
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Expanded(
-                    child: Center(
-                      child: Text(
-                        "Upcoming",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 48), // balance spacing
-                ],
-              ),
-            ),
+          : Column(
+        children: [
 
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: fetchUpcoming,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      buildSection("Today", filter("Today"), Colors.red),
-                      buildSection("Tomorrow", filter("Tomorrow"), Colors.orange),
-                      buildSection("Upcoming", upcomingList(), Colors.green),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+          // 🔥 HEADER
+          Container(
+            color: const Color(0xFF0D47A1), // deep blue
+            padding: const EdgeInsets.only(
+                top: 40, left: 12, right: 12, bottom: 16),
+            child: Column(
+              children: [
 
-  Widget buildSection(String title, List list, Color color) {
-    if (list.isEmpty) return const SizedBox();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 10),
-
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: list.length,
-          itemBuilder: (context, index) {
-            final item = list[index];
-            final status = item["status_text"]?.toString() ?? "UPCOMING";
-
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 3,
-              child: ListTile(
-                onTap: () => showDetails(item),
-
-                leading: CircleAvatar(
-                  backgroundColor: statusColor(status).withOpacity(0.2),
-                  child: Icon(
-                    Icons.build_circle_rounded,
-                    color: statusColor(status),
-                  ),
-                ),
-
-                title: Text(
-                  "ID: ${item["id"] ?? "-"}",
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 3),
+                // 🎨 TITLE
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.trending_up, color: Colors.white), // 🔁 replaced icon
+                    SizedBox(width: 6),
                     Text(
-                      status,
+                      "Upcoming",
                       style: TextStyle(
-                        color: statusColor(status),
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
-                    ),
-                    Text(
-                      safe(item, "location_name"),
-                      style: const TextStyle(fontSize: 12),
                     ),
                   ],
                 ),
 
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                const SizedBox(height: 10),
+
+                // 🔢 TOTAL
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    "Total: $totalCount",
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0D47A1),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 14),
+
+                // 🎨 BUTTONS
+                Row(
+                  children: [
+                    topCard("Today", todayCount,
+                        const Color(0xFFD32F2F), Icons.warning),
+                    topCard("Tomorrow", tomorrowCount,
+                        const Color(0xFFF57C00), Icons.event),
+                    topCard("Upcoming", upcomingCount,
+                        const Color(0xFF2E7D32), Icons.trending_up),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // 🔥 LIST
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: fetchUpcoming,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: data.length,
+                itemBuilder: (context, index) {
+                  final item = data[index];
+                  final status =
+                      item["status_text"]?.toString() ?? "UPCOMING";
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 8,
+                        )
+                      ],
+                    ),
+                    child: ListTile(
+                      onTap: () => showDetails(item),
+
+                      leading: CircleAvatar(
+                        backgroundColor:
+                        statusColor(status).withOpacity(0.2),
+                        child: Icon(Icons.build,
+                            color: statusColor(status)),
+                      ),
+
+                      title: Text(
+                        "ID: ${item["id"] ?? "-"}",
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold),
+                      ),
+
+                      subtitle:
+                      Text(safe(item, "location_name")),
+
+                      trailing: const Icon(Icons.arrow_forward_ios,
+                          size: 16),
+                    ),
+                  );
+                },
               ),
-            );
-          },
-        ),
-      ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

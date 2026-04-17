@@ -65,10 +65,6 @@ class _LoginPageState extends State<LoginPage> {
       String role = result["user"]["role"];
       String name = result["user"]["name"] ?? "";
 
-      print("LOGIN SUCCESS");
-      print("TOKEN: $token");
-      print("ROLE: $role");
-
       final box = Hive.box('inspectionBox');
       box.put('token', token);
       box.put('role', role);
@@ -94,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
         child: Column(
           children: [
 
-            /// 🔴 HEADER
+            /// 🔴 HEADER (UPDATED)
             ClipPath(
               clipper: WaveClipper(),
               child: Container(
@@ -102,20 +98,28 @@ class _LoginPageState extends State<LoginPage> {
                 width: double.infinity,
                 color: const Color(0xFFD50000),
 
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset("assets/123.png", height: 120, width: 130),
-                    const SizedBox(height: 10),
-                    const Text(
-                      "Extinguisher",
-                      style: TextStyle(
+                child: const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.local_fire_department,
+                        size: 80,
                         color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
                       ),
-                    ),
-                  ],
+                      SizedBox(height: 10),
+                      Text(
+                        "SOS Emergency Platform",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -199,7 +203,10 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       child: isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text("Log in", style: TextStyle(color: Colors.white)),
+                          : const Text(
+                        "Log in",
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
                 ],
