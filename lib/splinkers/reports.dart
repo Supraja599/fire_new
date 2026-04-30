@@ -12,7 +12,7 @@ class _ReportsPageState extends State<ReportsPage> {
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
 
-  final String plant = "Fire Hose Reel";
+  final String plant = "Fire Sprinkler";
   final String unit = "Unit 1";
 
   final TextEditingController startController = TextEditingController();
@@ -21,10 +21,10 @@ class _ReportsPageState extends State<ReportsPage> {
   @override
   void initState() {
     super.initState();
-    _update();
+    _updateDates();
   }
 
-  void _update() {
+  void _updateDates() {
     startController.text = DateFormat("dd MMM yyyy").format(startDate);
     endController.text = DateFormat("dd MMM yyyy").format(endDate);
   }
@@ -44,50 +44,50 @@ class _ReportsPageState extends State<ReportsPage> {
         } else {
           endDate = picked;
         }
-        _update();
+        _updateDates();
       });
     }
   }
 
   void generatePDF() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("PDF Generated Successfully")),
+      const SnackBar(content: Text("PDF Generated")),
     );
   }
 
   void downloadExcel() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Excel Downloaded Successfully")),
+      const SnackBar(content: Text("Excel Downloaded")),
     );
   }
 
-  // ================= FIELD BOX =================
-  Widget _box({
+  /// 🔲 FIELD BOX
+  Widget fieldBox({
     required String label,
     required String value,
-    required VoidCallback? onTap,
-    IconData? icon,
+    required IconData icon,
+    VoidCallback? onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(color: Colors.grey.shade300),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
             )
           ],
         ),
         child: Row(
           children: [
-            if (icon != null) Icon(icon, color: Colors.blue),
-            if (icon != null) const SizedBox(width: 10),
+            Icon(icon, color: Colors.red),
+            const SizedBox(width: 10),
+
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,26 +95,28 @@ class _ReportsPageState extends State<ReportsPage> {
                   Text(label,
                       style: const TextStyle(
                           fontSize: 12, color: Colors.grey)),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 4),
                   Text(value,
                       style: const TextStyle(
                           fontSize: 16, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_drop_down),
+
+            if (onTap != null)
+              const Icon(Icons.calendar_today, size: 18)
           ],
         ),
       ),
     );
   }
 
-  // ================= BUTTON =================
-  Widget _button({
+  /// 🔘 BUTTON
+  Widget actionButton({
     required String text,
     required Color color,
-    required VoidCallback onTap,
     required IconData icon,
+    required VoidCallback onTap,
   }) {
     return SizedBox(
       width: double.infinity,
@@ -124,9 +126,9 @@ class _ReportsPageState extends State<ReportsPage> {
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
-          padding: const EdgeInsets.symmetric(vertical: 15),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
         ),
       ),
@@ -138,10 +140,19 @@ class _ReportsPageState extends State<ReportsPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FA),
 
+      /// 🔴 TOP BAR (WHITE BG + RED TEXT)
       appBar: AppBar(
-        title: const Text("Reports"),
-        backgroundColor: Colors.blue,
-        elevation: 0,
+        backgroundColor: Colors.white,
+        elevation: 1,
+        centerTitle: true,
+        title: const Text(
+          "Reports",
+          style: TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.red),
       ),
 
       body: SingleChildScrollView(
@@ -149,21 +160,20 @@ class _ReportsPageState extends State<ReportsPage> {
         child: Column(
           children: [
 
-            // ================= HEADER CARD =================
+            /// 🧾 HEADER CARD
             Container(
+              width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Colors.blue, Colors.lightBlueAccent],
-                ),
-                borderRadius: BorderRadius.circular(15),
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(16),
               ),
               child: const Row(
                 children: [
-                  Icon(Icons.description, color: Colors.white, size: 30),
+                  Icon(Icons.summarize, color: Colors.white, size: 28),
                   SizedBox(width: 10),
                   Text(
-                    "Generate Asset Report",
+                    "Generate Report",
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -175,55 +185,56 @@ class _ReportsPageState extends State<ReportsPage> {
 
             const SizedBox(height: 20),
 
-            // ================= FORM CARD =================
+            /// 📦 FORM
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 12,
                   )
                 ],
               ),
               child: Column(
                 children: [
 
-                  _box(
+                  /// 🔥 PLANT
+                  fieldBox(
                     label: "Plant",
                     value: plant,
-                    onTap: null,
-                    icon: Icons.factory,
+                    icon: Icons.local_fire_department,
                   ),
 
                   const SizedBox(height: 15),
 
-                  _box(
+                  /// 🏢 UNIT
+                  fieldBox(
                     label: "Unit",
                     value: unit,
-                    onTap: null,
                     icon: Icons.apartment,
                   ),
 
                   const SizedBox(height: 15),
 
-                  _box(
+                  /// 📅 FROM DATE
+                  fieldBox(
                     label: "From Date",
                     value: startController.text,
+                    icon: Icons.date_range,
                     onTap: () => pickDate(true),
-                    icon: Icons.calendar_month,
                   ),
 
                   const SizedBox(height: 15),
 
-                  _box(
+                  /// 📅 TO DATE
+                  fieldBox(
                     label: "To Date",
                     value: endController.text,
+                    icon: Icons.calendar_month,
                     onTap: () => pickDate(false),
-                    icon: Icons.calendar_today,
                   ),
                 ],
               ),
@@ -231,8 +242,8 @@ class _ReportsPageState extends State<ReportsPage> {
 
             const SizedBox(height: 25),
 
-            // ================= BUTTONS =================
-            _button(
+            /// 📄 PDF BUTTON
+            actionButton(
               text: "Generate PDF",
               color: Colors.red,
               icon: Icons.picture_as_pdf,
@@ -241,7 +252,8 @@ class _ReportsPageState extends State<ReportsPage> {
 
             const SizedBox(height: 12),
 
-            _button(
+            /// 📊 EXCEL BUTTON
+            actionButton(
               text: "Download Excel",
               color: Colors.green,
               icon: Icons.table_chart,

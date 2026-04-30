@@ -36,6 +36,7 @@ dependencies:
   file_picker: ^8.0.0
          # ✅ ADD
   url_launcher: ^6.2.5
+  font_awesome_flutter: ^10.7.0
   image_picker: ^1.0.7
   shared_preferences: ^2.2.2
   hive: ^2.2.3
@@ -45,6 +46,12 @@ dependencies:
   http: ^1.2.0   #
   open_filex: ^4.4.0
   excel: ^2.1.0
+  geolocator: ^10.1.0
+  geocoding: ^2.1.1
+  cupertino_icons: ^1.0.2
+  percent_indicator: ^4.2.3
+
+
 
 
   fl_chart: ^0.68.0
@@ -55,7 +62,7 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
+
 
 dev_dependencies:
   flutter_test:
@@ -87,6 +94,19 @@ flutter:
   assets:
     - assets/123.png
     - assets/11.png
+
+    - assets/hosereel.png
+    - assets/hosereel2.png
+    - assets/hosereel3.png
+    - assets/hosereel4.png
+    - assets/hosereel5.png
+    - assets/s1.png
+    - assets/s2.png
+    - assets/s3.png
+    - assets/s4.png
+    - assets/s5.png
+
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
