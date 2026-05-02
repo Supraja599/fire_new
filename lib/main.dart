@@ -3,6 +3,7 @@ import 'signup.dart';
 import 'icons.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'services/apiservice.dart';
+import 'sync_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,6 +12,10 @@ void main() async {
   await Hive.openBox('inspectionBox');
 
   runApp(const MyApp());
+
+  // ✅ Sync service start
+  SyncService.init();
+  SyncService.syncData();
 }
 
 class MyApp extends StatelessWidget {

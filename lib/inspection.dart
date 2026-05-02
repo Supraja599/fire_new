@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:hive/hive.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'checklist.dart';
 import 'services/apiservice.dart';
+import 'local_db.dart'; // ✅ ADD THIS
 
 class InspectionPage extends StatefulWidget {
   const InspectionPage({super.key});
@@ -22,8 +22,7 @@ class _InspectionPageState extends State<InspectionPage> {
   bool showScanner = false;
   bool showSearch = true;
 
-  final box = Hive.box('inspectionBox');
-  List<String> suggestions = [];
+  List<String> suggestions = []; // ✅ KEEP
 
   String _clean(String value) {
     return value
@@ -70,6 +69,7 @@ class _InspectionPageState extends State<InspectionPage> {
     });
   }
 
+  // ✅ UPDATED (SQLite FIRST)
   Future<void> fetchDetails(String input) async {
     final id = _clean(input);
 
@@ -80,11 +80,11 @@ class _InspectionPageState extends State<InspectionPage> {
     });
 
     try {
-      final localData = box.get(id);
+      final localData = await LocalDB.get(id);
 
       if (localData != null) {
         setState(() {
-          item = Map<String, dynamic>.from(localData);
+          item = localData;
           scannedId = id;
           loading = false;
         });
@@ -93,14 +93,16 @@ class _InspectionPageState extends State<InspectionPage> {
 
       final data = await ApiService.searchAny(id);
 
-      if (data == null || data.isEmpty) {
+      if (data == null) {
         setState(() {
           loading = false;
-          error = "No data found for $id";
+          error = "No data found";
           showSearch = true;
         });
         return;
       }
+
+      await LocalDB.insert(id, data);
 
       setState(() {
         item = data;
@@ -108,18 +110,18 @@ class _InspectionPageState extends State<InspectionPage> {
         loading = false;
       });
 
-      box.put(id, data);
     } catch (e) {
       setState(() {
         loading = false;
-        error = "Connection Error: $e";
+        error = "Error: $e";
         showSearch = true;
       });
     }
   }
 
-  void updateSuggestions(String input) {
-    final keys = box.keys.whereType<String>().toList();
+  // ✅ UPDATED (SQLite suggestions)
+  void updateSuggestions(String input) async {
+    final keys = await LocalDB.getAllIds();
 
     setState(() {
       suggestions = keys
@@ -145,6 +147,7 @@ class _InspectionPageState extends State<InspectionPage> {
     );
   }
 
+  // ✅ UPDATED (SQLite save)
   void editAllFields() {
     if (item == null) return;
 
@@ -183,12 +186,12 @@ class _InspectionPageState extends State<InspectionPage> {
             child: const Text("Cancel"),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               controllers.forEach((key, controller) {
                 item![key] = controller.text;
               });
 
-              box.put(scannedId, item);
+              await LocalDB.insert(scannedId!, item!); // ✅ SQLite save
               setState(() {});
               Navigator.pop(context);
             },
@@ -213,26 +216,12 @@ class _InspectionPageState extends State<InspectionPage> {
           ),
           child: const Row(
             children: [
-              Expanded(
-                flex: 4,
-                child: Text(
-                  "FIELD",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-              Expanded(
-                flex: 6,
-                child: Text(
-                  "VALUE",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
+              Expanded(flex: 4, child: Text("FIELD", style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 6, child: Text("VALUE", style: TextStyle(fontWeight: FontWeight.bold))),
             ],
           ),
         ),
-
         const SizedBox(height: 10),
-
         ...entries.map((e) {
           return Container(
             margin: const EdgeInsets.symmetric(vertical: 5),
@@ -240,23 +229,12 @@ class _InspectionPageState extends State<InspectionPage> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              boxShadow: const [
-                BoxShadow(color: Colors.black12, blurRadius: 4),
-              ],
+              boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
             ),
             child: Row(
               children: [
-                Expanded(
-                  flex: 4,
-                  child: Text(
-                    e.key.toString(),
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ),
-                Expanded(
-                  flex: 6,
-                  child: Text(e.value.toString()),
-                ),
+                Expanded(flex: 4, child: Text(e.key.toString(), style: const TextStyle(fontWeight: FontWeight.w600))),
+                Expanded(flex: 6, child: Text(e.value.toString())),
               ],
             ),
           );
@@ -305,7 +283,6 @@ class _InspectionPageState extends State<InspectionPage> {
           ),
         ],
       ),
-
       body: SafeArea(
         child: Column(
           children: [
@@ -322,8 +299,7 @@ class _InspectionPageState extends State<InspectionPage> {
                         hintText: "Enter Barcode or SOS Code",
                         border: const OutlineInputBorder(),
                         suffixIcon: IconButton(
-                          icon: const Icon(Icons.qr_code_scanner,
-                              color: Colors.red),
+                          icon: const Icon(Icons.qr_code_scanner, color: Colors.red),
                           onPressed: () {
                             setState(() => showScanner = !showScanner);
                           },
@@ -331,10 +307,8 @@ class _InspectionPageState extends State<InspectionPage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                       onPressed: () {
                         final input = _clean(idController.text);
                         if (input.isEmpty) return;
@@ -345,26 +319,16 @@ class _InspectionPageState extends State<InspectionPage> {
                   ],
                 ),
               ),
-
             if (showScanner) buildScannerBox(),
-
             Expanded(
               child: loading
                   ? const Center(child: CircularProgressIndicator())
                   : error != null
-                  ? Center(
-                child: Text(
-                  error!,
-                  style: const TextStyle(color: Colors.red),
-                ),
-              )
+                  ? Center(child: Text(error!, style: const TextStyle(color: Colors.red)))
                   : item == null
-                  ? const Center(
-                child: Text("Scan or Enter ID to view details"),
-              )
+                  ? const Center(child: Text("Scan or Enter ID to view details"))
                   : buildTable(),
             ),
-
             Container(
               width: double.infinity,
               margin: const EdgeInsets.all(12),
@@ -374,8 +338,7 @@ class _InspectionPageState extends State<InspectionPage> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 icon: const Icon(Icons.list),
-                label: const Text("Open Checklist",
-                    style: TextStyle(fontSize: 18)),
+                label: const Text("Open Checklist", style: TextStyle(fontSize: 18)),
                 onPressed: openChecklistPage,
               ),
             ),

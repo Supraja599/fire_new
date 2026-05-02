@@ -88,7 +88,7 @@ class _DashboardState extends State<Dashboard> {
             ScanScreen(onBackToHome: _goHomeFromScan),
             ChecklistPage(),
             const MaintenanceScreen(),
-            const AlertsScreen(),
+            const HoseReelAlertsPage(),
             const PlantHealthScreen(),
             const ReportsPage(),
           ],

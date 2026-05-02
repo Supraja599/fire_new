@@ -3,6 +3,7 @@
     <!-- ✅ LOCATION PERMISSIONS ADDED -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:label="fire_new"
@@ -37,6 +38,7 @@
             android:value="2" />
 
     </application>
+    android:usesCleartextTraffic="true"
 
     <!-- Query section -->
     <queries>

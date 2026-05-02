@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../local_db.dart';
+
 
 class ApiService {
-  static const String baseUrl = "http://ehs.garrev.com/app1/v1";
+  static const String baseUrl = "https://ehs.garrev.com/app1/v1";
 
   // 🔐 Store token (set after login)
   static String? token;
@@ -12,9 +14,10 @@ class ApiService {
     return {
       "Content-Type": "application/json",
       "Accept": "application/json",
-      if (token != null) "Authorization": "Bearer $token",
+      if (token!= null) "Authorization": "Bearer $token",
     };
   }
+
 
   // =========================================================
   // 🔐 LOGIN API
@@ -247,4 +250,46 @@ class ApiService {
 
   static Future<List<Map<String, dynamic>>> getServiceReport() =>
       _getList("$baseUrl/reports/service");
+  static Future<void> syncAllExtinguishersToLocal() async {
+    try {
+      final list = await getAll();
+
+      print("SYNC START: ${list.length} items found");
+
+      for (var item in list) {
+        final id = normalize(item['id']?.toString() ?? '');
+
+        if (id.isEmpty) continue;
+
+        await LocalDB.insert(id, item);
+      }
+
+      print("✅ SYNC COMPLETE: ${list.length} items stored in SQLite");
+    } catch (e) {
+      print("❌ SYNC ERROR: $e");
+    }
+  }
+  static Future<bool> sendToServer(String data) async {
+    try {
+      final res = await http.post(
+        Uri.parse("$baseUrl/save"),
+        headers: headers,
+        body: jsonEncode({"data": data}),
+      );
+
+      return res.statusCode == 200 || res.statusCode == 201;
+    } catch (e) {
+      return false;
+    }
+  }
 }
+
+
+
+
+
+
+
+
+
+
