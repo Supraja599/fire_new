@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:fire_new/hosereel/services/apiservice.dart';
+
+import 'services/apiservice.dart';
 
 class MaintenanceScreen extends StatefulWidget {
   const MaintenanceScreen({super.key});
@@ -10,351 +11,355 @@ class MaintenanceScreen extends StatefulWidget {
 
 class _MaintenanceScreenState extends State<MaintenanceScreen> {
   final api = HoseReelApiService();
+  final List<Map<String, dynamic>> all = [];
 
-  List<dynamic> allList = [];
-  List<dynamic> todayList = [];
-  List<dynamic> tomorrowList = [];
-  List<dynamic> displayList = [];
+  List<Map<String, dynamic>> today = [];
+  List<Map<String, dynamic>> tomorrow = [];
+  List<Map<String, dynamic>> next3Days = [];
+  List<Map<String, dynamic>> later = [];
 
-  String selectedFilter = "all";
-  int totalCount = 0;
+  String selected = "Today";
   bool isLoading = true;
+  String? error;
 
   @override
   void initState() {
     super.initState();
-    loadData();
+    _loadData();
   }
 
-  DateTime? parseDate(String? date) {
-    if (date == null || date.isEmpty) return null;
+  DateTime? _parseDate(String? value) {
+    if (value == null || value.isEmpty) return null;
     try {
-      return DateTime.parse(date);
+      return DateTime.parse(value).toLocal();
     } catch (_) {
       return null;
     }
   }
 
-  bool isToday(DateTime d) {
-    final now = DateTime.now();
-    return d.year == now.year && d.month == now.month && d.day == now.day;
-  }
-
-  bool isTomorrow(DateTime d) {
-    final t = DateTime.now().add(const Duration(days: 1));
-    return d.year == t.year && d.month == t.month && d.day == t.day;
-  }
-
-  Future<void> loadData() async {
+  Future<void> _loadData() async {
     try {
-      final data = await api.getByStatus("due-inspection");
+      final equipment = await api.getEquipmentList();
 
-      List<dynamic> tdy = [];
-      List<dynamic> tmr = [];
+      all.clear();
+      today = [];
+      tomorrow = [];
+      next3Days = [];
+      later = [];
 
-      for (var item in data) {
-        final date = parseDate(
-          item["next_inspection_date"] ?? item["scheduled_date"],
-        );
+      for (final item in equipment) {
+        final date = _parseDate(item["next_inspection_due"]?.toString());
+        if (date == null) continue;
 
-        if (date != null) {
-          if (isToday(date)) tdy.add(item);
-          if (isTomorrow(date)) tmr.add(item);
-        }
+        all.add({
+          "id":
+              item["sos_code"] ?? item["serial_number"] ?? item["id"] ?? "N/A",
+          "location": item["location_name"] ?? item["zone_name"] ?? "Unknown",
+          "status": item["status_bucket"] ?? "active",
+          "hose_length":
+              item["details"]?["hose_length_m"]?.toString() ?? "N/A",
+          "pressure":
+              item["details"]?["pressure_rating"]?.toString() ?? "N/A",
+          "date": date,
+        });
       }
 
+      _splitData();
+    } catch (e) {
+      if (!mounted) return;
       setState(() {
-        allList = data;
-        todayList = tdy;
-        tomorrowList = tmr;
-        displayList = data;
-        totalCount = data.length;
+        error = e.toString();
         isLoading = false;
       });
-    } catch (e) {
-      setState(() => isLoading = false);
     }
   }
 
-  void applyFilter(String type) {
-    setState(() {
-      selectedFilter = type;
+  void _splitData() {
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
 
-      if (type == "today") {
-        displayList = todayList;
-      } else if (type == "tomorrow") {
-        displayList = tomorrowList;
-      } else {
-        displayList = allList;
-      }
-    });
-  }
+    for (final item in all) {
+      final itemDate = item["date"] as DateTime;
+      final itemStart = DateTime(itemDate.year, itemDate.month, itemDate.day);
+      final diff = itemStart.difference(todayStart).inDays;
 
-  String getValue(Map item, List<String> keys) {
-    for (var key in keys) {
-      if (item[key] != null && item[key].toString().isNotEmpty) {
-        return item[key].toString();
+      if (diff == 0) {
+        today.add(item);
+      } else if (diff == 1) {
+        tomorrow.add(item);
+      } else if (diff >= 2 && diff <= 3) {
+        next3Days.add(item);
+      } else if (diff > 3) {
+        later.add(item);
       }
     }
-    return "Zone A";
+
+    if (!mounted) return;
+    setState(() => isLoading = false);
   }
 
-  void openDetails(Map item) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => DetailScreen(item: item),
-      ),
-    );
+  List<Map<String, dynamic>> _selectedList() {
+    switch (selected) {
+      case "Today":
+        return today;
+      case "Tomorrow":
+        return tomorrow;
+      case "Next 3 Days":
+        return next3Days;
+      default:
+        return later;
+    }
+  }
+
+  Color _colorFor(String type) {
+    switch (type) {
+      case "Today":
+        return Colors.red;
+      case "Tomorrow":
+        return Colors.orange;
+      case "Next 3 Days":
+        return Colors.blue;
+      default:
+        return Colors.green;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FA),
-      appBar: AppBar(
-        title: const Text("Maintenance"),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF5E35B1), Color(0xFF7E57C2)],
+    final color = _colorFor(selected);
+
+    if (isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (error != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Maintenance Schedule")),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              "Unable to load hose reel maintenance schedule.\n$error",
+              textAlign: TextAlign.center,
             ),
           ),
         ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F6FA),
+      appBar: AppBar(
+        title: const Text("Maintenance Schedule"),
+        backgroundColor: Colors.white,
+        elevation: 2,
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-        padding: const EdgeInsets.all(16),
+      body: Padding(
+        padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-
-            /// TOTAL CARD
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
-                ),
-                borderRadius: BorderRadius.all(Radius.circular(18)),
-              ),
-              child: Text(
-                "Total Upcoming: $totalCount",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            /// FILTER
             Row(
               children: [
-                _box("Today", todayList.length, Colors.green, "today"),
-                const SizedBox(width: 10),
-                _box("Tomorrow", tomorrowList.length, Colors.orange, "tomorrow"),
-                const SizedBox(width: 10),
-                _box("All", allList.length, Colors.blue, "all"),
+                _tab("Today"),
+                _tab("Tomorrow"),
+                _tab("Next 3 Days"),
+                _tab("Later"),
               ],
             ),
-
-            const SizedBox(height: 16),
-
-            /// LIST
+            const SizedBox(height: 12),
             Expanded(
-              child: displayList.isEmpty
-                  ? const Center(child: Text("No Data"))
-                  : ListView.builder(
-                itemCount: displayList.length,
-                itemBuilder: (_, i) {
-                  final item = displayList[i];
-
-                  final id = getValue(item, ["sos_id", "id"]);
-                  final location = getValue(item, ["location", "zone", "building"]);
-                  final date = getValue(item, ["next_inspection_date", "scheduled_date"]);
+              child: ListView.builder(
+                itemCount: _selectedList().length,
+                itemBuilder: (context, index) {
+                  final item = _selectedList()[index];
 
                   return GestureDetector(
-                    onTap: () => openDetails(item),
+                    onTap: () => _showDetails(item),
                     child: Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(14),
+                      margin: const EdgeInsets.only(bottom: 10),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Colors.white, Color(0xFFF1F4F9)],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: const [
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
                           BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 6,
-                          )
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 8,
+                          ),
                         ],
                       ),
                       child: Row(
                         children: [
-                          Container(
-                            width: 6,
-                            height: 55,
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
+                          ClipRRect(
+                            borderRadius: const BorderRadius.horizontal(
+                              left: Radius.circular(20),
+                            ),
+                            child: Container(
+                              width: 96,
+                              height: 108,
+                              color: color.withValues(alpha: 0.08),
+                              child: Image.asset(
+                                'assets/hosereel.png',
+                                fit: BoxFit.cover,
                               ),
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
                             ),
                           ),
-                          const SizedBox(width: 12),
-
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("ID: $id",
-                                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                                Text(location),
-                              ],
+                            child: Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item["id"],
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    item["location"],
+                                    style: TextStyle(color: Colors.grey.shade600),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 6,
+                                    children: [
+                                      _chip("Hose ${item["hose_length"]}", color),
+                                      _chip("Pressure ${item["pressure"]}", Colors.grey.shade700),
+                                      _chip("${item["date"].day}/${item["date"].month}", color),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              const Icon(Icons.arrow_forward_ios,
-                                  size: 14, color: Colors.grey),
-                              const SizedBox(height: 6),
-                              Text(date,
-                                  style: const TextStyle(
-                                      color: Colors.grey, fontSize: 12)),
-                            ],
-                          )
                         ],
                       ),
                     ),
                   );
                 },
               ),
-            )
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _box(String title, int count, Color color, String type) {
-    final selected = selectedFilter == type;
+  Widget _tab(String title) {
+    final isSelected = selected == title;
+    final color = _colorFor(title);
 
     return Expanded(
       child: GestureDetector(
-        onTap: () => applyFilter(type),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          padding: const EdgeInsets.all(14),
+        onTap: () => setState(() => selected = title),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: selected
-                  ? [color, color.withOpacity(0.7)]
-                  : [color.withOpacity(0.3), color.withOpacity(0.5)],
-            ),
-            borderRadius: BorderRadius.circular(14),
+            color: isSelected ? color : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color),
           ),
-          child: Column(
-            children: [
-              Text(title, style: const TextStyle(color: Colors.white)),
-              const SizedBox(height: 5),
-              Text(
-                "$count",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+          child: Center(
+            child: Text(
+              title,
+              style: TextStyle(
+                color: isSelected ? Colors.white : color,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
-}
 
-/// 🔥 FULL DETAILS SCREEN (INSIDE SAME FILE)
-class DetailScreen extends StatelessWidget {
-  final Map item;
-
-  const DetailScreen({super.key, required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF141E30), Color(0xFF243B55)],
-          ),
+  Widget _chip(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
+      ),
+    );
+  }
 
-              /// HEADER
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const Text(
-                      "Details",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
-                  ],
+  void _showDetails(Map<String, dynamic> item) {
+    final color = _colorFor(selected);
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 96,
+                height: 96,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Image.asset(
+                    'assets/hosereel.png',
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
-
-              /// BODY
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(25),
-                      topRight: Radius.circular(25),
-                    ),
-                  ),
-                  child: ListView(
-                    children: item.entries.map((e) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFF7F8FA), Colors.white],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          "${e.key} : ${e.value ?? "N/A"}",
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+              const SizedBox(height: 14),
+              Text(
+                item["id"],
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-              )
+              ),
+              const SizedBox(height: 15),
+              _row("Location", item["location"], color),
+              _row("Pressure", item["pressure"], color),
+              _row("Hose Length", item["hose_length"], color),
+              _row("Status", item["status"], color),
+              _row(
+                "Next Inspection",
+                "${item["date"].day}/${item["date"].month}/${item["date"].year}",
+                color,
+              ),
             ],
           ),
-        ),
+        );
+      },
+    );
+  }
+
+  Widget _row(String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Text(
+            "$label: ",
+            style: TextStyle(fontWeight: FontWeight.bold, color: color),
+          ),
+          Expanded(child: Text(value)),
+        ],
       ),
     );
   }

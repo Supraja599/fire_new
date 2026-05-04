@@ -1,203 +1,213 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-class ScanScreen extends StatefulWidget {
-  final VoidCallback onBackToHome;
+import 'services/apiservice.dart';
 
-  const ScanScreen({super.key, required this.onBackToHome});
+class ScanScreen extends StatefulWidget {
+  const ScanScreen({super.key});
 
   @override
   State<ScanScreen> createState() => _ScanScreenState();
 }
 
 class _ScanScreenState extends State<ScanScreen> {
-  String result = "";
-  bool openScanner = false;
+  final api = HoseReelApiService();
+  final TextEditingController controller = TextEditingController();
 
-  final TextEditingController manualController = TextEditingController();
-  final MobileScannerController controller = MobileScannerController();
+  Map<String, dynamic>? item;
+  bool showScanner = false;
+  bool loading = false;
 
-  /// 🔍 SCAN
-  void onDetect(BarcodeCapture capture) {
-    if (capture.barcodes.isEmpty) return;
+  void fetchData(String input) async {
+    if (input.isEmpty) return;
 
-    final value = capture.barcodes.first.rawValue;
+    setState(() {
+      loading = true;
+      showScanner = false;
+    });
 
-    if (value != null) {
+    try {
+      final result = await api.getEquipmentByQuery(input);
+
       setState(() {
-        result = value;
-        openScanner = false;
+        item = result == null ? null : _buildDisplayData(result);
+        loading = false;
       });
-
-      controller.stop();
+    } catch (_) {
+      setState(() {
+        item = null;
+        loading = false;
+      });
     }
   }
 
-  void startScan() {
-    setState(() => openScanner = true);
-    controller.start();
+  Map<String, dynamic> _buildDisplayData(Map<String, dynamic> raw) {
+    final details = Map<String, dynamic>.from(raw["details"] ?? {});
+
+    return {
+      "SOS Code": raw["sos_code"] ?? "N/A",
+      "Serial Number": raw["serial_number"] ?? "N/A",
+      "Module": raw["module_name"] ?? "Hose Reel",
+      "Location": raw["location_name"] ?? "N/A",
+      "Building": raw["building_name"] ?? "N/A",
+      "Zone": raw["zone_name"] ?? "N/A",
+      "Status": raw["status_bucket"] ?? raw["operational_status"] ?? "N/A",
+      "Readiness Score": raw["readiness_score"]?.toString() ?? "N/A",
+      "Pressure Rating": details["pressure_rating"]?.toString() ?? "N/A",
+      "Hose Length": details["hose_length_m"]?.toString() ?? "N/A",
+      "Nozzle Type": details["nozzle_type"]?.toString() ?? "N/A",
+      "Water Source": details["water_source"]?.toString() ?? "N/A",
+      "Next Inspection Due": raw["next_inspection_due"] ?? "N/A",
+      "Expiry Date": raw["expiry_date"] ?? "N/A",
+    };
   }
 
-  void closeScanner() {
-    setState(() => openScanner = false);
-    controller.stop();
+  void onDetect(BarcodeCapture capture) {
+    final raw = capture.barcodes.first.rawValue;
+    if (raw == null) return;
+
+    controller.text = raw;
+
+    setState(() {
+      showScanner = false;
+    });
+
+    fetchData(raw);
+  }
+
+  Widget buildDetails() {
+    final entries = item!.entries.toList();
+
+    return ListView(
+      padding: const EdgeInsets.all(12),
+      children: entries.map((entry) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 8,
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 4,
+                child: Text(
+                  entry.key,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              Expanded(flex: 6, child: Text(entry.value.toString())),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget scannerBox() {
+    return Container(
+      margin: const EdgeInsets.all(12),
+      height: 230,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.red, width: 2),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: MobileScanner(onDetect: onDetect),
+      ),
+    );
   }
 
   @override
   void dispose() {
-    manualController.dispose();
     controller.dispose();
     super.dispose();
   }
 
-  /// ================= UI =================
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        widget.onBackToHome();
-        return false;
-      },
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-
-        /// 🔴 APP BAR (SIMPLE)
-        appBar: AppBar(
-          backgroundColor: Colors.red,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: widget.onBackToHome,
-          ),
-          title: const Text(
-            "Scan Asset",
-            style: TextStyle(color: Colors.white),
-          ),
-          centerTitle: true,
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F6FA),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 1,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.black),
+        title: const Text(
+          "Scan & Get Details",
+          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
         ),
-
-        body: Stack(
-          children: [
-
-            /// MAIN CONTENT
-            ListView(
-              padding: const EdgeInsets.all(16),
+      ),
+      body: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+            child: Column(
               children: [
-
-                /// 🔴 SCAN BUTTON CARD
-                GestureDetector(
-                  onTap: startScan,
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Column(
-                      children: [
-                        Icon(Icons.qr_code_scanner,
-                            size: 50, color: Colors.white),
-                        SizedBox(height: 10),
-                        Text(
-                          "Tap to Scan",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ],
+                TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    hintText: "Enter SOS code or serial number",
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.qr_code_scanner, color: Colors.red),
+                      onPressed: () {
+                        setState(() {
+                          showScanner = !showScanner;
+                        });
+                      },
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 20),
-
-                /// ✏️ MANUAL ENTRY
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-
-                      TextField(
-                        controller: manualController,
-                        decoration: const InputDecoration(
-                          hintText: "Enter Asset ID",
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              result = manualController.text;
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                          ),
-                          child: const Text("Submit"),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                /// 📋 RESULT
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    result.isEmpty
-                        ? "No data"
-                        : "Scanned: $result",
-                    style: const TextStyle(fontSize: 16),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onPressed: () => fetchData(controller.text),
+                    child: const Text("Get Details"),
                   ),
                 ),
               ],
             ),
-
-            /// 📷 SCANNER
-            if (openScanner)
-              Container(
-                color: Colors.white,
-                child: Column(
-                  children: [
-
-                    const SizedBox(height: 40),
-
-                    const Text("Scan Code"),
-
-                    Expanded(
-                      child: MobileScanner(
-                        controller: controller,
-                        onDetect: onDetect,
-                      ),
-                    ),
-
-                    ElevatedButton(
-                      onPressed: closeScanner,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
-                      child: const Text("Close"),
-                    ),
-
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
-          ],
-        ),
+          ),
+          if (showScanner) scannerBox(),
+          Expanded(
+            child: loading
+                ? const Center(child: CircularProgressIndicator())
+                : item == null
+                    ? const Center(
+                        child: Text(
+                          "No hose reel found. Scan or enter SOS code / serial number.",
+                          style: TextStyle(color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                      )
+                    : buildDetails(),
+          ),
+        ],
       ),
     );
   }

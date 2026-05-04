@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import 'services/sprinkler_api_service.dart';
+
 class ScanPage extends StatefulWidget {
   const ScanPage({super.key});
 
@@ -9,25 +11,13 @@ class ScanPage extends StatefulWidget {
 }
 
 class _ScanPageState extends State<ScanPage> {
+  final api = SprinklerApiService();
   final TextEditingController controller = TextEditingController();
 
   Map<String, dynamic>? item;
   bool showScanner = false;
   bool loading = false;
 
-  /// 🔥 DUMMY DATA
-  Map<String, dynamic> getDummyData(String id) {
-    return {
-      "ID": id,
-      "Location": "Zone 3",
-      "Pressure": "85 PSI",
-      "Status": "Active",
-      "Last Checked": "12/04/2026",
-      "Technician": "Ravi Kumar",
-    };
-  }
-
-  /// 🔍 FETCH DATA
   void fetchData(String input) async {
     if (input.isEmpty) return;
 
@@ -36,15 +26,43 @@ class _ScanPageState extends State<ScanPage> {
       showScanner = false;
     });
 
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final result = await api.getEquipmentByQuery(input);
 
-    setState(() {
-      item = getDummyData(input);
-      loading = false;
-    });
+      setState(() {
+        item = result == null ? null : _buildDisplayData(result);
+        loading = false;
+      });
+    } catch (_) {
+      setState(() {
+        item = null;
+        loading = false;
+      });
+    }
   }
 
-  /// 📷 SCAN
+  Map<String, dynamic> _buildDisplayData(Map<String, dynamic> raw) {
+    final details = Map<String, dynamic>.from(raw["details"] ?? {});
+
+    return {
+      "SOS Code": raw["sos_code"] ?? "N/A",
+      "Serial Number": raw["serial_number"] ?? "N/A",
+      "Module": raw["module_name"] ?? "Sprinkler System",
+      "Location": raw["location_name"] ?? "N/A",
+      "Building": raw["building_name"] ?? "N/A",
+      "Zone": raw["zone_name"] ?? "N/A",
+      "Status": raw["status_bucket"] ?? raw["operational_status"] ?? "N/A",
+      "Readiness Score": raw["readiness_score"]?.toString() ?? "N/A",
+      "System Type": details["system_type"]?.toString() ?? "N/A",
+      "Sprinkler Heads": details["sprinkler_count"]?.toString() ?? "N/A",
+      "Coverage Area": details["coverage_area_sqm"]?.toString() ?? "N/A",
+      "Operating Pressure":
+          details["operating_pressure_bar"]?.toString() ?? "N/A",
+      "Next Inspection Due": raw["next_inspection_due"] ?? "N/A",
+      "Expiry Date": raw["expiry_date"] ?? "N/A",
+    };
+  }
+
   void onDetect(BarcodeCapture capture) {
     final raw = capture.barcodes.first.rawValue;
     if (raw == null) return;
@@ -58,7 +76,6 @@ class _ScanPageState extends State<ScanPage> {
     fetchData(raw);
   }
 
-  /// 📋 DETAILS UI
   Widget buildDetails() {
     final entries = item!.entries.toList();
 
@@ -75,7 +92,7 @@ class _ScanPageState extends State<ScanPage> {
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 8,
-              )
+              ),
             ],
           ),
           child: Row(
@@ -87,10 +104,7 @@ class _ScanPageState extends State<ScanPage> {
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
-              Expanded(
-                flex: 6,
-                child: Text(e.value.toString()),
-              ),
+              Expanded(flex: 6, child: Text(e.value.toString())),
             ],
           ),
         );
@@ -98,7 +112,6 @@ class _ScanPageState extends State<ScanPage> {
     );
   }
 
-  /// 📷 SCANNER BOX
   Widget scannerBox() {
     return Container(
       margin: const EdgeInsets.all(12),
@@ -118,8 +131,6 @@ class _ScanPageState extends State<ScanPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FA),
-
-      /// 🔴 APP BAR WITH RED TITLE
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
@@ -127,17 +138,11 @@ class _ScanPageState extends State<ScanPage> {
         iconTheme: const IconThemeData(color: Colors.black),
         title: const Text(
           "Scan & Get Details",
-          style: TextStyle(
-            color: Colors.red,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
         ),
       ),
-
       body: Column(
         children: [
-
-          /// 🔍 INPUT BOX
           Container(
             margin: const EdgeInsets.all(12),
             padding: const EdgeInsets.all(12),
@@ -148,21 +153,21 @@ class _ScanPageState extends State<ScanPage> {
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
-                )
+                ),
               ],
             ),
             child: Column(
               children: [
-
-                /// TEXT FIELD
                 TextField(
                   controller: controller,
                   decoration: InputDecoration(
-                    hintText: "Enter ID manually",
+                    hintText: "Enter SOS code or serial number",
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
-                      icon: const Icon(Icons.qr_code_scanner,
-                          color: Colors.red),
+                      icon: const Icon(
+                        Icons.qr_code_scanner,
+                        color: Colors.red,
+                      ),
                       onPressed: () {
                         setState(() {
                           showScanner = !showScanner;
@@ -171,10 +176,7 @@ class _ScanPageState extends State<ScanPage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 12),
-
-                /// BUTTON
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -191,21 +193,18 @@ class _ScanPageState extends State<ScanPage> {
               ],
             ),
           ),
-
-          /// 📷 SCANNER
           if (showScanner) scannerBox(),
-
-          /// 📋 RESULTS
           Expanded(
             child: loading
                 ? const Center(child: CircularProgressIndicator())
                 : item == null
                 ? const Center(
-              child: Text(
-                "Scan or enter ID to view details",
-                style: TextStyle(color: Colors.grey),
-              ),
-            )
+                    child: Text(
+                      "No sprinkler found. Scan or enter SOS code / serial number.",
+                      style: TextStyle(color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
+                  )
                 : buildDetails(),
           ),
         ],

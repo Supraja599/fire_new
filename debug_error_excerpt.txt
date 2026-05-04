@@ -1,0 +1,1219 @@
+﻿
+build_debug_log.txt:273:[        ] Resolve mutations for 
+:gradle:checkKotlinGradlePluginConfigurationErrors (Thread[#514,Execution 
+worker,5,main]) started.
+build_debug_log.txt:274:[        ] 
+:gradle:checkKotlinGradlePluginConfigurationErrors (Thread[#514,Execution 
+worker,5,main]) started.
+build_debug_log.txt:275:[        ] > Task 
+:gradle:checkKotlinGradlePluginConfigurationErrors SKIPPED
+build_debug_log.txt:276:[        ] Skipping task 
+':gradle:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 
+'errorDiagnostics are present' is false.
+build_debug_log.txt:575:[ +697 ms] Tasks to be executed: [task 
+':app:DebugMinSdkCheck', task ':app:preBuild', task ':app:preDebugBuild', task 
+':app:mergeDebugNativeDebugMetadata', task 
+':app:checkKotlinGradlePluginConfigurationErrors', task 
+':app:compileFlutterBuildDebug', task ':app:packJniLibsflutterBuildDebug', 
+task ':connectivity_plus:preBuild', task ':connectivity_plus:preDebugBuild', 
+task ':connectivity_plus:writeDebugAarMetadata', task ':file_picker:preBuild', 
+task ':file_picker:preDebugBuild', task ':file_picker:writeDebugAarMetadata', 
+task ':flutter_plugin_android_lifecycle:preBuild', task 
+':flutter_plugin_android_lifecycle:preDebugBuild', task 
+':flutter_plugin_android_lifecycle:writeDebugAarMetadata', task 
+':geocoding_android:preBuild', task ':geocoding_android:preDebugBuild', task 
+':geocoding_android:writeDebugAarMetadata', task 
+':geolocator_android:preBuild', task ':geolocator_android:preDebugBuild', task 
+':geolocator_android:writeDebugAarMetadata', task 
+':image_picker_android:preBuild', task ':image_picker_android:preDebugBuild', 
+task ':image_picker_android:writeDebugAarMetadata', task ':jni:preBuild', task 
+':jni:preDebugBuild', task ':jni:writeDebugAarMetadata', task 
+':jni_flutter:preBuild', task ':jni_flutter:preDebugBuild', task 
+':jni_flutter:writeDebugAarMetadata', task ':mobile_scanner:preBuild', task 
+':mobile_scanner:preDebugBuild', task ':mobile_scanner:writeDebugAarMetadata', 
+task ':open_filex:preBuild', task ':open_filex:preDebugBuild', task 
+':open_filex:writeDebugAarMetadata', task 
+':permission_handler_android:preBuild', task 
+':permission_handler_android:preDebugBuild', task 
+':permission_handler_android:writeDebugAarMetadata', task 
+':printing:preBuild', task ':printing:preDebugBuild', task 
+':printing:writeDebugAarMetadata', task 
+':shared_preferences_android:preBuild', task 
+':shared_preferences_android:preDebugBuild', task 
+':shared_preferences_android:writeDebugAarMetadata', task 
+':sqflite_android:preBuild', task ':sqflite_android:preDebugBuild', task 
+':sqflite_android:writeDebugAarMetadata', task 
+':url_launcher_android:preBuild', task ':url_launcher_android:preDebugBuild', 
+task ':url_launcher_android:writeDebugAarMetadata', task 
+':app:checkDebugAarMetadata', task ':app:cleanMergeDebugAssets', task 
+':app:mergeDebugShaders', task ':app:compileDebugShaders', task 
+':app:generateDebugAssets', task ':connectivity_plus:mergeDebugShaders', task 
+':connectivity_plus:compileDebugShaders', task 
+':connectivity_plus:generateDebugAssets', task 
+':connectivity_plus:mergeDebugAssets', task ':file_picker:mergeDebugShaders', 
+task ':file_picker:compileDebugShaders', task 
+':file_picker:generateDebugAssets', task ':file_picker:mergeDebugAssets', task 
+':flutter_plugin_android_lifecycle:mergeDebugShaders', task 
+':flutter_plugin_android_lifecycle:compileDebugShaders', task 
+':flutter_plugin_android_lifecycle:generateDebugAssets', task 
+':flutter_plugin_android_lifecycle:mergeDebugAssets', task 
+':geocoding_android:mergeDebugShaders', task 
+':geocoding_android:compileDebugShaders', task 
+':geocoding_android:generateDebugAssets', task 
+':geocoding_android:mergeDebugAssets', task 
+':geolocator_android:mergeDebugShaders', task 
+':geolocator_android:compileDebugShaders', task 
+':geolocator_android:generateDebugAssets', task 
+':geolocator_android:mergeDebugAssets', task 
+':image_picker_android:mergeDebugShaders', task 
+':image_picker_android:compileDebugShaders', task 
+':image_picker_android:generateDebugAssets', task 
+':image_picker_android:mergeDebugAssets', task ':jni:mergeDebugShaders', task 
+':jni:compileDebugShaders', task ':jni:generateDebugAssets', task 
+':jni:mergeDebugAssets', task ':jni_flutter:mergeDebugShaders', task 
+':jni_flutter:compileDebugShaders', task ':jni_flutter:generateDebugAssets', 
+task ':jni_flutter:mergeDebugAssets', task 
+':mobile_scanner:mergeDebugShaders', task 
+':mobile_scanner:compileDebugShaders', task 
+':mobile_scanner:generateDebugAssets', task 
+':mobile_scanner:mergeDebugAssets', task ':open_filex:mergeDebugShaders', task 
+':open_filex:compileDebugShaders', task ':open_filex:generateDebugAssets', 
+task ':open_filex:mergeDebugAssets', task 
+':permission_handler_android:mergeDebugShaders', task 
+':permission_handler_android:compileDebugShaders', task 
+':permission_handler_android:generateDebugAssets', task 
+':permission_handler_android:mergeDebugAssets', task 
+':printing:mergeDebugShaders', task ':printing:compileDebugShaders', task 
+':printing:generateDebugAssets', task ':printing:mergeDebugAssets', task 
+':shared_preferences_android:mergeDebugShaders', task 
+':shared_preferences_android:compileDebugShaders', task 
+':shared_preferences_android:generateDebugAssets', task 
+':shared_preferences_android:mergeDebugAssets', task 
+':sqflite_android:mergeDebugShaders', task 
+':sqflite_android:compileDebugShaders', task 
+':sqflite_android:generateDebugAssets', task 
+':sqflite_android:mergeDebugAssets', task 
+':url_launcher_android:mergeDebugShaders', task 
+':url_launcher_android:compileDebugShaders', task 
+':url_launcher_android:generateDebugAssets', task 
+':url_launcher_android:mergeDebugAssets', task ':app:mergeDebugAssets', task 
+':app:copyFlutterAssetsDebug', task ':app:generateDebugResValues', task 
+':connectivity_plus:generateDebugResValues', task 
+':connectivity_plus:generateDebugResources', task 
+':connectivity_plus:packageDebugResources', task 
+':file_picker:generateDebugResValues', task 
+':file_picker:generateDebugResources', task 
+':file_picker:packageDebugResources', task 
+':flutter_plugin_android_lifecycle:generateDebugResValues', task 
+':flutter_plugin_android_lifecycle:generateDebugResources', task 
+':flutter_plugin_android_lifecycle:packageDebugResources', task 
+':geocoding_android:generateDebugResValues', task 
+':geocoding_android:generateDebugResources', task 
+':geocoding_android:packageDebugResources', task 
+':geolocator_android:generateDebugResValues', task 
+':geolocator_android:generateDebugResources', task 
+':geolocator_android:packageDebugResources', task 
+':image_picker_android:generateDebugResValues', task 
+':image_picker_android:generateDebugResources', task 
+':image_picker_android:packageDebugResources', task 
+':jni:generateDebugResValues', task ':jni:generateDebugResources', task 
+':jni:packageDebugResources', task ':jni_flutter:generateDebugResValues', task 
+':jni_flutter:generateDebugResources', task 
+':jni_flutter:packageDebugResources', task 
+':mobile_scanner:generateDebugResValues', task 
+':mobile_scanner:generateDebugResources', task 
+':mobile_scanner:packageDebugResources', task 
+':open_filex:generateDebugResValues', task 
+':open_filex:generateDebugResources', task 
+':open_filex:packageDebugResources', task 
+':permission_handler_android:generateDebugResValues', task 
+':permission_handler_android:generateDebugResources', task 
+':permission_handler_android:packageDebugResources', task 
+':printing:generateDebugResValues', task ':printing:generateDebugResources', 
+task ':printing:packageDebugResources', task 
+':shared_preferences_android:generateDebugResValues', task 
+':shared_preferences_android:generateDebugResources', task 
+':shared_preferences_android:packageDebugResources', task 
+':sqflite_android:generateDebugResValues', task 
+':sqflite_android:generateDebugResources', task 
+':sqflite_android:packageDebugResources', task 
+':url_launcher_android:generateDebugResValues', task 
+':url_launcher_android:generateDebugResources', task 
+':url_launcher_android:packageDebugResources', task 
+':app:mapDebugSourceSetPaths', task ':app:generateDebugResources', task 
+':app:mergeDebugResources', task ':app:packageDebugResources', task 
+':app:parseDebugLocalResources', task 
+':app:createDebugCompatibleScreenManifests', task 
+':app:extractDeepLinksDebug', task ':connectivity_plus:extractDeepLinksDebug', 
+task ':connectivity_plus:processDebugManifest', task 
+':file_picker:extractDeepLinksDebug', task 
+':file_picker:processDebugManifest', task 
+':flutter_plugin_android_lifecycle:extractDeepLinksDebug', task 
+':flutter_plugin_android_lifecycle:processDebugManifest', task 
+':geocoding_android:extractDeepLinksDebug', task 
+':geocoding_android:processDebugManifest', task 
+':geolocator_android:extractDeepLinksDebug', task 
+':geolocator_android:processDebugManifest', task 
+':image_picker_android:extractDeepLinksDebug', task 
+':image_picker_android:processDebugManifest', task 
+':jni:extractDeepLinksDebug', task ':jni:processDebugManifest', task 
+':jni_flutter:extractDeepLinksDebug', task 
+':jni_flutter:processDebugManifest', task 
+':mobile_scanner:extractDeepLinksDebug', task 
+':mobile_scanner:processDebugManifest', task 
+':open_filex:extractDeepLinksDebug', task ':open_filex:processDebugManifest', 
+task ':permission_handler_android:extractDeepLinksDebug', task 
+':permission_handler_android:processDebugManifest', task 
+':printing:extractDeepLinksDebug', task ':printing:processDebugManifest', task 
+':shared_preferences_android:extractDeepLinksDebug', task 
+':shared_preferences_android:processDebugManifest', task 
+':sqflite_android:extractDeepLinksDebug', task 
+':sqflite_android:processDebugManifest', task 
+':url_launcher_android:extractDeepLinksDebug', task 
+':url_launcher_android:processDebugManifest', task 
+':app:processDebugMainManifest', task ':app:outputDebugAppLinkSettings', task 
+':app:processDebugManifest', task ':app:processDebugManifestForPackage', task 
+':connectivity_plus:compileDebugLibraryResources', task 
+':connectivity_plus:parseDebugLocalResources', task 
+':connectivity_plus:generateDebugRFile', task 
+':file_picker:compileDebugLibraryResources', task 
+':file_picker:parseDebugLocalResources', task 
+':file_picker:generateDebugRFile', task 
+':flutter_plugin_android_lifecycle:compileDebugLibraryResources', task 
+':flutter_plugin_android_lifecycle:parseDebugLocalResources', task 
+':flutter_plugin_android_lifecycle:generateDebugRFile', task 
+':geocoding_android:compileDebugLibraryResources', task 
+':geocoding_android:parseDebugLocalResources', task 
+':geocoding_android:generateDebugRFile', task 
+':geolocator_android:compileDebugLibraryResources', task 
+':geolocator_android:parseDebugLocalResources', task 
+':geolocator_android:generateDebugRFile', task 
+':image_picker_android:compileDebugLibraryResources', task 
+':image_picker_android:parseDebugLocalResources', task 
+':image_picker_android:generateDebugRFile', task 
+':jni:compileDebugLibraryResources', task ':jni:parseDebugLocalResources', 
+task ':jni:generateDebugRFile', task 
+':jni_flutter:compileDebugLibraryResources', task 
+':jni_flutter:parseDebugLocalResources', task 
+':jni_flutter:generateDebugRFile', task 
+':mobile_scanner:compileDebugLibraryResources', task 
+':mobile_scanner:parseDebugLocalResources', task 
+':mobile_scanner:generateDebugRFile', task 
+':open_filex:compileDebugLibraryResources', task 
+':open_filex:parseDebugLocalResources', task ':open_filex:generateDebugRFile', 
+task ':permission_handler_android:compileDebugLibraryResources', task 
+':permission_handler_android:parseDebugLocalResources', task 
+':permission_handler_android:generateDebugRFile', task 
+':printing:compileDebugLibraryResources', task 
+':printing:parseDebugLocalResources', task ':printing:generateDebugRFile', 
+task ':shared_preferences_android:compileDebugLibraryResources', task 
+':shared_preferences_android:parseDebugLocalResources', task 
+':shared_preferences_android:generateDebugRFile', task 
+':sqflite_android:compileDebugLibraryResources', task 
+':sqflite_android:parseDebugLocalResources', task 
+':sqflite_android:generateDebugRFile', task 
+':url_launcher_android:compileDebugLibraryResources', task 
+':url_launcher_android:parseDebugLocalResources', task 
+':url_launcher_android:generateDebugRFile', task ':app:processDebugResources', 
+task ':connectivity_plus:javaPreCompileDebug', task 
+':connectivity_plus:compileDebugJavaWithJavac', task 
+':connectivity_plus:bundleLibCompileToJarDebug', task 
+':file_picker:javaPreCompileDebug', task 
+':flutter_plugin_android_lifecycle:javaPreCompileDebug', task 
+':flutter_plugin_android_lifecycle:compileDebugJavaWithJavac', task 
+':flutter_plugin_android_lifecycle:bundleLibCompileToJarDebug', task 
+':file_picker:compileDebugJavaWithJavac', task 
+':file_picker:bundleLibCompileToJarDebug', task 
+':geocoding_android:javaPreCompileDebug', task 
+':geocoding_android:compileDebugJavaWithJavac', task 
+':geocoding_android:bundleLibCompileToJarDebug', task 
+':geolocator_android:javaPreCompileDebug', task 
+':geolocator_android:compileDebugJavaWithJavac', task 
+':geolocator_android:bundleLibCompileToJarDebug', task 
+':image_picker_android:javaPreCompileDebug', task 
+':image_picker_android:compileDebugJavaWithJavac', task 
+':image_picker_android:bundleLibCompileToJarDebug', task 
+':jni:javaPreCompileDebug', task ':jni:compileDebugJavaWithJavac', task 
+':jni:bundleLibCompileToJarDebug', task ':jni_flutter:javaPreCompileDebug', 
+task ':jni_flutter:compileDebugJavaWithJavac', task 
+':jni_flutter:bundleLibCompileToJarDebug', task 
+':mobile_scanner:checkKotlinGradlePluginConfigurationErrors', task 
+':mobile_scanner:compileDebugKotlin', task 
+':mobile_scanner:javaPreCompileDebug', task 
+':mobile_scanner:compileDebugJavaWithJavac', task 
+':mobile_scanner:bundleLibCompileToJarDebug', task 
+':open_filex:javaPreCompileDebug', task 
+':open_filex:compileDebugJavaWithJavac', task 
+':open_filex:bundleLibCompileToJarDebug', task 
+':permission_handler_android:javaPreCompileDebug', task 
+':permission_handler_android:compileDebugJavaWithJavac', task 
+':permission_handler_android:bundleLibCompileToJarDebug', task 
+':printing:javaPreCompileDebug', task ':printing:compileDebugJavaWithJavac', 
+task ':printing:bundleLibCompileToJarDebug', task 
+':shared_preferences_android:checkKotlinGradlePluginConfigurationErrors', task 
+':shared_preferences_android:compileDebugKotlin', task 
+':shared_preferences_android:javaPreCompileDebug', task 
+':shared_preferences_android:compileDebugJavaWithJavac', task 
+':shared_preferences_android:bundleLibCompileToJarDebug', task 
+':sqflite_android:javaPreCompileDebug', task 
+':sqflite_android:compileDebugJavaWithJavac', task 
+':sqflite_android:bundleLibCompileToJarDebug', task 
+':url_launcher_android:generateDebugBuildConfig', task 
+':url_launcher_android:javaPreCompileDebug', task 
+':url_launcher_android:compileDebugJavaWithJavac', task 
+':url_launcher_android:bundleLibCompileToJarDebug', task 
+':app:compileDebugKotlin', task ':app:javaPreCompileDebug', task 
+':app:compileDebugJavaWithJavac', task ':app:compressDebugAssets', task 
+':connectivity_plus:bundleLibRuntimeToJarDebug', task 
+':file_picker:bundleLibRuntimeToJarDebug', task 
+':image_picker_android:bundleLibRuntimeToJarDebug', task 
+':flutter_plugin_android_lifecycle:bundleLibRuntimeToJarDebug', task 
+':geocoding_android:bundleLibRuntimeToJarDebug', task 
+':geolocator_android:bundleLibRuntimeToJarDebug', task 
+':jni_flutter:bundleLibRuntimeToJarDebug', task 
+':jni:bundleLibRuntimeToJarDebug', task 
+':mobile_scanner:bundleLibRuntimeToJarDebug', task 
+':open_filex:bundleLibRuntimeToJarDebug', task 
+':permission_handler_android:bundleLibRuntimeToJarDebug', task 
+':printing:bundleLibRuntimeToJarDebug', task 
+':shared_preferences_android:bundleLibRuntimeToJarDebug', task 
+':sqflite_android:bundleLibRuntimeToJarDebug', task 
+':url_launcher_android:bundleLibRuntimeToJarDebug', task 
+':app:desugarDebugFileDependencies', task ':app:dexBuilderDebug', task 
+':app:mergeDebugGlobalSynthetics', task ':app:processDebugJavaRes', task 
+':connectivity_plus:processDebugJavaRes', task 
+':file_picker:processDebugJavaRes', task 
+':flutter_plugin_android_lifecycle:processDebugJavaRes', task 
+':geocoding_android:processDebugJavaRes', task 
+':geolocator_android:processDebugJavaRes', task 
+':image_picker_android:processDebugJavaRes', task ':jni:processDebugJavaRes', 
+task ':jni_flutter:processDebugJavaRes', task 
+':mobile_scanner:processDebugJavaRes', task ':open_filex:processDebugJavaRes', 
+task ':permission_handler_android:processDebugJavaRes', task 
+':printing:processDebugJavaRes', task 
+':shared_preferences_android:processDebugJavaRes', task 
+':sqflite_android:processDebugJavaRes', task 
+':url_launcher_android:processDebugJavaRes', task 
+':app:mergeDebugJavaResource', task ':app:checkDebugDuplicateClasses', task 
+':app:mergeExtDexDebug', task ':connectivity_plus:bundleLibRuntimeToDirDebug', 
+task ':file_picker:bundleLibRuntimeToDirDebug', task 
+':image_picker_android:bundleLibRuntimeToDirDebug', task 
+':flutter_plugin_android_lifecycle:bundleLibRuntimeToDirDebug', task 
+':geocoding_android:bundleLibRuntimeToDirDebug', task 
+':geolocator_android:bundleLibRuntimeToDirDebug', task 
+':jni_flutter:bundleLibRuntimeToDirDebug', task 
+':jni:bundleLibRuntimeToDirDebug', task 
+':mobile_scanner:bundleLibRuntimeToDirDebug', task 
+':open_filex:bundleLibRuntimeToDirDebug', task 
+':permission_handler_android:bundleLibRuntimeToDirDebug', task 
+':printing:bundleLibRuntimeToDirDebug', task 
+':shared_preferences_android:bundleLibRuntimeToDirDebug', task 
+':sqflite_android:bundleLibRuntimeToDirDebug', task 
+':url_launcher_android:bundleLibRuntimeToDirDebug', task 
+':app:mergeLibDexDebug', task ':app:mergeProjectDexDebug', task 
+':app:configureCMakeDebug[arm64-v8a]', task ':app:buildCMakeDebug[arm64-v8a]', 
+task ':app:configureCMakeDebug[armeabi-v7a]', task 
+':app:buildCMakeDebug[armeabi-v7a]', task ':app:configureCMakeDebug[x86_64]', 
+task ':app:buildCMakeDebug[x86_64]', task ':app:mergeDebugJniLibFolders', task 
+':connectivity_plus:mergeDebugJniLibFolders', task 
+':connectivity_plus:mergeDebugNativeLibs', task 
+':connectivity_plus:copyDebugJniLibsProjectOnly', task 
+':file_picker:mergeDebugJniLibFolders', task 
+':file_picker:mergeDebugNativeLibs', task 
+':file_picker:copyDebugJniLibsProjectOnly', task 
+':flutter_plugin_android_lifecycle:mergeDebugJniLibFolders', task 
+':flutter_plugin_android_lifecycle:mergeDebugNativeLibs', task 
+':flutter_plugin_android_lifecycle:copyDebugJniLibsProjectOnly', task 
+':geocoding_android:mergeDebugJniLibFolders', task 
+':geocoding_android:mergeDebugNativeLibs', task 
+':geocoding_android:copyDebugJniLibsProjectOnly', task 
+':geolocator_android:mergeDebugJniLibFolders', task 
+':geolocator_android:mergeDebugNativeLibs', task 
+':geolocator_android:copyDebugJniLibsProjectOnly', task 
+':image_picker_android:mergeDebugJniLibFolders', task 
+':image_picker_android:mergeDebugNativeLibs', task 
+':image_picker_android:copyDebugJniLibsProjectOnly', task 
+':jni:preProfileBuild', task ':jni:configureCMakeDebug[arm64-v8a]', task 
+':jni:buildCMakeDebug[arm64-v8a]', task 
+':jni:configureCMakeDebug[armeabi-v7a]', task 
+':jni:buildCMakeDebug[armeabi-v7a]', task ':jni:configureCMakeDebug[x86]', 
+task ':jni:buildCMakeDebug[x86]', task ':jni:configureCMakeDebug[x86_64]', 
+task ':jni:buildCMakeDebug[x86_64]', task ':jni:mergeDebugJniLibFolders', task 
+':jni:mergeDebugNativeLibs', task ':jni:copyDebugJniLibsProjectOnly', task 
+':jni_flutter:mergeDebugJniLibFolders', task 
+':jni_flutter:mergeDebugNativeLibs', task 
+':jni_flutter:copyDebugJniLibsProjectOnly', task 
+':mobile_scanner:mergeDebugJniLibFolders', task 
+':mobile_scanner:mergeDebugNativeLibs', task 
+':mobile_scanner:copyDebugJniLibsProjectOnly', task 
+':open_filex:mergeDebugJniLibFolders', task 
+':open_filex:mergeDebugNativeLibs', task 
+':open_filex:copyDebugJniLibsProjectOnly', task 
+':permission_handler_android:mergeDebugJniLibFolders', task 
+':permission_handler_android:mergeDebugNativeLibs', task 
+':permission_handler_android:copyDebugJniLibsProjectOnly', task 
+':printing:mergeDebugJniLibFolders', task ':printing:mergeDebugNativeLibs', 
+task ':printing:copyDebugJniLibsProjectOnly', task 
+':shared_preferences_android:mergeDebugJniLibFolders', task 
+':shared_preferences_android:mergeDebugNativeLibs', task 
+':shared_preferences_android:copyDebugJniLibsProjectOnly', task 
+':sqflite_android:mergeDebugJniLibFolders', task 
+':sqflite_android:mergeDebugNativeLibs', task 
+':sqflite_android:copyDebugJniLibsProjectOnly', task 
+':url_launcher_android:mergeDebugJniLibFolders', task 
+':url_launcher_android:mergeDebugNativeLibs', task 
+':url_launcher_android:copyDebugJniLibsProjectOnly', task 
+':app:mergeDebugNativeLibs', task ':app:stripDebugDebugSymbols', task 
+':app:validateSigningDebug', task ':app:writeDebugAppMetadata', task 
+':app:writeDebugSigningConfigVersions', task ':app:packageDebug', task 
+':app:createDebugApkListingFileRedirect', task ':app:assembleDebug', task 
+':connectivity_plus:stripDebugDebugSymbols', task 
+':connectivity_plus:copyDebugJniLibsProjectAndLocalJars', task 
+':connectivity_plus:extractDebugAnnotations', task 
+':connectivity_plus:extractDeepLinksForAarDebug', task 
+':connectivity_plus:mergeDebugGeneratedProguardFiles', task 
+':connectivity_plus:mergeDebugConsumerProguardFiles', task 
+':connectivity_plus:prepareDebugArtProfile', task 
+':connectivity_plus:prepareLintJarForPublish', task 
+':connectivity_plus:mergeDebugJavaResource', task 
+':connectivity_plus:syncDebugLibJars', task 
+':connectivity_plus:bundleDebugAar', task ':connectivity_plus:assembleDebug', 
+task ':file_picker:stripDebugDebugSymbols', task 
+':file_picker:copyDebugJniLibsProjectAndLocalJars', task 
+':file_picker:extractDebugAnnotations', task 
+':file_picker:extractDeepLinksForAarDebug', task 
+':file_picker:mergeDebugGeneratedProguardFiles', task 
+':file_picker:mergeDebugConsumerProguardFiles', task 
+':file_picker:prepareDebugArtProfile', task 
+':file_picker:prepareLintJarForPublish', task 
+':file_picker:mergeDebugJavaResource', task ':file_picker:syncDebugLibJars', 
+task ':file_picker:bundleDebugAar', task ':file_picker:assembleDebug', task 
+':flutter_plugin_android_lifecycle:stripDebugDebugSymbols', task 
+':flutter_plugin_android_lifecycle:copyDebugJniLibsProjectAndLocalJars', task 
+':flutter_plugin_android_lifecycle:extractDebugAnnotations', task 
+':flutter_plugin_android_lifecycle:extractDeepLinksForAarDebug', task 
+':flutter_plugin_android_lifecycle:mergeDebugGeneratedProguardFiles', task 
+':flutter_plugin_android_lifecycle:mergeDebugConsumerProguardFiles', task 
+':flutter_plugin_android_lifecycle:prepareDebugArtProfile', task 
+':flutter_plugin_android_lifecycle:prepareLintJarForPublish', task 
+':flutter_plugin_android_lifecycle:mergeDebugJavaResource', task 
+':flutter_plugin_android_lifecycle:syncDebugLibJars', task 
+':flutter_plugin_android_lifecycle:bundleDebugAar', task 
+':flutter_plugin_android_lifecycle:assembleDebug', task 
+':geocoding_android:stripDebugDebugSymbols', task 
+':geocoding_android:copyDebugJniLibsProjectAndLocalJars', task 
+':geocoding_android:extractDebugAnnotations', task 
+':geocoding_android:extractDeepLinksForAarDebug', task 
+':geocoding_android:mergeDebugGeneratedProguardFiles', task 
+':geocoding_android:mergeDebugConsumerProguardFiles', task 
+':geocoding_android:prepareDebugArtProfile', task 
+':geocoding_android:prepareLintJarForPublish', task 
+':geocoding_android:mergeDebugJavaResource', task 
+':geocoding_android:syncDebugLibJars', task 
+':geocoding_android:bundleDebugAar', task ':geocoding_android:assembleDebug', 
+task ':geolocator_android:stripDebugDebugSymbols', task 
+':geolocator_android:copyDebugJniLibsProjectAndLocalJars', task 
+':geolocator_android:extractDebugAnnotations', task 
+':geolocator_android:extractDeepLinksForAarDebug', task 
+':geolocator_android:mergeDebugGeneratedProguardFiles', task 
+':geolocator_android:mergeDebugConsumerProguardFiles', task 
+':geolocator_android:prepareDebugArtProfile', task 
+':geolocator_android:prepareLintJarForPublish', task 
+':geolocator_android:mergeDebugJavaResource', task 
+':geolocator_android:syncDebugLibJars', task 
+':geolocator_android:bundleDebugAar', task 
+':geolocator_android:assembleDebug', task 
+':image_picker_android:stripDebugDebugSymbols', task 
+':image_picker_android:copyDebugJniLibsProjectAndLocalJars', task 
+':image_picker_android:extractDebugAnnotations', task 
+':image_picker_android:extractDeepLinksForAarDebug', task 
+':image_picker_android:mergeDebugGeneratedProguardFiles', task 
+':image_picker_android:mergeDebugConsumerProguardFiles', task 
+':image_picker_android:prepareDebugArtProfile', task 
+':image_picker_android:prepareLintJarForPublish', task 
+':image_picker_android:mergeDebugJavaResource', task 
+':image_picker_android:syncDebugLibJars', task 
+':image_picker_android:bundleDebugAar', task 
+':image_picker_android:assembleDebug', task ':jni:stripDebugDebugSymbols', 
+task ':jni:copyDebugJniLibsProjectAndLocalJars', task 
+':jni:extractDebugAnnotations', task ':jni:extractDeepLinksForAarDebug', task 
+':jni:mergeDebugGeneratedProguardFiles', task 
+':jni:mergeDebugConsumerProguardFiles', task ':jni:prepareDebugArtProfile', 
+task ':jni:prepareLintJarForPublish', task ':jni:mergeDebugJavaResource', task 
+':jni:syncDebugLibJars', task ':jni:bundleDebugAar', task 
+':jni:assembleDebug', task ':jni_flutter:stripDebugDebugSymbols', task 
+':jni_flutter:copyDebugJniLibsProjectAndLocalJars', task 
+':jni_flutter:extractDebugAnnotations', task 
+':jni_flutter:extractDeepLinksForAarDebug', task 
+':jni_flutter:mergeDebugGeneratedProguardFiles', task 
+':jni_flutter:mergeDebugConsumerProguardFiles', task 
+':jni_flutter:prepareDebugArtProfile', task 
+':jni_flutter:prepareLintJarForPublish', task 
+':jni_flutter:mergeDebugJavaResource', task ':jni_flutter:syncDebugLibJars', 
+task ':jni_flutter:bundleDebugAar', task ':jni_flutter:assembleDebug', task 
+':mobile_scanner:stripDebugDebugSymbols', task 
+':mobile_scanner:copyDebugJniLibsProjectAndLocalJars', task 
+':mobile_scanner:extractDebugAnnotations', task 
+':mobile_scanner:extractDeepLinksForAarDebug', task 
+':mobile_scanner:mergeDebugGeneratedProguardFiles', task 
+':mobile_scanner:mergeDebugConsumerProguardFiles', task 
+':mobile_scanner:prepareDebugArtProfile', task 
+':mobile_scanner:prepareLintJarForPublish', task 
+':mobile_scanner:mergeDebugJavaResource', task 
+':mobile_scanner:syncDebugLibJars', task ':mobile_scanner:bundleDebugAar', 
+task ':mobile_scanner:assembleDebug', task 
+':open_filex:stripDebugDebugSymbols', task 
+':open_filex:copyDebugJniLibsProjectAndLocalJars', task 
+':open_filex:extractDebugAnnotations', task 
+':open_filex:extractDeepLinksForAarDebug', task 
+':open_filex:mergeDebugGeneratedProguardFiles', task 
+':open_filex:mergeDebugConsumerProguardFiles', task 
+':open_filex:prepareDebugArtProfile', task 
+':open_filex:prepareLintJarForPublish', task 
+':open_filex:mergeDebugJavaResource', task ':open_filex:syncDebugLibJars', 
+task ':open_filex:bundleDebugAar', task ':open_filex:assembleDebug', task 
+':permission_handler_android:stripDebugDebugSymbols', task 
+':permission_handler_android:copyDebugJniLibsProjectAndLocalJars', task 
+':permission_handler_android:extractDebugAnnotations', task 
+':permission_handler_android:extractDeepLinksForAarDebug', task 
+':permission_handler_android:mergeDebugGeneratedProguardFiles', task 
+':permission_handler_android:mergeDebugConsumerProguardFiles', task 
+':permission_handler_android:prepareDebugArtProfile', task 
+':permission_handler_android:prepareLintJarForPublish', task 
+':permission_handler_android:mergeDebugJavaResource', task 
+':permission_handler_android:syncDebugLibJars', task 
+':permission_handler_android:bundleDebugAar', task 
+':permission_handler_android:assembleDebug', task 
+':printing:stripDebugDebugSymbols', task 
+':printing:copyDebugJniLibsProjectAndLocalJars', task 
+':printing:extractDebugAnnotations', task 
+':printing:extractDeepLinksForAarDebug', task 
+':printing:mergeDebugGeneratedProguardFiles', task 
+':printing:mergeDebugConsumerProguardFiles', task 
+':printing:prepareDebugArtProfile', task ':printing:prepareLintJarForPublish', 
+task ':printing:mergeDebugJavaResource', task ':printing:syncDebugLibJars', 
+task ':printing:bundleDebugAar', task ':printing:assembleDebug', task 
+':shared_preferences_android:stripDebugDebugSymbols', task 
+':shared_preferences_android:copyDebugJniLibsProjectAndLocalJars', task 
+':shared_preferences_android:extractDebugAnnotations', task 
+':shared_preferences_android:extractDeepLinksForAarDebug', task 
+':shared_preferences_android:mergeDebugGeneratedProguardFiles', task 
+':shared_preferences_android:mergeDebugConsumerProguardFiles', task 
+':shared_preferences_android:prepareDebugArtProfile', task 
+':shared_preferences_android:prepareLintJarForPublish', task 
+':shared_preferences_android:mergeDebugJavaResource', task 
+':shared_preferences_android:syncDebugLibJars', task 
+':shared_preferences_android:bundleDebugAar', task 
+':shared_preferences_android:assembleDebug', task 
+':sqflite_android:stripDebugDebugSymbols', task 
+':sqflite_android:copyDebugJniLibsProjectAndLocalJars', task 
+':sqflite_android:extractDebugAnnotations', task 
+':sqflite_android:extractDeepLinksForAarDebug', task 
+':sqflite_android:mergeDebugGeneratedProguardFiles', task 
+':sqflite_android:mergeDebugConsumerProguardFiles', task 
+':sqflite_android:prepareDebugArtProfile', task 
+':sqflite_android:prepareLintJarForPublish', task 
+':sqflite_android:mergeDebugJavaResource', task 
+':sqflite_android:syncDebugLibJars', task ':sqflite_android:bundleDebugAar', 
+task ':sqflite_android:assembleDebug', task 
+':url_launcher_android:stripDebugDebugSymbols', task 
+':url_launcher_android:copyDebugJniLibsProjectAndLocalJars', task 
+':url_launcher_android:extractDebugAnnotations', task 
+':url_launcher_android:extractDeepLinksForAarDebug', task 
+':url_launcher_android:mergeDebugGeneratedProguardFiles', task 
+':url_launcher_android:mergeDebugConsumerProguardFiles', task 
+':url_launcher_android:prepareDebugArtProfile', task 
+':url_launcher_android:prepareLintJarForPublish', task 
+':url_launcher_android:mergeDebugJavaResource', task 
+':url_launcher_android:syncDebugLibJars', task 
+':url_launcher_android:bundleDebugAar', task 
+':url_launcher_android:assembleDebug']
+build_debug_log.txt:601:[        ] Resolve mutations for 
+:app:checkKotlinGradlePluginConfigurationErrors (Thread[#519,Execution worker 
+Thread 6,5,main]) started.
+build_debug_log.txt:602:[        ] 
+:app:checkKotlinGradlePluginConfigurationErrors (Thread[#519,Execution worker 
+Thread 6,5,main]) started.
+build_debug_log.txt:603:[        ] > Task 
+:app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+build_debug_log.txt:604:[        ] Skipping task 
+':app:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 
+'errorDiagnostics are present' is false.
+build_debug_log.txt:735:[        ] [  +16 ms] 
+C:\src\flutter\bin\cache\dart-sdk\bin\dartaotruntime.exe C:\src\flutter\bin\cac
+he\dart-sdk\bin\snapshots\frontend_server_aot.dart.snapshot --sdk-root 
+C:\src\flutter\bin\cache\artifacts\engine\common\flutter_patched_sdk/ 
+--target=flutter --no-print-incremental-dependencies -DFLUTTER_VERSION=3.41.9 
+-DFLUTTER_CHANNEL=stable 
+-DFLUTTER_GIT_URL=https://github.com/flutter/flutter.git 
+-DFLUTTER_FRAMEWORK_REVISION=00b0c91f06 -DFLUTTER_ENGINE_REVISION=42d3d75a56 
+-DFLUTTER_DART_VERSION=3.11.5 -DFLUTTER_APP_FLAVOR= -Ddart.vm.profile=false 
+-Ddart.vm.product=false --enable-asserts --track-widget-creation 
+--no-link-platform --packages 
+C:\Users\A\AndroidStudioProjects\Fire_New\.dart_tool\package_config.json 
+--output-dill C:\Users\A\AndroidStudioProjects\Fire_New\.dart_tool\flutter_buil
+d\604584cf70bf13324fa6f07c97f9132f\app.dill --depfile C:\Users\A\AndroidStudioP
+rojects\Fire_New\.dart_tool\flutter_build\604584cf70bf13324fa6f07c97f9132f\kern
+el_snapshot_program.d --incremental --initialize-from-dill C:\Users\A\AndroidSt
+udioProjects\Fire_New\.dart_tool\flutter_build\604584cf70bf13324fa6f07c97f9132f
+\app.dill --source file:///C:/Users/A/AndroidStudioProjects/Fire_New/.dart_tool
+/flutter_build/dart_plugin_registrant.dart --source 
+package:flutter/src/dart_plugin_registrant.dart -Dflutter.dart_plugin_registran
+t=file:///C:/Users/A/AndroidStudioProjects/Fire_New/.dart_tool/flutter_build/da
+rt_plugin_registrant.dart --verbosity=error package:fire_new/main.dart
+build_debug_log.txt:7769:   :String) [], RemoteException
+build_debug_log.txt:7770:    + FullyQualifiedErrorId : NativeCommandError
+build_debug_log.txt:8038:[  +80 ms] Resolve mutations for 
+:mobile_scanner:checkKotlinGradlePluginConfigurationErrors 
+(Thread[#516,Execution worker Thread 3,5,main]) started.
+build_debug_log.txt:8039:[        ] 
+:mobile_scanner:checkKotlinGradlePluginConfigurationErrors 
+(Thread[#516,Execution worker Thread 3,5,main]) started.
+build_debug_log.txt:8040:[        ] > Task 
+:mobile_scanner:checkKotlinGradlePluginConfigurationErrors SKIPPED
+build_debug_log.txt:8041:[        ] Skipping task 
+':mobile_scanner:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 
+'errorDiagnostics are present' is false.
+build_debug_log.txt:8337:[        ] Kotlin source files: C:\Users\A\AppData\Loc
+al\Pub\Cache\hosted\pub.dev\mobile_scanner-5.2.3\android\src\main\kotlin\dev\st
+eenbakker\mobile_scanner\BarcodeHandler.kt, C:\Users\A\AppData\Local\Pub\Cache\
+hosted\pub.dev\mobile_scanner-5.2.3\android\src\main\kotlin\dev\steenbakker\mob
+ile_scanner\MobileScanner.kt, C:\Users\A\AppData\Local\Pub\Cache\hosted\pub.dev
+\mobile_scanner-5.2.3\android\src\main\kotlin\dev\steenbakker\mobile_scanner\Mo
+bileScannerCallbacks.kt, C:\Users\A\AppData\Local\Pub\Cache\hosted\pub.dev\mobi
+le_scanner-5.2.3\android\src\main\kotlin\dev\steenbakker\mobile_scanner\MobileS
+cannerExceptions.kt, C:\Users\A\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_s
+canner-5.2.3\android\src\main\kotlin\dev\steenbakker\mobile_scanner\MobileScann
+erHandler.kt, C:\Users\A\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-
+5.2.3\android\src\main\kotlin\dev\steenbakker\mobile_scanner\MobileScannerPermi
+ssions.kt, C:\Users\A\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-5.2
+.3\android\src\main\kotlin\dev\steenbakker\mobile_scanner\MobileScannerPermissi
+onsListener.kt, C:\Users\A\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanne
+r-5.2.3\android\src\main\kotlin\dev\steenbakker\mobile_scanner\MobileScannerPlu
+gin.kt, C:\Users\A\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-5.2.3\
+android\src\main\kotlin\dev\steenbakker\mobile_scanner\MobileScannerUtilities.k
+t, C:\Users\A\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-5.2.3\andro
+id\src\main\kotlin\dev\steenbakker\mobile_scanner\objects\BarcodeFormats.kt, C:
+\Users\A\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-5.2.3\android\sr
+c\main\kotlin\dev\steenbakker\mobile_scanner\objects\DetectionSpeed.kt, C:\User
+s\A\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-5.2.3\android\src\mai
+n\kotlin\dev\steenbakker\mobile_scanner\objects\MobileScannerStartParameters.kt
+, C:\Users\A\AppData\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-5.2.3\androi
+d\src\main\kotlin\dev\steenbakker\mobile_scanner\utils\Yuv.kt, C:\Users\A\AppDa
+ta\Local\Pub\Cache\hosted\pub.dev\mobile_scanner-5.2.3\android\src\main\kotlin\
+dev\steenbakker\mobile_scanner\utils\YuvToRgbConverter.kt
+build_debug_log.txt:8505:[        ] Resolve mutations for 
+:shared_preferences_android:checkKotlinGradlePluginConfigurationErrors 
+(Thread[#518,Execution worker Thread 5,5,main]) started.
+build_debug_log.txt:8506:[        ] 
+:shared_preferences_android:checkKotlinGradlePluginConfigurationErrors 
+(Thread[#518,Execution worker Thread 5,5,main]) started.
+build_debug_log.txt:8507:[        ] > Task 
+:shared_preferences_android:checkKotlinGradlePluginConfigurationErrors SKIPPED
+build_debug_log.txt:8508:[        ] Skipping task 
+':shared_preferences_android:checkKotlinGradlePluginConfigurationErrors' as 
+task onlyIf 'errorDiagnostics are present' is false.
+build_debug_log.txt:12474:[  +94 ms] C/C++: 
+C:\src\flutter\packages\flutter_tools\gradle\src\main\scripts\CMakeLists.txt 
+debug|armeabi-v7a : JSON generation completed with problem. Exception: 
+java.io.FileNotFoundException: C:\Users\A\AndroidStudioProjects\Fire_New\build\
+app\intermediates\cxx\debug\623wdmp4\logs\armeabi-v7a\generate_cxx_metadata_519
+_timing.txt (The process cannot access the file because it is being used by 
+another process)
+build_debug_log.txt:12482:[   +2 ms] FAILURE: Build failed with an exception.
+build_debug_log.txt:12485:[        ] > java.io.FileNotFoundException: 
+C:\Users\A\AndroidStudioProjects\Fi
+build_debug_log.txt:12493:[        ] * Exception is:
+build_debug_log.txt:12494:[        ] 
+org.gradle.api.tasks.TaskExecutionException: Execution failed for 
+build_debug_log.txt:12498:[        ] 	at 
+org.gradle.internal.Try$Failure.ifSuccessfulOrElse(Try.java:293)
+build_debug_log.txt:12513:[        ] 	at 
+org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecut
+build_debug_log.txt:12514:er.execute(CatchExceptionTaskExecuter.java:36)
+build_debug_log.txt:12565:[        ] Caused by: 
+org.gradle.api.UncheckedIOException: 
+build_debug_log.txt:12566:java.io.FileNotFoundException: 
+C:\Users\A\AndroidStudioProjects\Fire_New\build\
+build_debug_log.txt:12570:[        ] 	at 
+org.gradle.internal.UncheckedException.throwAsUncheckedException
+build_debug_log.txt:12571:(UncheckedException.java:63)
+build_debug_log.txt:12572:[        ] 	at 
+org.gradle.internal.UncheckedException.throwAsUncheckedException
+build_debug_log.txt:12573:(UncheckedException.java:42)
+build_debug_log.txt:12769:[        ] 	at 
+org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecut
+build_debug_log.txt:12770:er.execute(CatchExceptionTaskExecuter.java:36)
+build_debug_log.txt:12821:[        ] Caused by: java.io.FileNotFoundException: 
+C:\Users\A\AndroidStudioPr
+build_debug_log.txt:12826:java.base/java.io.IoOverNioFileSystem.convertNioToIoE
+xceptionInStreams(Unknown 
+build_debug_log.txt:12861:[        ] Caused by: 
+java.nio.file.FileSystemException: C:\Users\A\AndroidStud
+build_debug_log.txt:12866:java.base/sun.nio.fs.WindowsException.translateToIOEx
+ception(Unknown Source)
+build_debug_log.txt:12868:java.base/sun.nio.fs.WindowsException.rethrowAsIOExce
+ption(Unknown Source)
+build_debug_log.txt:12870:java.base/sun.nio.fs.WindowsException.rethrowAsIOExce
+ption(Unknown Source)
+build_debug_log.txt:12877:[  +28 ms] [!] Gradle threw an error while 
+downloading artifacts from the 
+build_debug_log.txt:12907:[ +105 ms] Resolve mutations for 
+:gradle:checkKotlinGradlePluginConfigurationErrors (Thread[#686,Execution 
+worker,5,main]) started.
+build_debug_log.txt:12908:[        ] 
+:gradle:checkKotlinGradlePluginConfigurationErrors (Thread[#686,Execution 
+worker,5,main]) started.
+build_debug_log.txt:12909:[        ] > Task 
+:gradle:checkKotlinGradlePluginConfigurationErrors SKIPPED
+build_debug_log.txt:12910:[   +1 ms] Skipping task 
+':gradle:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 
+'errorDiagnostics are present' is false.
+build_debug_log.txt:13209:[+1005 ms] Tasks to be executed: [task 
+':app:DebugMinSdkCheck', task ':app:preBuild', task ':app:preDebugBuild', task 
+':app:mergeDebugNativeDebugMetadata', task 
+':app:checkKotlinGradlePluginConfigurationErrors', task 
+':app:compileFlutterBuildDebug', task ':app:packJniLibsflutterBuildDebug', 
+task ':connectivity_plus:preBuild', task ':connectivity_plus:preDebugBuild', 
+task ':connectivity_plus:writeDebugAarMetadata', task ':file_picker:preBuild', 
+task ':file_picker:preDebugBuild', task ':file_picker:writeDebugAarMetadata', 
+task ':flutter_plugin_android_lifecycle:preBuild', task 
+':flutter_plugin_android_lifecycle:preDebugBuild', task 
+':flutter_plugin_android_lifecycle:writeDebugAarMetadata', task 
+':geocoding_android:preBuild', task ':geocoding_android:preDebugBuild', task 
+':geocoding_android:writeDebugAarMetadata', task 
+':geolocator_android:preBuild', task ':geolocator_android:preDebugBuild', task 
+':geolocator_android:writeDebugAarMetadata', task 
+':image_picker_android:preBuild', task ':image_picker_android:preDebugBuild', 
+task ':image_picker_android:writeDebugAarMetadata', task ':jni:preBuild', task 
+':jni:preDebugBuild', task ':jni:writeDebugAarMetadata', task 
+':jni_flutter:preBuild', task ':jni_flutter:preDebugBuild', task 
+':jni_flutter:writeDebugAarMetadata', task ':mobile_scanner:preBuild', task 
+':mobile_scanner:preDebugBuild', task ':mobile_scanner:writeDebugAarMetadata', 
+task ':open_filex:preBuild', task ':open_filex:preDebugBuild', task 
+':open_filex:writeDebugAarMetadata', task 
+':permission_handler_android:preBuild', task 
+':permission_handler_android:preDebugBuild', task 
+':permission_handler_android:writeDebugAarMetadata', task 
+':printing:preBuild', task ':printing:preDebugBuild', task 
+':printing:writeDebugAarMetadata', task 
+':shared_preferences_android:preBuild', task 
+':shared_preferences_android:preDebugBuild', task 
+':shared_preferences_android:writeDebugAarMetadata', task 
+':sqflite_android:preBuild', task ':sqflite_android:preDebugBuild', task 
+':sqflite_android:writeDebugAarMetadata', task 
+':url_launcher_android:preBuild', task ':url_launcher_android:preDebugBuild', 
+task ':url_launcher_android:writeDebugAarMetadata', task 
+':app:checkDebugAarMetadata', task ':app:cleanMergeDebugAssets', task 
+':app:mergeDebugShaders', task ':app:compileDebugShaders', task 
+':app:generateDebugAssets', task ':connectivity_plus:mergeDebugShaders', task 
+':connectivity_plus:compileDebugShaders', task 
+':connectivity_plus:generateDebugAssets', task 
+':connectivity_plus:mergeDebugAssets', task ':file_picker:mergeDebugShaders', 
+task ':file_picker:compileDebugShaders', task 
+':file_picker:generateDebugAssets', task ':file_picker:mergeDebugAssets', task 
+':flutter_plugin_android_lifecycle:mergeDebugShaders', task 
+':flutter_plugin_android_lifecycle:compileDebugShaders', task 
+':flutter_plugin_android_lifecycle:generateDebugAssets', task 
+':flutter_plugin_android_lifecycle:mergeDebugAssets', task 
+':geocoding_android:mergeDebugShaders', task 
+':geocoding_android:compileDebugShaders', task 
+':geocoding_android:generateDebugAssets', task 
+':geocoding_android:mergeDebugAssets', task 
+':geolocator_android:mergeDebugShaders', task 
+':geolocator_android:compileDebugShaders', task 
+':geolocator_android:generateDebugAssets', task 
+':geolocator_android:mergeDebugAssets', task 
+':image_picker_android:mergeDebugShaders', task 
+':image_picker_android:compileDebugShaders', task 
+':image_picker_android:generateDebugAssets', task 
+':image_picker_android:mergeDebugAssets', task ':jni:mergeDebugShaders', task 
+':jni:compileDebugShaders', task ':jni:generateDebugAssets', task 
+':jni:mergeDebugAssets', task ':jni_flutter:mergeDebugShaders', task 
+':jni_flutter:compileDebugShaders', task ':jni_flutter:generateDebugAssets', 
+task ':jni_flutter:mergeDebugAssets', task 
+':mobile_scanner:mergeDebugShaders', task 
+':mobile_scanner:compileDebugShaders', task 
+':mobile_scanner:generateDebugAssets', task 
+':mobile_scanner:mergeDebugAssets', task ':open_filex:mergeDebugShaders', task 
+':open_filex:compileDebugShaders', task ':open_filex:generateDebugAssets', 
+task ':open_filex:mergeDebugAssets', task 
+':permission_handler_android:mergeDebugShaders', task 
+':permission_handler_android:compileDebugShaders', task 
+':permission_handler_android:generateDebugAssets', task 
+':permission_handler_android:mergeDebugAssets', task 
+':printing:mergeDebugShaders', task ':printing:compileDebugShaders', task 
+':printing:generateDebugAssets', task ':printing:mergeDebugAssets', task 
+':shared_preferences_android:mergeDebugShaders', task 
+':shared_preferences_android:compileDebugShaders', task 
+':shared_preferences_android:generateDebugAssets', task 
+':shared_preferences_android:mergeDebugAssets', task 
+':sqflite_android:mergeDebugShaders', task 
+':sqflite_android:compileDebugShaders', task 
+':sqflite_android:generateDebugAssets', task 
+':sqflite_android:mergeDebugAssets', task 
+':url_launcher_android:mergeDebugShaders', task 
+':url_launcher_android:compileDebugShaders', task 
+':url_launcher_android:generateDebugAssets', task 
+':url_launcher_android:mergeDebugAssets', task ':app:mergeDebugAssets', task 
+':app:copyFlutterAssetsDebug', task ':app:generateDebugResValues', task 
+':connectivity_plus:generateDebugResValues', task 
+':connectivity_plus:generateDebugResources', task 
+':connectivity_plus:packageDebugResources', task 
+':file_picker:generateDebugResValues', task 
+':file_picker:generateDebugResources', task 
+':file_picker:packageDebugResources', task 
+':flutter_plugin_android_lifecycle:generateDebugResValues', task 
+':flutter_plugin_android_lifecycle:generateDebugResources', task 
+':flutter_plugin_android_lifecycle:packageDebugResources', task 
+':geocoding_android:generateDebugResValues', task 
+':geocoding_android:generateDebugResources', task 
+':geocoding_android:packageDebugResources', task 
+':geolocator_android:generateDebugResValues', task 
+':geolocator_android:generateDebugResources', task 
+':geolocator_android:packageDebugResources', task 
+':image_picker_android:generateDebugResValues', task 
+':image_picker_android:generateDebugResources', task 
+':image_picker_android:packageDebugResources', task 
+':jni:generateDebugResValues', task ':jni:generateDebugResources', task 
+':jni:packageDebugResources', task ':jni_flutter:generateDebugResValues', task 
+':jni_flutter:generateDebugResources', task 
+':jni_flutter:packageDebugResources', task 
+':mobile_scanner:generateDebugResValues', task 
+':mobile_scanner:generateDebugResources', task 
+':mobile_scanner:packageDebugResources', task 
+':open_filex:generateDebugResValues', task 
+':open_filex:generateDebugResources', task 
+':open_filex:packageDebugResources', task 
+':permission_handler_android:generateDebugResValues', task 
+':permission_handler_android:generateDebugResources', task 
+':permission_handler_android:packageDebugResources', task 
+':printing:generateDebugResValues', task ':printing:generateDebugResources', 
+task ':printing:packageDebugResources', task 
+':shared_preferences_android:generateDebugResValues', task 
+':shared_preferences_android:generateDebugResources', task 
+':shared_preferences_android:packageDebugResources', task 
+':sqflite_android:generateDebugResValues', task 
+':sqflite_android:generateDebugResources', task 
+':sqflite_android:packageDebugResources', task 
+':url_launcher_android:generateDebugResValues', task 
+':url_launcher_android:generateDebugResources', task 
+':url_launcher_android:packageDebugResources', task 
+':app:mapDebugSourceSetPaths', task ':app:generateDebugResources', task 
+':app:mergeDebugResources', task ':app:packageDebugResources', task 
+':app:parseDebugLocalResources', task 
+':app:createDebugCompatibleScreenManifests', task 
+':app:extractDeepLinksDebug', task ':connectivity_plus:extractDeepLinksDebug', 
+task ':connectivity_plus:processDebugManifest', task 
+':file_picker:extractDeepLinksDebug', task 
+':file_picker:processDebugManifest', task 
+':flutter_plugin_android_lifecycle:extractDeepLinksDebug', task 
+':flutter_plugin_android_lifecycle:processDebugManifest', task 
+':geocoding_android:extractDeepLinksDebug', task 
+':geocoding_android:processDebugManifest', task 
+':geolocator_android:extractDeepLinksDebug', task 
+':geolocator_android:processDebugManifest', task 
+':image_picker_android:extractDeepLinksDebug', task 
+':image_picker_android:processDebugManifest', task 
+':jni:extractDeepLinksDebug', task ':jni:processDebugManifest', task 
+':jni_flutter:extractDeepLinksDebug', task 
+':jni_flutter:processDebugManifest', task 
+':mobile_scanner:extractDeepLinksDebug', task 
+':mobile_scanner:processDebugManifest', task 
+':open_filex:extractDeepLinksDebug', task ':open_filex:processDebugManifest', 
+task ':permission_handler_android:extractDeepLinksDebug', task 
+':permission_handler_android:processDebugManifest', task 
+':printing:extractDeepLinksDebug', task ':printing:processDebugManifest', task 
+':shared_preferences_android:extractDeepLinksDebug', task 
+':shared_preferences_android:processDebugManifest', task 
+':sqflite_android:extractDeepLinksDebug', task 
+':sqflite_android:processDebugManifest', task 
+':url_launcher_android:extractDeepLinksDebug', task 
+':url_launcher_android:processDebugManifest', task 
+':app:processDebugMainManifest', task ':app:outputDebugAppLinkSettings', task 
+':app:processDebugManifest', task ':app:processDebugManifestForPackage', task 
+':connectivity_plus:compileDebugLibraryResources', task 
+':connectivity_plus:parseDebugLocalResources', task 
+':connectivity_plus:generateDebugRFile', task 
+':file_picker:compileDebugLibraryResources', task 
+':file_picker:parseDebugLocalResources', task 
+':file_picker:generateDebugRFile', task 
+':flutter_plugin_android_lifecycle:compileDebugLibraryResources', task 
+':flutter_plugin_android_lifecycle:parseDebugLocalResources', task 
+':flutter_plugin_android_lifecycle:generateDebugRFile', task 
+':geocoding_android:compileDebugLibraryResources', task 
+':geocoding_android:parseDebugLocalResources', task 
+':geocoding_android:generateDebugRFile', task 
+':geolocator_android:compileDebugLibraryResources', task 
+':geolocator_android:parseDebugLocalResources', task 
+':geolocator_android:generateDebugRFile', task 
+':image_picker_android:compileDebugLibraryResources', task 
+':image_picker_android:parseDebugLocalResources', task 
+':image_picker_android:generateDebugRFile', task 
+':jni:compileDebugLibraryResources', task ':jni:parseDebugLocalResources', 
+task ':jni:generateDebugRFile', task 
+':jni_flutter:compileDebugLibraryResources', task 
+':jni_flutter:parseDebugLocalResources', task 
+':jni_flutter:generateDebugRFile', task 
+':mobile_scanner:compileDebugLibraryResources', task 
+':mobile_scanner:parseDebugLocalResources', task 
+':mobile_scanner:generateDebugRFile', task 
+':open_filex:compileDebugLibraryResources', task 
+':open_filex:parseDebugLocalResources', task ':open_filex:generateDebugRFile', 
+task ':permission_handler_android:compileDebugLibraryResources', task 
+':permission_handler_android:parseDebugLocalResources', task 
+':permission_handler_android:generateDebugRFile', task 
+':printing:compileDebugLibraryResources', task 
+':printing:parseDebugLocalResources', task ':printing:generateDebugRFile', 
+task ':shared_preferences_android:compileDebugLibraryResources', task 
+':shared_preferences_android:parseDebugLocalResources', task 
+':shared_preferences_android:generateDebugRFile', task 
+':sqflite_android:compileDebugLibraryResources', task 
+':sqflite_android:parseDebugLocalResources', task 
+':sqflite_android:generateDebugRFile', task 
+':url_launcher_android:compileDebugLibraryResources', task 
+':url_launcher_android:parseDebugLocalResources', task 
+':url_launcher_android:generateDebugRFile', task ':app:processDebugResources', 
+task ':connectivity_plus:javaPreCompileDebug', task 
+':connectivity_plus:compileDebugJavaWithJavac', task 
+':connectivity_plus:bundleLibCompileToJarDebug', task 
+':file_picker:javaPreCompileDebug', task 
+':flutter_plugin_android_lifecycle:javaPreCompileDebug', task 
+':flutter_plugin_android_lifecycle:compileDebugJavaWithJavac', task 
+':flutter_plugin_android_lifecycle:bundleLibCompileToJarDebug', task 
+':file_picker:compileDebugJavaWithJavac', task 
+':file_picker:bundleLibCompileToJarDebug', task 
+':geocoding_android:javaPreCompileDebug', task 
+':geocoding_android:compileDebugJavaWithJavac', task 
+':geocoding_android:bundleLibCompileToJarDebug', task 
+':geolocator_android:javaPreCompileDebug', task 
+':geolocator_android:compileDebugJavaWithJavac', task 
+':geolocator_android:bundleLibCompileToJarDebug', task 
+':image_picker_android:javaPreCompileDebug', task 
+':image_picker_android:compileDebugJavaWithJavac', task 
+':image_picker_android:bundleLibCompileToJarDebug', task 
+':jni:javaPreCompileDebug', task ':jni:compileDebugJavaWithJavac', task 
+':jni:bundleLibCompileToJarDebug', task ':jni_flutter:javaPreCompileDebug', 
+task ':jni_flutter:compileDebugJavaWithJavac', task 
+':jni_flutter:bundleLibCompileToJarDebug', task 
+':mobile_scanner:checkKotlinGradlePluginConfigurationErrors', task 
+':mobile_scanner:compileDebugKotlin', task 
+':mobile_scanner:javaPreCompileDebug', task 
+':mobile_scanner:compileDebugJavaWithJavac', task 
+':mobile_scanner:bundleLibCompileToJarDebug', task 
+':open_filex:javaPreCompileDebug', task 
+':open_filex:compileDebugJavaWithJavac', task 
+':open_filex:bundleLibCompileToJarDebug', task 
+':permission_handler_android:javaPreCompileDebug', task 
+':permission_handler_android:compileDebugJavaWithJavac', task 
+':permission_handler_android:bundleLibCompileToJarDebug', task 
+':printing:javaPreCompileDebug', task ':printing:compileDebugJavaWithJavac', 
+task ':printing:bundleLibCompileToJarDebug', task 
+':shared_preferences_android:checkKotlinGradlePluginConfigurationErrors', task 
+':shared_preferences_android:compileDebugKotlin', task 
+':shared_preferences_android:javaPreCompileDebug', task 
+':shared_preferences_android:compileDebugJavaWithJavac', task 
+':shared_preferences_android:bundleLibCompileToJarDebug', task 
+':sqflite_android:javaPreCompileDebug', task 
+':sqflite_android:compileDebugJavaWithJavac', task 
+':sqflite_android:bundleLibCompileToJarDebug', task 
+':url_launcher_android:generateDebugBuildConfig', task 
+':url_launcher_android:javaPreCompileDebug', task 
+':url_launcher_android:compileDebugJavaWithJavac', task 
+':url_launcher_android:bundleLibCompileToJarDebug', task 
+':app:compileDebugKotlin', task ':app:javaPreCompileDebug', task 
+':app:compileDebugJavaWithJavac', task ':app:compressDebugAssets', task 
+':connectivity_plus:bundleLibRuntimeToJarDebug', task 
+':file_picker:bundleLibRuntimeToJarDebug', task 
+':image_picker_android:bundleLibRuntimeToJarDebug', task 
+':flutter_plugin_android_lifecycle:bundleLibRuntimeToJarDebug', task 
+':geocoding_android:bundleLibRuntimeToJarDebug', task 
+':geolocator_android:bundleLibRuntimeToJarDebug', task 
+':jni_flutter:bundleLibRuntimeToJarDebug', task 
+':jni:bundleLibRuntimeToJarDebug', task 
+':mobile_scanner:bundleLibRuntimeToJarDebug', task 
+':open_filex:bundleLibRuntimeToJarDebug', task 
+':permission_handler_android:bundleLibRuntimeToJarDebug', task 
+':printing:bundleLibRuntimeToJarDebug', task 
+':shared_preferences_android:bundleLibRuntimeToJarDebug', task 
+':sqflite_android:bundleLibRuntimeToJarDebug', task 
+':url_launcher_android:bundleLibRuntimeToJarDebug', task 
+':app:desugarDebugFileDependencies', task ':app:dexBuilderDebug', task 
+':app:mergeDebugGlobalSynthetics', task ':app:processDebugJavaRes', task 
+':connectivity_plus:processDebugJavaRes', task 
+':file_picker:processDebugJavaRes', task 
+':flutter_plugin_android_lifecycle:processDebugJavaRes', task 
+':geocoding_android:processDebugJavaRes', task 
+':geolocator_android:processDebugJavaRes', task 
+':image_picker_android:processDebugJavaRes', task ':jni:processDebugJavaRes', 
+task ':jni_flutter:processDebugJavaRes', task 
+':mobile_scanner:processDebugJavaRes', task ':open_filex:processDebugJavaRes', 
+task ':permission_handler_android:processDebugJavaRes', task 
+':printing:processDebugJavaRes', task 
+':shared_preferences_android:processDebugJavaRes', task 
+':sqflite_android:processDebugJavaRes', task 
+':url_launcher_android:processDebugJavaRes', task 
+':app:mergeDebugJavaResource', task ':app:checkDebugDuplicateClasses', task 
+':app:mergeExtDexDebug', task ':connectivity_plus:bundleLibRuntimeToDirDebug', 
+task ':file_picker:bundleLibRuntimeToDirDebug', task 
+':image_picker_android:bundleLibRuntimeToDirDebug', task 
+':flutter_plugin_android_lifecycle:bundleLibRuntimeToDirDebug', task 
+':geocoding_android:bundleLibRuntimeToDirDebug', task 
+':geolocator_android:bundleLibRuntimeToDirDebug', task 
+':jni_flutter:bundleLibRuntimeToDirDebug', task 
+':jni:bundleLibRuntimeToDirDebug', task 
+':mobile_scanner:bundleLibRuntimeToDirDebug', task 
+':open_filex:bundleLibRuntimeToDirDebug', task 
+':permission_handler_android:bundleLibRuntimeToDirDebug', task 
+':printing:bundleLibRuntimeToDirDebug', task 
+':shared_preferences_android:bundleLibRuntimeToDirDebug', task 
+':sqflite_android:bundleLibRuntimeToDirDebug', task 
+':url_launcher_android:bundleLibRuntimeToDirDebug', task 
+':app:mergeLibDexDebug', task ':app:mergeProjectDexDebug', task 
+':app:configureCMakeDebug[arm64-v8a]', task ':app:buildCMakeDebug[arm64-v8a]', 
+task ':app:configureCMakeDebug[armeabi-v7a]', task 
+':app:buildCMakeDebug[armeabi-v7a]', task ':app:configureCMakeDebug[x86_64]', 
+task ':app:buildCMakeDebug[x86_64]', task ':app:mergeDebugJniLibFolders', task 
+':connectivity_plus:mergeDebugJniLibFolders', task 
+':connectivity_plus:mergeDebugNativeLibs', task 
+':connectivity_plus:copyDebugJniLibsProjectOnly', task 
+':file_picker:mergeDebugJniLibFolders', task 
+':file_picker:mergeDebugNativeLibs', task 
+':file_picker:copyDebugJniLibsProjectOnly', task 
+':flutter_plugin_android_lifecycle:mergeDebugJniLibFolders', task 
+':flutter_plugin_android_lifecycle:mergeDebugNativeLibs', task 
+':flutter_plugin_android_lifecycle:copyDebugJniLibsProjectOnly', task 
+':geocoding_android:mergeDebugJniLibFolders', task 
+':geocoding_android:mergeDebugNativeLibs', task 
+':geocoding_android:copyDebugJniLibsProjectOnly', task 
+':geolocator_android:mergeDebugJniLibFolders', task 
+':geolocator_android:mergeDebugNativeLibs', task 
+':geolocator_android:copyDebugJniLibsProjectOnly', task 
+':image_picker_android:mergeDebugJniLibFolders', task 
+':image_picker_android:mergeDebugNativeLibs', task 
+':image_picker_android:copyDebugJniLibsProjectOnly', task 
+':jni:preProfileBuild', task ':jni:configureCMakeDebug[arm64-v8a]', task 
+':jni:buildCMakeDebug[arm64-v8a]', task 
+':jni:configureCMakeDebug[armeabi-v7a]', task 
+':jni:buildCMakeDebug[armeabi-v7a]', task ':jni:configureCMakeDebug[x86]', 
+task ':jni:buildCMakeDebug[x86]', task ':jni:configureCMakeDebug[x86_64]', 
+task ':jni:buildCMakeDebug[x86_64]', task ':jni:mergeDebugJniLibFolders', task 
+':jni:mergeDebugNativeLibs', task ':jni:copyDebugJniLibsProjectOnly', task 
+':jni_flutter:mergeDebugJniLibFolders', task 
+':jni_flutter:mergeDebugNativeLibs', task 
+':jni_flutter:copyDebugJniLibsProjectOnly', task 
+':mobile_scanner:mergeDebugJniLibFolders', task 
+':mobile_scanner:mergeDebugNativeLibs', task 
+':mobile_scanner:copyDebugJniLibsProjectOnly', task 
+':open_filex:mergeDebugJniLibFolders', task 
+':open_filex:mergeDebugNativeLibs', task 
+':open_filex:copyDebugJniLibsProjectOnly', task 
+':permission_handler_android:mergeDebugJniLibFolders', task 
+':permission_handler_android:mergeDebugNativeLibs', task 
+':permission_handler_android:copyDebugJniLibsProjectOnly', task 
+':printing:mergeDebugJniLibFolders', task ':printing:mergeDebugNativeLibs', 
+task ':printing:copyDebugJniLibsProjectOnly', task 
+':shared_preferences_android:mergeDebugJniLibFolders', task 
+':shared_preferences_android:mergeDebugNativeLibs', task 
+':shared_preferences_android:copyDebugJniLibsProjectOnly', task 
+':sqflite_android:mergeDebugJniLibFolders', task 
+':sqflite_android:mergeDebugNativeLibs', task 
+':sqflite_android:copyDebugJniLibsProjectOnly', task 
+':url_launcher_android:mergeDebugJniLibFolders', task 
+':url_launcher_android:mergeDebugNativeLibs', task 
+':url_launcher_android:copyDebugJniLibsProjectOnly', task 
+':app:mergeDebugNativeLibs', task ':app:stripDebugDebugSymbols', task 
+':app:validateSigningDebug', task ':app:writeDebugAppMetadata', task 
+':app:writeDebugSigningConfigVersions', task ':app:packageDebug', task 
+':app:createDebugApkListingFileRedirect', task ':app:assembleDebug', task 
+':connectivity_plus:stripDebugDebugSymbols', task 
+':connectivity_plus:copyDebugJniLibsProjectAndLocalJars', task 
+':connectivity_plus:extractDebugAnnotations', task 
+':connectivity_plus:extractDeepLinksForAarDebug', task 
+':connectivity_plus:mergeDebugGeneratedProguardFiles', task 
+':connectivity_plus:mergeDebugConsumerProguardFiles', task 
+':connectivity_plus:prepareDebugArtProfile', task 
+':connectivity_plus:prepareLintJarForPublish', task 
+':connectivity_plus:mergeDebugJavaResource', task 
+':connectivity_plus:syncDebugLibJars', task 
+':connectivity_plus:bundleDebugAar', task ':connectivity_plus:assembleDebug', 
+task ':file_picker:stripDebugDebugSymbols', task 
+':file_picker:copyDebugJniLibsProjectAndLocalJars', task 
+':file_picker:extractDebugAnnotations', task 
+':file_picker:extractDeepLinksForAarDebug', task 
+':file_picker:mergeDebugGeneratedProguardFiles', task 
+':file_picker:mergeDebugConsumerProguardFiles', task 
+':file_picker:prepareDebugArtProfile', task 
+':file_picker:prepareLintJarForPublish', task 
+':file_picker:mergeDebugJavaResource', task ':file_picker:syncDebugLibJars', 
+task ':file_picker:bundleDebugAar', task ':file_picker:assembleDebug', task 
+':flutter_plugin_android_lifecycle:stripDebugDebugSymbols', task 
+':flutter_plugin_android_lifecycle:copyDebugJniLibsProjectAndLocalJars', task 
+':flutter_plugin_android_lifecycle:extractDebugAnnotations', task 
+':flutter_plugin_android_lifecycle:extractDeepLinksForAarDebug', task 
+':flutter_plugin_android_lifecycle:mergeDebugGeneratedProguardFiles', task 
+':flutter_plugin_android_lifecycle:mergeDebugConsumerProguardFiles', task 
+':flutter_plugin_android_lifecycle:prepareDebugArtProfile', task 
+':flutter_plugin_android_lifecycle:prepareLintJarForPublish', task 
+':flutter_plugin_android_lifecycle:mergeDebugJavaResource', task 
+':flutter_plugin_android_lifecycle:syncDebugLibJars', task 
+':flutter_plugin_android_lifecycle:bundleDebugAar', task 
+':flutter_plugin_android_lifecycle:assembleDebug', task 
+':geocoding_android:stripDebugDebugSymbols', task 
+':geocoding_android:copyDebugJniLibsProjectAndLocalJars', task 
+':geocoding_android:extractDebugAnnotations', task 
+':geocoding_android:extractDeepLinksForAarDebug', task 
+':geocoding_android:mergeDebugGeneratedProguardFiles', task 
+':geocoding_android:mergeDebugConsumerProguardFiles', task 
+':geocoding_android:prepareDebugArtProfile', task 
+':geocoding_android:prepareLintJarForPublish', task 
+':geocoding_android:mergeDebugJavaResource', task 
+':geocoding_android:syncDebugLibJars', task 
+':geocoding_android:bundleDebugAar', task ':geocoding_android:assembleDebug', 
+task ':geolocator_android:stripDebugDebugSymbols', task 
+':geolocator_android:copyDebugJniLibsProjectAndLocalJars', task 
+':geolocator_android:extractDebugAnnotations', task 
+':geolocator_android:extractDeepLinksForAarDebug', task 
+':geolocator_android:mergeDebugGeneratedProguardFiles', task 
+':geolocator_android:mergeDebugConsumerProguardFiles', task 
+':geolocator_android:prepareDebugArtProfile', task 
+':geolocator_android:prepareLintJarForPublish', task 
+':geolocator_android:mergeDebugJavaResource', task 
+':geolocator_android:syncDebugLibJars', task 
+':geolocator_android:bundleDebugAar', task 
+':geolocator_android:assembleDebug', task 
+':image_picker_android:stripDebugDebugSymbols', task 
+':image_picker_android:copyDebugJniLibsProjectAndLocalJars', task 
+':image_picker_android:extractDebugAnnotations', task 
+':image_picker_android:extractDeepLinksForAarDebug', task 
+':image_picker_android:mergeDebugGeneratedProguardFiles', task 
+':image_picker_android:mergeDebugConsumerProguardFiles', task 
+':image_picker_android:prepareDebugArtProfile', task 
+':image_picker_android:prepareLintJarForPublish', task 
+':image_picker_android:mergeDebugJavaResource', task 
+':image_picker_android:syncDebugLibJars', task 
+':image_picker_android:bundleDebugAar', task 
+':image_picker_android:assembleDebug', task ':jni:stripDebugDebugSymbols', 
+task ':jni:copyDebugJniLibsProjectAndLocalJars', task 
+':jni:extractDebugAnnotations', task ':jni:extractDeepLinksForAarDebug', task 
+':jni:mergeDebugGeneratedProguardFiles', task 
+':jni:mergeDebugConsumerProguardFiles', task ':jni:prepareDebugArtProfile', 
+task ':jni:prepareLintJarForPublish', task ':jni:mergeDebugJavaResource', task 
+':jni:syncDebugLibJars', task ':jni:bundleDebugAar', task 
+':jni:assembleDebug', task ':jni_flutter:stripDebugDebugSymbols', task 
+':jni_flutter:copyDebugJniLibsProjectAndLocalJars', task 
+':jni_flutter:extractDebugAnnotations', task 
+':jni_flutter:extractDeepLinksForAarDebug', task 
+':jni_flutter:mergeDebugGeneratedProguardFiles', task 
+':jni_flutter:mergeDebugConsumerProguardFiles', task 
+':jni_flutter:prepareDebugArtProfile', task 
+':jni_flutter:prepareLintJarForPublish', task 
+':jni_flutter:mergeDebugJavaResource', task ':jni_flutter:syncDebugLibJars', 
+task ':jni_flutter:bundleDebugAar', task ':jni_flutter:assembleDebug', task 
+':mobile_scanner:stripDebugDebugSymbols', task 
+':mobile_scanner:copyDebugJniLibsProjectAndLocalJars', task 
+':mobile_scanner:extractDebugAnnotations', task 
+':mobile_scanner:extractDeepLinksForAarDebug', task 
+':mobile_scanner:mergeDebugGeneratedProguardFiles', task 
+':mobile_scanner:mergeDebugConsumerProguardFiles', task 
+':mobile_scanner:prepareDebugArtProfile', task 
+':mobile_scanner:prepareLintJarForPublish', task 
+':mobile_scanner:mergeDebugJavaResource', task 
+':mobile_scanner:syncDebugLibJars', task ':mobile_scanner:bundleDebugAar', 
+task ':mobile_scanner:assembleDebug', task 
+':open_filex:stripDebugDebugSymbols', task 
+':open_filex:copyDebugJniLibsProjectAndLocalJars', task 
+':open_filex:extractDebugAnnotations', task 
+':open_filex:extractDeepLinksForAarDebug', task 
+':open_filex:mergeDebugGeneratedProguardFiles', task 
+':open_filex:mergeDebugConsumerProguardFiles', task 
+':open_filex:prepareDebugArtProfile', task 
+':open_filex:prepareLintJarForPublish', task 
+':open_filex:mergeDebugJavaResource', task ':open_filex:syncDebugLibJars', 
+task ':open_filex:bundleDebugAar', task ':open_filex:assembleDebug', task 
+':permission_handler_android:stripDebugDebugSymbols', task 
+':permission_handler_android:copyDebugJniLibsProjectAndLocalJars', task 
+':permission_handler_android:extractDebugAnnotations', task 
+':permission_handler_android:extractDeepLinksForAarDebug', task 
+':permission_handler_android:mergeDebugGeneratedProguardFiles', task 
+':permission_handler_android:mergeDebugConsumerProguardFiles', task 
+':permission_handler_android:prepareDebugArtProfile', task 
+':permission_handler_android:prepareLintJarForPublish', task 
+':permission_handler_android:mergeDebugJavaResource', task 
+':permission_handler_android:syncDebugLibJars', task 
+':permission_handler_android:bundleDebugAar', task 
+':permission_handler_android:assembleDebug', task 
+':printing:stripDebugDebugSymbols', task 
+':printing:copyDebugJniLibsProjectAndLocalJars', task 
+':printing:extractDebugAnnotations', task 
+':printing:extractDeepLinksForAarDebug', task 
+':printing:mergeDebugGeneratedProguardFiles', task 
+':printing:mergeDebugConsumerProguardFiles', task 
+':printing:prepareDebugArtProfile', task ':printing:prepareLintJarForPublish', 
+task ':printing:mergeDebugJavaResource', task ':printing:syncDebugLibJars', 
+task ':printing:bundleDebugAar', task ':printing:assembleDebug', task 
+':shared_preferences_android:stripDebugDebugSymbols', task 
+':shared_preferences_android:copyDebugJniLibsProjectAndLocalJars', task 
+':shared_preferences_android:extractDebugAnnotations', task 
+':shared_preferences_android:extractDeepLinksForAarDebug', task 
+':shared_preferences_android:mergeDebugGeneratedProguardFiles', task 
+':shared_preferences_android:mergeDebugConsumerProguardFiles', task 
+':shared_preferences_android:prepareDebugArtProfile', task 
+':shared_preferences_android:prepareLintJarForPublish', task 
+':shared_preferences_android:mergeDebugJavaResource', task 
+':shared_preferences_android:syncDebugLibJars', task 
+':shared_preferences_android:bundleDebugAar', task 
+':shared_preferences_android:assembleDebug', task 
+':sqflite_android:stripDebugDebugSymbols', task 
+':sqflite_android:copyDebugJniLibsProjectAndLocalJars', task 
+':sqflite_android:extractDebugAnnotations', task 
+':sqflite_android:extractDeepLinksForAarDebug', task 
+':sqflite_android:mergeDebugGeneratedProguardFiles', task 
+':sqflite_android:mergeDebugConsumerProguardFiles', task 
+':sqflite_android:prepareDebugArtProfile', task 
+':sqflite_android:prepareLintJarForPublish', task 
+':sqflite_android:mergeDebugJavaResource', task 
+':sqflite_android:syncDebugLibJars', task ':sqflite_android:bundleDebugAar', 
+task ':sqflite_android:assembleDebug', task 
+':url_launcher_android:stripDebugDebugSymbols', task 
+':url_launcher_android:copyDebugJniLibsProjectAndLocalJars', task 
+':url_launcher_android:extractDebugAnnotations', task 
+':url_launcher_android:extractDeepLinksForAarDebug', task 
+':url_launcher_android:mergeDebugGeneratedProguardFiles', task 
+':url_launcher_android:mergeDebugConsumerProguardFiles', task 
+':url_launcher_android:prepareDebugArtProfile', task 
+':url_launcher_android:prepareLintJarForPublish', task 
+':url_launcher_android:mergeDebugJavaResource', task 
+':url_launcher_android:syncDebugLibJars', task 
+':url_launcher_android:bundleDebugAar', task 
+':url_launcher_android:assembleDebug']
+build_debug_log.txt:13235:[        ] Resolve mutations for 
+:app:checkKotlinGradlePluginConfigurationErrors (Thread[#685,included 
+builds,5,main]) started.
+build_debug_log.txt:13236:[        ] 
+:app:checkKotlinGradlePluginConfigurationErrors (Thread[#685,included 
+builds,5,main]) started.
+build_debug_log.txt:13237:[        ] > Task 
+:app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+build_debug_log.txt:13238:[        ] Skipping task 
+':app:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 
+'errorDiagnostics are present' is false.
+build_debug_log.txt:13252:[+7008 ms] Access is denied.
+build_debug_log.txt:13253:[        ] Error: Unable to determine engine 
+version... 
+build_debug_log.txt:13257:[        ] FAILURE: Build failed with an exception.
+build_debug_log.txt:13266:[        ] * Exception is:
+build_debug_log.txt:13267:[        ] 
+org.gradle.api.tasks.TaskExecutionException: Execution failed for 
+build_debug_log.txt:13271:[        ] 	at 
+org.gradle.internal.Try$Failure.ifSuccessfulOrElse(Try.java:293)
+build_debug_log.txt:13286:[        ] 	at 
+org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecut
+build_debug_log.txt:13287:er.execute(CatchExceptionTaskExecuter.java:36)
+build_debug_log.txt:13399:[        ] Caused by: 
+org.gradle.process.internal.ExecException: Process 
+build_debug_log.txt:13611:[        ] 	at 
+org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecut
+build_debug_log.txt:13612:er.execute(CatchExceptionTaskExecuter.java:36)
+
+

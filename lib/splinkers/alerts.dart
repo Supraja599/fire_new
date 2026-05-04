@@ -1,5 +1,6 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
+
+import 'services/sprinkler_api_service.dart';
 
 class AlertsPage extends StatefulWidget {
   const AlertsPage({super.key});
@@ -9,85 +10,86 @@ class AlertsPage extends StatefulWidget {
 }
 
 class _AlertsPageState extends State<AlertsPage> {
+  final api = SprinklerApiService();
   final List<Map<String, dynamic>> all = [];
 
-  /// 🔴 GROUPED (DATE → ITEMS)
   Map<DateTime, List<Map<String, dynamic>>> grouped = {};
+  bool isLoading = true;
+  String? error;
 
   @override
   void initState() {
     super.initState();
-    generateData();
-    processData();
+    loadData();
   }
 
-  /// 🔥 GENERATE DATA
-  void generateData() {
-    final random = Random();
+  DateTime? parseDate(String? value) {
+    if (value == null || value.isEmpty) return null;
+    try {
+      return DateTime.parse(value).toLocal();
+    } catch (_) {
+      return null;
+    }
+  }
 
-    for (int i = 0; i < 500; i++) {
-      int offset;
+  Future<void> loadData() async {
+    try {
+      final equipment = await api.getEquipmentList();
+      all.clear();
+      grouped = {};
 
-      if (i < 150) {
-        offset = -random.nextInt(5) - 1; // past (missed)
-      } else {
-        offset = random.nextInt(5);
+      for (final item in equipment) {
+        final status = item["status_bucket"]?.toString() ?? "";
+        final dueDate = parseDate(item["next_inspection_due"]?.toString());
+        final expiryDate = parseDate(item["expiry_date"]?.toString());
+        final alertDate = status == "expired" ? expiryDate : dueDate;
+
+        if (!["due-inspection", "needs-service", "expired"].contains(status) ||
+            alertDate == null) {
+          continue;
+        }
+
+        all.add({
+          "id":
+              item["sos_code"] ?? item["serial_number"] ?? item["id"] ?? "N/A",
+          "location": item["location_name"] ?? item["zone_name"] ?? "Unknown",
+          "pressure":
+              "${item["details"]?["operating_pressure_bar"] ?? "N/A"} bar",
+          "system_type": item["details"]?["system_type"] ?? "N/A",
+          "status": status,
+          "date": alertDate,
+        });
       }
 
-      all.add({
-        "id": "SPR-${1000 + i}",
-        "location": "Zone-${random.nextInt(10) + 1}",
-        "pressure": "${70 + random.nextInt(30)} PSI",
-        "date": DateTime.now().add(Duration(days: offset)),
-        "done": random.nextBool(),
+      processData();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        error = e.toString();
+        isLoading = false;
       });
     }
   }
 
-  /// 🔴 PROCESS + LIMIT PER DATE
   void processData() {
-    DateTime now = DateTime.now();
-    DateTime today = DateTime(now.year, now.month, now.day);
+    final sorted = [
+      ...all,
+    ]..sort((a, b) => (b["date"] as DateTime).compareTo(a["date"] as DateTime));
 
-    List<Map<String, dynamic>> missed = [];
-
-    for (var item in all) {
-      DateTime d = item["date"];
-      bool done = item["done"];
-
-      DateTime itemDate = DateTime(d.year, d.month, d.day);
-
-      if (itemDate.isBefore(today) && !done) {
-        missed.add(item);
-      }
+    for (final item in sorted) {
+      final d = item["date"] as DateTime;
+      final key = DateTime(d.year, d.month, d.day);
+      grouped.putIfAbsent(key, () => []).add(item);
     }
 
-    /// SORT (latest first → yesterday first)
-    missed.sort((a, b) => b["date"].compareTo(a["date"]));
-
-    /// GROUP + LIMIT (ONLY 2 PER DAY)
-    for (var item in missed) {
-      DateTime d = item["date"];
-      DateTime key = DateTime(d.year, d.month, d.day);
-
-      if (!grouped.containsKey(key)) {
-        grouped[key] = [];
-      }
-
-      /// LIMIT 2 ITEMS PER DATE ✅
-      if (grouped[key]!.length < 2) {
-        grouped[key]!.add(item);
-      }
-    }
-
-    setState(() {});
+    if (!mounted) return;
+    setState(() => isLoading = false);
   }
 
-  /// 📅 LABEL
   String getLabel(DateTime d) {
-    DateTime now = DateTime.now();
-    DateTime today = DateTime(now.year, now.month, now.day);
-    DateTime yesterday = today.subtract(const Duration(days: 1));
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
 
     if (d == yesterday) return "Yesterday";
     return "${d.day}/${d.month}";
@@ -95,13 +97,29 @@ class _AlertsPageState extends State<AlertsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final sortedKeys = grouped.keys.toList()
-      ..sort((a, b) => b.compareTo(a)); // latest first
+    if (isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (error != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Alerts")),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              "Unable to load sprinkler alerts.\n$error",
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
+    final sortedKeys = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FA),
-
-      /// 🔴 APP BAR
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
@@ -114,102 +132,103 @@ class _AlertsPageState extends State<AlertsPage> {
             Text(
               "Alerts",
               style: TextStyle(
-                  color: Colors.black, fontWeight: FontWeight.bold),
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
       ),
+      body: sortedKeys.isEmpty
+          ? const Center(child: Text("No sprinkler alerts found"))
+          : ListView(
+              padding: const EdgeInsets.all(12),
+              children: sortedKeys.map((dateKey) {
+                final list = grouped[dateKey]!;
 
-      body: ListView(
-        padding: const EdgeInsets.all(12),
-        children: sortedKeys.map((dateKey) {
-          final list = grouped[dateKey]!;
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-              /// 🔴 DATE HEADER
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  getLabel(dateKey),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-
-              /// 🔥 ITEMS (ONLY 2)
-              ...list.map((item) {
-                return GestureDetector(
-                  onTap: () => showDetails(item),
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                          color: Colors.red.withValues(alpha: 0.25)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 6,
-                        )
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-
-                        /// 💧 ICON
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.water_drop,
-                              color: Colors.red),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        getLabel(dateKey),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                          fontSize: 14,
                         ),
-
-                        const SizedBox(width: 12),
-
-                        /// TEXT
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      ),
+                    ),
+                    ...list.map((item) {
+                      return GestureDetector(
+                        onTap: () => showDetails(item),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: Colors.red.withValues(alpha: 0.25),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.04),
+                                blurRadius: 6,
+                              ),
+                            ],
+                          ),
+                          child: Row(
                             children: [
-                              Text(item["id"],
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
-                              Text(item["location"],
-                                  style: TextStyle(
-                                      color: Colors.grey.shade600)),
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.water_drop,
+                                  color: Colors.red,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item["id"],
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      item["location"],
+                                      style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
+                      );
+                    }),
+                  ],
                 );
-              }),
-            ],
-          );
-        }).toList(),
-      ),
+              }).toList(),
+            ),
     );
   }
 
-  /// 🔥 DETAILS POPUP
   void showDetails(Map<String, dynamic> item) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius:
-        BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) {
         return Padding(
@@ -217,23 +236,20 @@ class _AlertsPageState extends State<AlertsPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-
-              const Icon(Icons.water_drop,
-                  size: 45, color: Colors.red),
-
+              const Icon(Icons.water_drop, size: 45, color: Colors.red),
               const SizedBox(height: 10),
-
               Text(
                 item["id"],
                 style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-
               const SizedBox(height: 10),
-
               _row("Location", item["location"]),
               _row("Pressure", item["pressure"]),
-              _row("Status", "Inspection Missed ❌"),
+              _row("System", item["system_type"]),
+              _row("Status", item["status"].toString()),
               _row(
                 "Date",
                 "${item["date"].day}/${item["date"].month}/${item["date"].year}",
@@ -250,9 +266,8 @@ class _AlertsPageState extends State<AlertsPage> {
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
-          Text("$a: ",
-              style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(b),
+          Text("$a: ", style: const TextStyle(fontWeight: FontWeight.bold)),
+          Expanded(child: Text(b)),
         ],
       ),
     );

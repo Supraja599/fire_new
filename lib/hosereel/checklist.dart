@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../local_db.dart';
+import 'services/apiservice.dart';
+
 class ChecklistPage extends StatefulWidget {
   const ChecklistPage({super.key});
 
@@ -8,258 +11,354 @@ class ChecklistPage extends StatefulWidget {
 }
 
 class _ChecklistPageState extends State<ChecklistPage> {
-  bool isEditing = false;
+  final api = HoseReelApiService();
+  final TextEditingController equipmentController = TextEditingController();
+  final TextEditingController inspectorController = TextEditingController();
+  final TextEditingController remarksController = TextEditingController();
 
-  List<Map<String, dynamic>> checklist = [
-    {"item": "Location of Hose Reel (Building or Conveyor)", "yes": false, "no": false, "na": false},
-    {"item": "Hose reel is securely mounted on the wall.", "yes": false, "no": false, "na": false},
-    {"item": "Check for visible damage or corrosion.", "yes": false, "no": false, "na": false},
-    {"item": "Inspect hose for cuts, cracks or wear.", "yes": false, "no": false, "na": false},
-    {"item": "Check nozzle for blockages or leaks.", "yes": false, "no": false, "na": false},
-    {"item": "Pull hose fully to ensure smooth unwinding.", "yes": false, "no": false, "na": false},
-    {"item": "Signage above hose reel is visible.", "yes": false, "no": false, "na": false},
-    {"item": "Operating instructions label is present.", "yes": false, "no": false, "na": false},
-    {"item": "Isolation valve is in good condition.", "yes": false, "no": false, "na": false},
-    {"item": "Valve operates smoothly.", "yes": false, "no": false, "na": false},
-    {"item": "Retainer clip is present.", "yes": false, "no": false, "na": false},
-    {"item": "Hose reel is functional.", "yes": false, "no": false, "na": false},
-    {"item": "No replacement required?", "yes": false, "no": false, "na": false},
-    {"item": "Mounting bolts are tight.", "yes": false, "no": false, "na": false},
-    {"item": "No obstruction for emergency use.", "yes": false, "no": false, "na": false},
-    {"item": "Water pressure is adequate.", "yes": false, "no": false, "na": false},
-    {"item": "Maintenance record is up to date.", "yes": false, "no": false, "na": false},
-    {"item": "No hose kinks or damage.", "yes": false, "no": false, "na": false},
-    {"item": "Emergency signage is visible.", "yes": false, "no": false, "na": false},
-  ];
+  late List<Map<String, dynamic>> checklist;
+  bool isLoading = true;
+  bool isSaving = false;
 
-  // ================= OPTION BUTTON =================
-  Widget optionButton({
-    required String label,
-    required bool selected,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
+  @override
+  void initState() {
+    super.initState();
+    checklist = [];
+    _loadChecklist();
+  }
+
+  List<Map<String, dynamic>> _fallbackChecklist() {
+    final items = [
+      "Hose reel cabinet and access area are clean and unobstructed",
+      "Hose reel drum rotates smoothly and locks correctly",
+      "Hose is free from cracks, cuts, and flattening",
+      "Nozzle is present, secure, and free from leakage",
+      "Valve opens and closes without resistance",
+      "Water pressure is adequate during test",
+      "Mounting bracket and fasteners are secure",
+      "Identification tag and signage are visible",
+      "Inspection label is updated with latest date",
+      "Surrounding area is safe for emergency operation",
+    ];
+
+    return items
+        .map(
+          (item) => {
+            "id": null,
+            "item": item,
+            "yes": false,
+            "no": false,
+            "na": false,
+          },
+        )
+        .toList();
+  }
+
+  Future<void> _loadChecklist() async {
+    final items = await api.getChecklist();
+
+    if (!mounted) return;
+
+    setState(() {
+      checklist = items.isNotEmpty
+          ? items
+              .map(
+                (item) => {
+                  "id": item["id"],
+                  "item": item["item_text"] ?? "",
+                  "yes": false,
+                  "no": false,
+                  "na": false,
+                },
+              )
+              .toList()
+          : _fallbackChecklist();
+      isLoading = false;
+    });
+  }
+
+  void _setValue(int index, String type) {
+    setState(() {
+      checklist[index]["yes"] = type == "YES";
+      checklist[index]["no"] = type == "NO";
+      checklist[index]["na"] = type == "NA";
+    });
+  }
+
+  Color _statusColor(Map<String, dynamic> item) {
+    if (item["yes"] == true) return Colors.green;
+    if (item["no"] == true) return Colors.red;
+    if (item["na"] == true) return Colors.orange;
+    return Colors.grey;
+  }
+
+  String? _answerFor(Map<String, dynamic> item) {
+    if (item["yes"] == true) return "true";
+    if (item["no"] == true) return "false";
+    if (item["na"] == true) return "na";
+    return null;
+  }
+
+  Future<void> _saveOffline() async {
+    final equipmentId = equipmentController.text.trim();
+    final inspectorName = inspectorController.text.trim();
+
+    if (equipmentId.isEmpty || inspectorName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Enter equipment code and inspector name first."),
+        ),
+      );
+      return;
+    }
+
+    final answers = checklist
+        .where((item) => item["id"] != null && _answerFor(item) != null)
+        .map(
+          (item) => {
+            "checklist_item_id": item["id"],
+            "answer": _answerFor(item),
+            "remarks": "",
+          },
+        )
+        .toList();
+
+    if (answers.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Select at least one checklist answer to save."),
+        ),
+      );
+      return;
+    }
+
+    final eventId = "hose-${DateTime.now().millisecondsSinceEpoch}";
+    final payload = {
+      "inspector_name": inspectorName,
+      "remarks": remarksController.text.trim(),
+      "answers": answers,
+    };
+
+    setState(() => isSaving = true);
+
+    await LocalDB.queueModuleInspection(
+      eventId: eventId,
+      moduleCode: HoseReelApiService.moduleCode,
+      equipmentId: equipmentId,
+      payload: payload,
+    );
+
+    if (!mounted) return;
+
+    setState(() => isSaving = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Checklist saved in Hive and queued for sync."),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    equipmentController.dispose();
+    inspectorController.dispose();
+    remarksController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF2F4F8),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 2,
+        iconTheme: const IconThemeData(color: Colors.black),
+        title: const Text(
+          "Hose Reel Checklist",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                TextField(
+                  controller: equipmentController,
+                  decoration: const InputDecoration(
+                    labelText: "Equipment SOS Code / ID",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: inspectorController,
+                  decoration: const InputDecoration(
+                    labelText: "Inspector Name",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: remarksController,
+                  minLines: 2,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: "Remarks",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              itemCount: checklist.length,
+              itemBuilder: (context, index) {
+                final item = checklist[index];
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: _statusColor(item).withValues(alpha: 0.4),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(top: 3),
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: _statusColor(item),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              item["item"],
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                height: 1.3,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          _btn(index, "YES", Colors.green),
+                          const SizedBox(width: 8),
+                          _btn(index, "NO", Colors.red),
+                          const SizedBox(width: 8),
+                          _btn(index, "NA", Colors.orange),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.all(12),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: isSaving ? null : _saveOffline,
+              child: isSaving
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      "SAVE OFFLINE TO HIVE",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _btn(int index, String label, Color color) {
+    final item = checklist[index];
+
+    bool selected = false;
+    if (label == "YES") selected = item["yes"] == true;
+    if (label == "NO") selected = item["no"] == true;
+    if (label == "NA") selected = item["na"] == true;
+
     return Expanded(
       child: GestureDetector(
-        onTap: isEditing ? onTap : null,
+        onTap: () => _setValue(index, label),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: selected ? color : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: selected ? color : Colors.grey.shade300,
-              width: 1,
-            ),
+            color: selected ? color : Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(10),
           ),
           alignment: Alignment.center,
           child: Text(
             label,
             style: TextStyle(
-              fontSize: 11,
+              color: selected ? Colors.white : Colors.black,
               fontWeight: FontWeight.bold,
-              color: selected ? Colors.white : Colors.black87,
+              fontSize: 12,
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  // ================= ROW UI =================
-  Widget buildRow(Map<String, dynamic> item) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-
-        // ⭐ LIGHT BLACK BORDER
-        border: Border.all(color: Colors.black12, width: 1),
-
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          )
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-
-          /// ITEM TEXT
-          Expanded(
-            flex: 5,
-            child: Text(
-              item["item"],
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 10),
-
-          /// YES / NO / NA
-          Expanded(
-            flex: 5,
-            child: Row(
-              children: [
-
-                optionButton(
-                  label: "YES",
-                  selected: item["yes"],
-                  color: Colors.green,
-                  onTap: () {
-                    setState(() {
-                      item["yes"] = true;
-                      item["no"] = false;
-                      item["na"] = false;
-                    });
-                  },
-                ),
-
-                optionButton(
-                  label: "NO",
-                  selected: item["no"],
-                  color: Colors.red,
-                  onTap: () {
-                    setState(() {
-                      item["yes"] = false;
-                      item["no"] = true;
-                      item["na"] = false;
-                    });
-                  },
-                ),
-
-                optionButton(
-                  label: "NA",
-                  selected: item["na"],
-                  color: Colors.orange,
-                  onTap: () {
-                    setState(() {
-                      item["yes"] = false;
-                      item["no"] = false;
-                      item["na"] = true;
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ================= SNACKBAR =================
-  void showToast(String msg, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: color,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  // ================= UI =================
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FA),
-
-      /// APP BAR
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "Hose Reel Checklist",
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-
-        actions: [
-          IconButton(
-            icon: Icon(
-              isEditing ? Icons.check_circle : Icons.edit,
-              color: isEditing ? Colors.green : Colors.blue,
-            ),
-            onPressed: () {
-              setState(() {
-                isEditing = !isEditing;
-              });
-
-              showToast(
-                isEditing ? "Edit Mode ON" : "View Mode",
-                isEditing ? Colors.orange : Colors.green,
-              );
-            },
-          )
-        ],
-      ),
-
-      /// BODY
-      body: Column(
-        children: [
-
-          const SizedBox(height: 10),
-
-          /// LIST
-          Expanded(
-            child: ListView.builder(
-              itemCount: checklist.length,
-              itemBuilder: (context, index) {
-                return buildRow(checklist[index]);
-              },
-            ),
-          ),
-
-          /// SAVE BUTTON
-          if (isEditing)
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.all(12),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () {
-                  setState(() => isEditing = false);
-
-                  showToast(
-                    "Checklist Saved Successfully ✔",
-                    Colors.green,
-                  );
-                },
-                child: const Text(
-                  "SAVE CHECKLIST",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-        ],
       ),
     );
   }

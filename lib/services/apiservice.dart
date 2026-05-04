@@ -282,6 +282,45 @@ class ApiService {
       return false;
     }
   }
+
+  static Future<bool> submitEquipmentInspection({
+    required String equipmentId,
+    required Map<String, dynamic> payload,
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse("$baseUrl/equipment/$equipmentId/inspections"),
+        headers: headers,
+        body: jsonEncode(payload),
+      );
+
+      return res.statusCode == 200 || res.statusCode == 201;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  static Future<void> syncPendingModuleInspections() async {
+    final pendingItems = await LocalDB.getPendingModuleInspections();
+
+    for (final item in pendingItems) {
+      final equipmentId = item['equipment_id']?.toString();
+      final eventId = item['event_id']?.toString();
+
+      if (equipmentId == null || equipmentId.isEmpty || eventId == null) {
+        continue;
+      }
+
+      final success = await submitEquipmentInspection(
+        equipmentId: equipmentId,
+        payload: Map<String, dynamic>.from(item['payload'] ?? {}),
+      );
+
+      if (success) {
+        await LocalDB.markModuleInspectionSynced(eventId);
+      }
+    }
+  }
 }
 
 

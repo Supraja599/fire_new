@@ -5,10 +5,10 @@ import 'package:fire_new/services/apiservice.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 
-class HoseReelApiService {
+class HydrantApiService {
   static const String baseUrl = "https://ehs.garrev.com/app1/v1";
-  static const int moduleId = 33;
-  static const String moduleCode = "hose_reel";
+  static const int moduleId = 34;
+  static const String moduleCode = "hydrant";
 
   Map<String, String> get headers {
     final box = Hive.isBoxOpen('inspectionBox')

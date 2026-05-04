@@ -1,12 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
-// Screens
-import 'scan.dart';
-import 'checklist.dart';
-import 'reports.dart';
-import 'maintaince.dart';
 import 'alerts.dart';
+import 'checklist.dart';
+import 'maintaince.dart';
 import 'plant health.dart';
+import 'reports.dart';
+import 'scan.dart';
+import 'services/apiservice.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -16,60 +18,45 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  int _currentIndex = 0;
-  late PageController _pageController;
+  static const Color primaryRed = Color(0xFFD32F2F);
+
+  final HoseReelApiService api = HoseReelApiService();
+  final PageController _pageController = PageController();
 
   final List<String> images = [
-    "assets/hosereel.png",
-    "assets/hosereel2.png",
-    "assets/hosereel3.png",
-    "assets/hosereel4.png",
-    "assets/hosereel5.png",
-
+    'assets/hosereel.png',
+    'assets/hosereel2.png',
+    'assets/hosereel3.png',
+    'assets/hosereel4.png',
+    'assets/hosereel5.png',
   ];
 
-  // ================= NAVIGATION INDEX =================
-  static const int dashboardIndex = 0;
-  static const int scanIndex = 1;
-  static const int checklistIndex = 2;
-  static const int maintenanceIndex = 3;
-  static const int alertsIndex = 4;
-  static const int plantHealthIndex = 5;
-  static const int reportsIndex = 6;
+  Timer? timer;
+  int currentPage = 0;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: 1000);
-    _autoScroll();
-  }
+    unawaited(api.syncModuleData());
 
-  void _autoScroll() async {
-    while (mounted) {
-      await Future.delayed(const Duration(seconds: 2));
-      if (_pageController.hasClients) {
-        _pageController.nextPage(
-          duration: const Duration(milliseconds: 600),
-          curve: Curves.easeInOut,
-        );
+    timer = Timer.periodic(const Duration(seconds: 4), (_) {
+      currentPage = (currentPage + 1) % images.length;
+
+      _pageController.animateToPage(
+        currentPage,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+
+      if (mounted) {
+        setState(() {});
       }
-    }
-  }
-
-  void _navigateTo(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
-
-  void _goHomeFromScan() {
-    setState(() {
-      _currentIndex = 0;
     });
   }
 
   @override
   void dispose() {
+    timer?.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -77,199 +64,216 @@ class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FA),
-
-      body: SafeArea(
-        child: IndexedStack(
-          index: _currentIndex,
-          children: [
-            _buildDashboard(),
-
-            ScanScreen(onBackToHome: _goHomeFromScan),
-            ChecklistPage(),
-            const MaintenanceScreen(),
-            const HoseReelAlertsPage(),
-            const PlantHealthScreen(),
-            const ReportsPage(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ================= DASHBOARD =================
-  Widget _buildDashboard() {
-    return Column(
-      children: [
-
-        Align(
-          alignment: Alignment.topLeft,
-          child: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new,
-                color: Colors.redAccent),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
-
-        SizedBox(
-          height: 320,
-          child: PageView.builder(
-            controller: _pageController,
-            itemBuilder: (context, index) {
-              final image = images[index % images.length];
-              return _buildImageCard(image);
-            },
-          ),
-        ),
-
-        const SizedBox(height: 10),
-
-        const Text(
-          "Fire Hose Reel Assets",
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.redAccent,
-          ),
-        ),
-
-        const SizedBox(height: 20),
-
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-
-                    _bigIcon(
-                      icon: Icons.qr_code_scanner_rounded,
-                      label: "Scan",
-                      color: Colors.redAccent,
-                      onTap: () => _navigateTo(scanIndex),
-                    ),
-
-                    _bigIcon(
-                      icon: Icons.fact_check_rounded,
-                      label: "Checklist",
-                      color: Colors.green,
-                      onTap: () => _navigateTo(checklistIndex),
-                    ),
-
-                    _bigIcon(
-                      icon: Icons.build_circle_rounded,
-                      label: "Maintenance",
-                      color: Colors.deepPurple,
-                      onTap: () => _navigateTo(maintenanceIndex),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 35),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-
-                    _bigIcon(
-                      icon: Icons.warning_amber_rounded,
-                      label: "Alerts",
-                      color: Colors.orange,
-                      onTap: () => _navigateTo(alertsIndex),
-                    ),
-
-                    _bigIcon(
-                      icon: Icons.local_florist_rounded,
-                      label: "Plant Health",
-                      color: Colors.teal,
-                      onTap: () => _navigateTo(plantHealthIndex),
-                    ),
-
-                    _bigIcon(
-                      icon: Icons.analytics_rounded,
-                      label: "Reports",
-                      color: Colors.blue,
-                      onTap: () => _navigateTo(reportsIndex),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ================= IMAGE CARD =================
-  Widget _buildImageCard(String path) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(25),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            )
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(25),
-          child: Container(
-            color: Colors.white,
-            child: Image.asset(path, fit: BoxFit.contain),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ================= ICON =================
-  Widget _bigIcon({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-
-          Container(
-            height: 85,
-            width: 85,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  color.withOpacity(0.25),
-                  color.withOpacity(0.10),
-                ],
-              ),
-            ),
-            child: Icon(icon, size: 40, color: color),
-          ),
-
-          const SizedBox(height: 10),
-
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+      backgroundColor: Colors.grey.shade100,
+      bottomNavigationBar: BottomNavigationBar(
+        selectedItemColor: primaryRed,
+        onTap: (index) {
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const _SettingsPage()),
+            );
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: "Settings",
           ),
         ],
       ),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 16, 16, 10),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    color: primaryRed,
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const Text(
+                    "Fire Hose Reel Dashboard",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: primaryRed,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              height: 300,
+              width: double.infinity,
+              margin: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 90,
+                  ),
+                ],
+              ),
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: images.length,
+                itemBuilder: (context, index) {
+                  return Center(
+                    child: Image.asset(
+                      images[index],
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 10),
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(images.length, (index) {
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: currentPage == index ? 18 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: currentPage == index
+                          ? primaryRed
+                          : Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  );
+                }),
+              ),
+            ),
+            const SizedBox(height: 50),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: GridView.count(
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1,
+                  children: const [
+                    _DashboardCard(
+                      icon: Icons.favorite,
+                      title: "Plant Health",
+                      color: Colors.green,
+                      page: PlantHealthScreen(),
+                    ),
+                    _DashboardCard(
+                      icon: Icons.build,
+                      title: "Maintenance",
+                      color: Colors.orange,
+                      page: MaintenanceScreen(),
+                    ),
+                    _DashboardCard(
+                      icon: Icons.checklist,
+                      title: "Checklist",
+                      color: Colors.blue,
+                      page: ChecklistPage(),
+                    ),
+                    _DashboardCard(
+                      icon: Icons.description,
+                      title: "Reports",
+                      color: Colors.purple,
+                      page: ReportsPage(),
+                    ),
+                    _DashboardCard(
+                      icon: Icons.notifications,
+                      title: "Alerts",
+                      color: Colors.red,
+                      page: HoseReelAlertsPage(),
+                    ),
+                    _DashboardCard(
+                      icon: Icons.qr_code_scanner,
+                      title: "Scan",
+                      color: Colors.teal,
+                      page: ScanScreen(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
+  }
+}
+
+class _DashboardCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final Color color;
+  final Widget page;
+
+  const _DashboardCard({
+    required this.icon,
+    required this.title,
+    required this.color,
+    required this.page,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 30, color: color),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingsPage extends StatelessWidget {
+  const _SettingsPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(body: Center(child: Text("Settings Page")));
   }
 }

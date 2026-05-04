@@ -38,6 +38,8 @@ class SyncService {
           await LocalDB.markSynced(id);
         }
       }
+
+      await ApiService.syncPendingModuleInspections();
     } catch (e) {
       print("Sync error: $e");
     }

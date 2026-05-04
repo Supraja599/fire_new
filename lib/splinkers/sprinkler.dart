@@ -6,6 +6,7 @@ import 'maintaince.dart';
 import 'alerts.dart';
 import 'reports.dart';
 import 'scan.dart';
+
 class SprinklerPage extends StatefulWidget {
   const SprinklerPage({super.key});
 
@@ -23,7 +24,7 @@ class _SprinklerPageState extends State<SprinklerPage> {
     'assets/s1.png',
     'assets/s2.png',
     'assets/s3.png',
-   // ✅ FIXED (comma added)
+    // ✅ FIXED (comma added)
     'assets/s5.png',
   ];
 
@@ -56,7 +57,6 @@ class _SprinklerPageState extends State<SprinklerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       backgroundColor: Colors.grey.shade100,
 
       /// 🔻 BOTTOM NAV
@@ -72,7 +72,10 @@ class _SprinklerPageState extends State<SprinklerPage> {
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: "Settings",
+          ),
         ],
       ),
 
@@ -80,7 +83,6 @@ class _SprinklerPageState extends State<SprinklerPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             /// 🔴 HEADER TITLE
             /// 🔴 HEADER TITLE + BACK BUTTON
             Padding(
@@ -117,9 +119,9 @@ class _SprinklerPageState extends State<SprinklerPage> {
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
+                    color: Colors.black.withValues(alpha: 0.06),
                     blurRadius: 90,
-                  )
+                  ),
                 ],
               ),
               child: PageView.builder(
@@ -173,24 +175,47 @@ class _SprinklerPageState extends State<SprinklerPage> {
                   mainAxisSpacing: 12,
                   childAspectRatio: 1,
                   children: [
+                    _card(
+                      Icons.favorite,
+                      "Plant Health",
+                      Colors.green,
+                      const PlantHealthPage(),
+                    ),
 
-                    _card(Icons.favorite, "Plant Health",
-                        Colors.green, const PlantHealthPage()),
+                    _card(
+                      Icons.build,
+                      "Maintenance",
+                      Colors.orange,
+                      const MaintenancePage(),
+                    ),
 
-                    _card(Icons.build, "Maintenance",
-                        Colors.orange, const MaintenancePage()),
+                    _card(
+                      Icons.checklist,
+                      "Checklist",
+                      Colors.blue,
+                      const ChecklistPage(),
+                    ),
 
-                    _card(Icons.checklist, "Checklist",
-                        Colors.blue, const ChecklistPage()),
+                    _card(
+                      Icons.description,
+                      "Reports",
+                      Colors.purple,
+                      const ReportsPage(),
+                    ),
 
-                    _card(Icons.description, "Reports",
-                        Colors.purple, const ReportsPage()),
+                    _card(
+                      Icons.notifications,
+                      "Alerts",
+                      Colors.red,
+                      const AlertsPage(),
+                    ),
 
-                    _card(Icons.notifications, "Alerts",
-                        Colors.red, const AlertsPage()),
-
-                    _card(Icons.qr_code_scanner, "Scan",
-                        Colors.teal, const ScanPage()),
+                    _card(
+                      Icons.qr_code_scanner,
+                      "Scan",
+                      Colors.teal,
+                      const ScanPage(),
+                    ),
                   ],
                 ),
               ),
@@ -202,18 +227,10 @@ class _SprinklerPageState extends State<SprinklerPage> {
   }
 
   /// 🔲 CARD UI
-  Widget _card(
-      IconData icon,
-      String title,
-      Color color,
-      Widget page,
-      ) {
+  Widget _card(IconData icon, String title, Color color, Widget page) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => page),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (_) => page));
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -222,20 +239,19 @@ class _SprinklerPageState extends State<SprinklerPage> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
-            )
+            ),
           ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             /// 🔥 ICON
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 30, color: color),
@@ -247,10 +263,7 @@ class _SprinklerPageState extends State<SprinklerPage> {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -265,8 +278,6 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text("Settings Page")),
-    );
+    return const Scaffold(body: Center(child: Text("Settings Page")));
   }
 }
