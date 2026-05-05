@@ -47,10 +47,19 @@ class _AlertsPageState extends State<AlertsPage> {
   }
 
   Future<void> loadAlerts() async {
-    final data = await ApiService.getAlerts();
+    final alertData = await ApiService.getAlerts();
+    final expiredData = await ApiService.getExpired();
+
+    // 🏷️ Add a label to expired items so they show up clearly
+    final normalizedExpired = expiredData.map((e) {
+      e["alert_label"] = "EXPIRED";
+      e["alert_level"] = 3; // Emergency level for expired items
+      return e;
+    }).toList();
 
     setState(() {
-      alerts = data.map((e) => AlertPlant.fromJson(e)).toList();
+      final combined = [...alertData, ...normalizedExpired];
+      alerts = combined.map((e) => AlertPlant.fromJson(e)).toList();
       isLoading = false;
     });
   }
@@ -151,16 +160,15 @@ class _AlertsPageState extends State<AlertsPage> {
 
   Widget alertCard(AlertPlant p) {
     final color = levelColor(p.level);
+    final sosId = p.raw["sos_code"] ?? p.raw["serial_number"] ?? p.raw["id"] ?? "-";
 
     return GestureDetector(
       onTap: () => showDetails(p.raw),
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
-        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: color.withOpacity(0.5)),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -171,34 +179,47 @@ class _AlertsPageState extends State<AlertsPage> {
         ),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
-                shape: BoxShape.circle,
+            ClipRRect(
+              borderRadius: const BorderRadius.horizontal(left: Radius.circular(20)),
+              child: Container(
+                width: 90,
+                height: 100,
+                color: color.withOpacity(0.08),
+                child: Image.asset(
+                  'assets/extinguisher.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Icon(levelIcon(p.level), color: color, size: 30),
+                ),
               ),
-              child: Icon(levelIcon(p.level), color: color, size: 28),
             ),
-            const SizedBox(width: 14),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    p.plantName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "SOS ID: $sosId",
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    p.issue,
-                    style: TextStyle(color: Colors.grey.shade700),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      p.issue,
+                      style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      p.plantName,
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                    ),
+                  ],
+                ),
               ),
             ),
+            const Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+            )
           ],
         ),
       ),
@@ -215,26 +236,26 @@ class _AlertsPageState extends State<AlertsPage> {
       ),
       builder: (_) {
         return Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(18),
           child: SingleChildScrollView(
-            child: DataTable(
-              columnSpacing: 20,
-              columns: const [
-                DataColumn(label: Text("Field")),
-                DataColumn(label: Text("Value")),
-              ],
-              rows: [
-                row("ID", item["id"]),
-                row("Barcode", item["barcode"]),
-                row("Equipment Code", item["equipment_code"]),
-                row("Type", item["extinguisher_type"]),
-                row("Location", item["location_name"]),
-                row("Building", item["building_name"]),
-                row("Next Inspection", item["next_inspection_due"]),
-                row("Expiry", item["expiry_date"]),
-                row("Status", item["operational_status"]),
-                row("Alert Level", item["alert_label"]),
-                row("Days Overdue", item["days_overdue"]),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.info_outline, color: Colors.blue, size: 40),
+                const SizedBox(height: 14),
+                const Text(
+                  "Alert Details",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 15),
+                _detailRow("SOS ID", (item["sos_code"] ?? item["serial_number"] ?? item["id"] ?? "-").toString()),
+                _detailRow("Issue", (item["alert_label"] ?? item["alert_reason"] ?? "Warning").toString()),
+                _detailRow("Location", (item["location_name"] ?? "-").toString()),
+                _detailRow("Type", (item["extinguisher_type"] ?? "-").toString()),
+                _detailRow("Building", (item["building_name"] ?? "-").toString()),
+                _detailRow("Next Inspection", (item["next_inspection_due"] ?? "-").toString()),
+                _detailRow("Expiry", (item["expiry_date"] ?? "-").toString()),
+                _detailRow("Status", (item["operational_status"] ?? "-").toString()),
               ],
             ),
           ),
@@ -243,11 +264,17 @@ class _AlertsPageState extends State<AlertsPage> {
     );
   }
 
-  DataRow row(String key, dynamic value) {
-    return DataRow(cells: [
-      DataCell(Text(key)),
-      DataCell(Text(value?.toString() ?? "-")),
-    ]);
+  Widget _detailRow(String a, String b) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(flex: 4, child: Text(a, style: const TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(flex: 6, child: Text(b)),
+        ],
+      ),
+    );
   }
 
   @override

@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import '../local_db.dart';
 import 'services/sprinkler_api_service.dart';
 
-class ChecklistPage extends StatefulWidget {
-  const ChecklistPage({super.key});
+class SprinklerChecklistPage extends StatefulWidget {
+  const SprinklerChecklistPage({super.key});
 
   @override
-  State<ChecklistPage> createState() => _ChecklistPageState();
+  State<SprinklerChecklistPage> createState() => _SprinklerChecklistPageState();
 }
 
-class _ChecklistPageState extends State<ChecklistPage> {
+class _SprinklerChecklistPageState extends State<SprinklerChecklistPage> {
   final api = SprinklerApiService();
   final TextEditingController equipmentController = TextEditingController();
   final TextEditingController inspectorController = TextEditingController();
@@ -226,7 +226,7 @@ class _ChecklistPageState extends State<ChecklistPage> {
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity(0.05),
                   blurRadius: 8,
                 ),
               ],
@@ -275,11 +275,11 @@ class _ChecklistPageState extends State<ChecklistPage> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: _statusColor(item).withValues(alpha: 0.4),
+                      color: _statusColor(item).withOpacity(0.4),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
+                        color: Colors.black.withOpacity(0.05),
                         blurRadius: 8,
                       ),
                     ],

@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'services/sprinkler_api_service.dart';
 
-class MaintenancePage extends StatefulWidget {
-  const MaintenancePage({super.key});
+class SprinklerMaintenancePage extends StatefulWidget {
+  const SprinklerMaintenancePage({super.key});
 
   @override
-  State<MaintenancePage> createState() => _MaintenancePageState();
+  State<SprinklerMaintenancePage> createState() => _SprinklerMaintenancePageState();
 }
 
-class _MaintenancePageState extends State<MaintenancePage> {
+class _SprinklerMaintenancePageState extends State<SprinklerMaintenancePage> {
   final api = SprinklerApiService();
   final List<Map<String, dynamic>> all = [];
 
@@ -50,6 +50,9 @@ class _MaintenancePageState extends State<MaintenancePage> {
       for (final item in equipment) {
         final date = parseDate(item["next_inspection_due"]?.toString());
         if (date == null) continue;
+
+        final status = item["status_bucket"]?.toString().toLowerCase() ?? "active";
+        if (status == "expired") continue; // 🔥 EXPIRED ITEMS SHOULD GO TO ALERTS
 
         all.add({
           "id":
@@ -189,8 +192,21 @@ class _MaintenancePageState extends State<MaintenancePage> {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.water_drop, color: color, size: 30),
-                          const SizedBox(width: 10),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              width: 60,
+                              height: 60,
+                              color: color.withValues(alpha: 0.1),
+                              child: Image.asset(
+                                'assets/sprinkler.png',
+                                fit: BoxFit.contain,
+                                errorBuilder: (c, e, s) =>
+                                    Icon(Icons.water_drop, color: color, size: 30),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,7 +301,11 @@ class _MaintenancePageState extends State<MaintenancePage> {
                   shape: BoxShape.circle,
                   color: color.withValues(alpha: 0.12),
                 ),
-                child: Icon(Icons.water_drop, size: 65, color: color),
+                child: Image.asset(
+                  'assets/sprinkler.png',
+                  height: 65,
+                  errorBuilder: (c, e, s) => Icon(Icons.water_drop, size: 65, color: color),
+                ),
               ),
               const SizedBox(height: 10),
               Text(

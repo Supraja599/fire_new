@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 
 import 'services/apiservice.dart';
 
-class PlantHealthScreen extends StatefulWidget {
-  const PlantHealthScreen({super.key});
+class HoseReelPlantHealthPage extends StatefulWidget {
+  const HoseReelPlantHealthPage({super.key});
 
   @override
-  State<PlantHealthScreen> createState() => _PlantHealthScreenState();
+  State<HoseReelPlantHealthPage> createState() => _HoseReelPlantHealthPageState();
 }
 
-class _PlantHealthScreenState extends State<PlantHealthScreen> {
+class _HoseReelPlantHealthPageState extends State<HoseReelPlantHealthPage> {
   final api = HoseReelApiService();
 
   int active = 0;
@@ -181,7 +181,7 @@ class _PlantHealthScreenState extends State<PlantHealthScreen> {
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
+                      color: Colors.black.withOpacity(0.08),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
                     ),
@@ -290,7 +290,7 @@ class _PlantHealthScreenState extends State<PlantHealthScreen> {
             color: color,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
-              BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 10),
+              BoxShadow(color: color.withOpacity(0.3), blurRadius: 10),
             ],
           ),
           child: Column(
@@ -382,7 +382,7 @@ class _StatusListPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
+                          color: Colors.black.withOpacity(0.05),
                           blurRadius: 8,
                         ),
                       ],
@@ -390,12 +390,17 @@ class _StatusListPage extends StatelessWidget {
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
+                            color: color.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(icon, color: color),
+                          child: Image.asset(
+                            'assets/hosereel.png',
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) => Icon(icon, color: color),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(

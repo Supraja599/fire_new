@@ -6,6 +6,7 @@ import 'maintaince.dart';
 import 'alerts.dart';
 import 'reports.dart';
 import 'scan.dart';
+import 'services/sprinkler_api_service.dart';
 
 class SprinklerPage extends StatefulWidget {
   const SprinklerPage({super.key});
@@ -16,16 +17,14 @@ class SprinklerPage extends StatefulWidget {
 
 class _SprinklerPageState extends State<SprinklerPage> {
   static const Color primaryRed = Color(0xFFD32F2F);
+  final api = SprinklerApiService();
 
   final PageController _pageController = PageController();
   int currentPage = 0;
+  bool isLoading = true;
 
   final List<String> images = [
-    'assets/s1.png',
-    'assets/s2.png',
-    'assets/s3.png',
-    // ✅ FIXED (comma added)
-    'assets/s5.png',
+    'assets/sprinkler.png',
   ];
 
   Timer? timer;
@@ -33,18 +32,25 @@ class _SprinklerPageState extends State<SprinklerPage> {
   @override
   void initState() {
     super.initState();
-
+    _initData();
     timer = Timer.periodic(const Duration(seconds: 4), (t) {
-      currentPage = (currentPage + 1) % images.length;
-
-      _pageController.animateToPage(
-        currentPage,
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
-
-      setState(() {});
+      if (images.length > 1) {
+        currentPage = (currentPage + 1) % images.length;
+        _pageController.animateToPage(
+          currentPage,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+        setState(() {});
+      }
     });
+  }
+
+  Future<void> _initData() async {
+    try {
+      await api.syncModuleData();
+    } catch (_) {}
+    if (mounted) setState(() => isLoading = false);
   }
 
   @override
@@ -58,8 +64,6 @@ class _SprinklerPageState extends State<SprinklerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
-
-      /// 🔻 BOTTOM NAV
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: primaryRed,
         onTap: (index) {
@@ -78,13 +82,10 @@ class _SprinklerPageState extends State<SprinklerPage> {
           ),
         ],
       ),
-
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// 🔴 HEADER TITLE
-            /// 🔴 HEADER TITLE + BACK BUTTON
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 16, 16, 10),
               child: Row(
@@ -96,8 +97,8 @@ class _SprinklerPageState extends State<SprinklerPage> {
                       Navigator.pop(context);
                     },
                   ),
-                  Text(
-                    "Fire Sprinkler Dashboard",
+                  const Text(
+                    "Sprinkler Dashboard",
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -107,20 +108,18 @@ class _SprinklerPageState extends State<SprinklerPage> {
                 ],
               ),
             ),
-
-            /// 🖼️ IMAGE SLIDER
             Container(
-              height: 300,
+              height: 220,
               width: double.infinity,
               margin: const EdgeInsets.symmetric(horizontal: 12),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(25),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 90,
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 20,
                   ),
                 ],
               ),
@@ -132,14 +131,13 @@ class _SprinklerPageState extends State<SprinklerPage> {
                     child: Image.asset(
                       images[index],
                       width: double.infinity,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
+                      errorBuilder: (c, e, s) => const Icon(Icons.water_drop, size: 80, color: primaryRed),
                     ),
                   );
                 },
               ),
             ),
-
-            /// 🔘 DOT INDICATORS
             const SizedBox(height: 10),
             Center(
               child: Row(
@@ -160,61 +158,52 @@ class _SprinklerPageState extends State<SprinklerPage> {
                 }),
               ),
             ),
-
-            /// 🔥 GAP
-            const SizedBox(height: 50),
-
-            /// 🔲 GRID SECTION
+            const SizedBox(height: 30),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: GridView.count(
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisCount: 3,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 1,
+                  childAspectRatio: 0.85,
                   children: [
                     _card(
-                      Icons.favorite,
+                      Icons.health_and_safety,
                       "Plant Health",
                       Colors.green,
-                      const PlantHealthPage(),
+                      const SprinklerPlantHealthPage(),
                     ),
-
                     _card(
-                      Icons.build,
+                      Icons.settings_suggest,
                       "Maintenance",
                       Colors.orange,
-                      const MaintenancePage(),
+                      const SprinklerMaintenancePage(),
                     ),
-
                     _card(
-                      Icons.checklist,
+                      Icons.fact_check,
                       "Checklist",
                       Colors.blue,
-                      const ChecklistPage(),
+                      const SprinklerChecklistPage(),
                     ),
-
                     _card(
-                      Icons.description,
+                      Icons.assignment,
                       "Reports",
                       Colors.purple,
-                      const ReportsPage(),
+                      const SprinklerReportsPage(),
                     ),
-
                     _card(
-                      Icons.notifications,
+                      Icons.crisis_alert,
                       "Alerts",
                       Colors.red,
-                      const AlertsPage(),
+                      const SprinklerAlertsPage(),
                     ),
-
                     _card(
                       Icons.qr_code_scanner,
                       "Scan",
                       Colors.teal,
-                      const ScanPage(),
+                      const SprinklerScanPage(),
                     ),
                   ],
                 ),
@@ -226,44 +215,40 @@ class _SprinklerPageState extends State<SprinklerPage> {
     );
   }
 
-  /// 🔲 CARD UI
   Widget _card(IconData icon, String title, Color color, Widget page) {
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (_) => page));
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withOpacity(0.04),
               blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            /// 🔥 ICON
             Container(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
+                color: color.withOpacity(0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 30, color: color),
+              child: Icon(icon, size: 28, color: color),
             ),
-
             const SizedBox(height: 10),
-
-            /// TEXT
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
             ),
           ],
         ),

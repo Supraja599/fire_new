@@ -90,13 +90,14 @@ class DashboardPage extends StatelessWidget {
                       /// GRID
                       Expanded(
                         child: GridView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           gridDelegate:
                           SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: crossAxisCount,
                             crossAxisSpacing: 20,
                             mainAxisSpacing: 20,
-                            childAspectRatio: 1,
+                            childAspectRatio: screenWidth > 600 ? 1.2 : 1.0,
                           ),
                           itemCount: 6,
                           itemBuilder: (context, index) {

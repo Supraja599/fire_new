@@ -9,14 +9,14 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'services/sprinkler_api_service.dart';
 
-class ReportsPage extends StatefulWidget {
-  const ReportsPage({super.key});
+class SprinklerReportsPage extends StatefulWidget {
+  const SprinklerReportsPage({super.key});
 
   @override
-  State<ReportsPage> createState() => _ReportsPageState();
+  State<SprinklerReportsPage> createState() => _SprinklerReportsPageState();
 }
 
-class _ReportsPageState extends State<ReportsPage> {
+class _SprinklerReportsPageState extends State<SprinklerReportsPage> {
   final api = SprinklerApiService();
 
   DateTime startDate = DateTime.now();

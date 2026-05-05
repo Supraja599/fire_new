@@ -1,12 +1,10 @@
 import 'dart:io';
-
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
-
 import 'services/hydrant_api_service.dart';
 
 class HydrantReportsPage extends StatefulWidget {
@@ -18,33 +16,62 @@ class HydrantReportsPage extends StatefulWidget {
 
 class _HydrantReportsPageState extends State<HydrantReportsPage> {
   final api = HydrantApiService();
-  DateTime startDate = DateTime.now().subtract(const Duration(days: 30));
+  DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
-  bool loading = false;
+
+  String selectedPlant = "Hydrant Points";
   String selectedUnit = "UNIT-1";
 
-  Future<void> _pick(bool isStart) async {
-    final picked = await showDatePicker(
+  bool loading = false;
+
+  final TextEditingController startController = TextEditingController();
+  final TextEditingController endController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    updateDateFields();
+  }
+
+  void updateDateFields() {
+    startController.text = DateFormat("dd/MM/yyyy").format(startDate);
+    endController.text = DateFormat("dd/MM/yyyy").format(endDate);
+  }
+
+  Future pickDate(bool isStart) async {
+    DateTime? picked = await showDatePicker(
       context: context,
       initialDate: isStart ? startDate : endDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
     );
-    if (picked == null) return;
-    setState(() {
-      if (isStart) {
-        startDate = picked;
-      } else {
-        endDate = picked;
+
+    if (picked != null) {
+      if (isStart && picked.isAfter(endDate)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Start date cannot be after End date")),
+        );
+        return;
       }
-    });
+      if (!isStart && picked.isBefore(startDate)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("End date cannot be before Start date")),
+        );
+        return;
+      }
+      setState(() {
+        isStart ? startDate = picked : endDate = picked;
+        updateDateFields();
+      });
+    }
   }
 
-  Future<Map<String, List<Map<String, dynamic>>>> _fetchData() async {
+  Future<Map<String, List<Map<String, dynamic>>>> fetchData() async {
     final equipment = await api.getEquipmentList();
-    List<Map<String, dynamic>> byStatus(String status) => equipment
-        .where((item) => item["status_bucket"]?.toString() == status)
-        .toList();
+    
+    List<Map<String, dynamic>> byStatus(String status) {
+      return equipment.where((e) => e["status_bucket"]?.toString() == status).toList();
+    }
 
     return {
       "Active": byStatus("active"),
@@ -54,42 +81,47 @@ class _HydrantReportsPageState extends State<HydrantReportsPage> {
     };
   }
 
-  Future<void> _generatePdf() async {
+  Future<void> generatePDF() async {
     setState(() => loading = true);
     try {
       await Permission.manageExternalStorage.request();
-      final dataMap = await _fetchData();
-      final allData = <Map<String, dynamic>>[];
+      final dataMap = await fetchData();
+      List<Map<String, dynamic>> allData = [];
       dataMap.forEach((status, list) {
-        allData.addAll(list.map((item) => {...item, "status": status}));
+        allData.addAll(list.map((e) => {...e, "status": status}));
       });
+
+      if (allData.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No data to generate PDF")),
+        );
+        setState(() => loading = false);
+        return;
+      }
 
       final pdf = pw.Document();
       pdf.addPage(
         pw.MultiPage(
           build: (context) => [
-            pw.Text(
-              "HYDRANT REPORT",
-              style: pw.TextStyle(
-                fontSize: 20,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
+            pw.Text("PLANT REPORT", style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
-            pw.Text("Plant: Hydrant Point"),
+            pw.Text("Plant: $selectedPlant"),
             pw.Text("Unit: $selectedUnit"),
-            pw.Text(
-              "Date: ${DateFormat("dd-MM-yyyy").format(startDate)} to ${DateFormat("dd-MM-yyyy").format(endDate)}",
+            pw.Text("Date: ${DateFormat("dd-MM-yyyy").format(startDate)} to ${DateFormat("dd-MM-yyyy").format(endDate)}"),
+            pw.SizedBox(height: 20),
+            pw.Text("Summary", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            pw.Column(
+              children: dataMap.entries.map((e) => pw.Text("${e.key}: ${e.value.length}")).toList(),
             ),
             pw.SizedBox(height: 20),
             pw.Table.fromTextArray(
               headers: ["SOS Code", "Location", "Status", "Unit"],
-              data: allData.map((item) {
+              data: allData.map((e) {
                 return [
-                  (item["sos_code"] ?? item["id"] ?? "").toString(),
-                  (item["location_name"] ?? item["building_name"] ?? "").toString(),
-                  (item["status"] ?? "").toString(),
-                  selectedUnit,
+                  (e['sos_code'] ?? e['id'] ?? '').toString(),
+                  (e['location_name'] ?? e['building_name'] ?? '').toString(),
+                  (e['status'] ?? '').toString(),
+                  selectedUnit
                 ];
               }).toList(),
             ),
@@ -98,178 +130,143 @@ class _HydrantReportsPageState extends State<HydrantReportsPage> {
       );
 
       final dir = Directory('/storage/emulated/0/Download');
-      final file = File(
-        "${dir.path}/Hydrant_Report_${DateTime.now().millisecondsSinceEpoch}.pdf",
-      );
+      final file = File("${dir.path}/Hydrant_Report_${DateTime.now().millisecondsSinceEpoch}.pdf");
       await file.writeAsBytes(await pdf.save());
       await OpenFilex.open(file.path);
-    } catch (_) {}
-    if (mounted) setState(() => loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF saved in Downloads")));
+    } catch (e) {
+      debugPrint("PDF ERROR: $e");
+    }
+    setState(() => loading = false);
   }
 
-  Future<void> _downloadExcel() async {
+  Future<void> downloadExcel() async {
     setState(() => loading = true);
     try {
       await Permission.manageExternalStorage.request();
-      final dataMap = await _fetchData();
-      final excel = Excel.createExcel();
+      final dataMap = await fetchData();
+      var excel = Excel.createExcel();
 
       dataMap.forEach((status, list) {
-        final sheet = excel[status];
+        Sheet sheet = excel[status];
         sheet.appendRow(["SOS Code", "Location", "Status", "Unit"]);
-        for (final item in list) {
+        for (var item in list) {
           sheet.appendRow([
-            item["sos_code"] ?? item["id"] ?? "",
-            item["location_name"] ?? item["building_name"] ?? "",
+            item['sos_code'] ?? item['id'] ?? '',
+            item['location_name'] ?? item['building_name'] ?? '',
             status,
-            selectedUnit,
+            selectedUnit
           ]);
         }
       });
 
-      final dir = Directory('/storage/emulated/0/Download');
-      final path =
-          "${dir.path}/Hydrant_Report_${DateTime.now().millisecondsSinceEpoch}.xlsx";
-      final file = File(path);
+      Directory dir = Directory('/storage/emulated/0/Download');
+      String path = "${dir.path}/Hydrant_Report_${DateTime.now().millisecondsSinceEpoch}.xlsx";
+      File file = File(path);
       await file.writeAsBytes(excel.encode()!);
       await OpenFilex.open(path);
-    } catch (_) {}
-    if (mounted) setState(() => loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Excel saved in Downloads")));
+    } catch (e) {
+      debugPrint("EXCEL ERROR: $e");
+    }
+    setState(() => loading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F2EE),
       appBar: AppBar(
-        backgroundColor: Colors.white,
         title: const Text("Hydrant Reports"),
+        backgroundColor: Colors.red,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF8E1C1C), Color(0xFFD84315)],
+            Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    DropdownButtonFormField<String>(
+                      value: selectedPlant,
+                      isExpanded: true,
+                      items: ["Hydrant Points"].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                      onChanged: (val) => setState(() => selectedPlant = val!),
+                      decoration: const InputDecoration(labelText: "Plant", border: OutlineInputBorder()),
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: selectedUnit,
+                      isExpanded: true,
+                      items: ["UNIT-1", "UNIT-2", "UNIT-3"].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                      onChanged: (val) => setState(() => selectedUnit = val!),
+                      decoration: const InputDecoration(labelText: "Unit", border: OutlineInputBorder()),
+                    ),
+                    const SizedBox(height: 15),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: startController,
+                            readOnly: true,
+                            onTap: () => pickDate(true),
+                            decoration: const InputDecoration(
+                              labelText: "From Date",
+                              border: OutlineInputBorder(),
+                              suffixIcon: Icon(Icons.calendar_today),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            controller: endController,
+                            readOnly: true,
+                            onTap: () => pickDate(false),
+                            decoration: const InputDecoration(
+                              labelText: "To Date",
+                              border: OutlineInputBorder(),
+                              suffixIcon: Icon(Icons.calendar_today),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: const Text(
-                "Generate hydrant inspection and readiness reports",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
               ),
             ),
-            const SizedBox(height: 16),
-            _field(
-              "From Date",
-              DateFormat("dd/MM/yyyy").format(startDate),
-              Icons.date_range,
-              () => _pick(true),
-            ),
-            const SizedBox(height: 12),
-            _field(
-              "To Date",
-              DateFormat("dd/MM/yyyy").format(endDate),
-              Icons.calendar_month,
-              () => _pick(false),
-            ),
-            const SizedBox(height: 18),
-            _field("Plant", "Hydrant Point", Icons.fire_hydrant_alt, null),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: DropdownButtonFormField<String>(
-                value: selectedUnit,
-                items: const ["UNIT-1", "UNIT-2", "UNIT-3"]
-                    .map((item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ))
-                    .toList(),
-                onChanged: (value) => setState(() => selectedUnit = value!),
-                decoration: const InputDecoration(
-                  labelText: "Unit",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC62828),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                onPressed: loading ? null : _generatePdf,
                 icon: const Icon(Icons.picture_as_pdf),
                 label: const Text("Generate PDF"),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: loading ? null : generatePDF,
               ),
             ),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2E7D32),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                onPressed: loading ? null : _downloadExcel,
                 icon: const Icon(Icons.table_chart),
                 label: const Text("Download Excel"),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.green,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: loading ? null : downloadExcel,
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _field(String label, String value, IconData icon, VoidCallback? onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: const Color(0xFFC62828)),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (onTap != null) const Icon(Icons.chevron_right),
           ],
         ),
       ),

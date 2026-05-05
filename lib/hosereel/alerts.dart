@@ -103,7 +103,7 @@ class _HoseReelAlertsPageState extends State<HoseReelAlertsPage> {
         margin: const EdgeInsets.symmetric(horizontal: 5),
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected ? color : color.withValues(alpha: 0.1),
+          color: isSelected ? color : color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: color),
         ),
@@ -131,68 +131,68 @@ class _HoseReelAlertsPageState extends State<HoseReelAlertsPage> {
   Widget _alertCard(Map<String, dynamic> item) {
     final level = _levelOf(item);
     final color = _levelColor(level);
-    final code = item["sos_code"] ?? item["equipment_id"] ?? item["id"] ?? "-";
-    final location = item["building_name"] ??
-        item["location_name"] ??
-        item["zone_name"] ??
-        "Unknown";
-    final issue = item["alert_reason"] ??
-        item["alert_label"] ??
-        item["message"] ??
-        "No issue message";
+    final sosId = item["sos_code"] ?? item["serial_number"] ?? item["id"] ?? "-";
+    final location = item["building_name"] ?? item["location_name"] ?? "Unknown";
+    final issue = item["alert_reason"] ?? item["alert_label"] ?? item["message"] ?? "Warning";
 
     return GestureDetector(
       onTap: () => _showDetails(item),
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
-        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: color.withValues(alpha: 0.5)),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 8,
               offset: const Offset(0, 4),
-            ),
+            )
           ],
         ),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
+            ClipRRect(
+              borderRadius: const BorderRadius.horizontal(left: Radius.circular(20)),
+              child: Container(
+                width: 90,
+                height: 100,
+                color: color.withOpacity(0.08),
+                child: Image.asset(
+                  'assets/hosereel.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Icon(_levelIcon(level), color: color, size: 30),
+                ),
               ),
-              child: Icon(_levelIcon(level), color: color, size: 28),
             ),
-            const SizedBox(width: 14),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    code.toString(),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "SOS ID: $sosId",
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    location.toString(),
-                    style: TextStyle(color: Colors.grey.shade700),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    issue.toString(),
-                    style: TextStyle(color: Colors.grey.shade700),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      issue,
+                      style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      location,
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                    ),
+                  ],
+                ),
               ),
             ),
+            const Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+            )
           ],
         ),
       ),
@@ -209,25 +209,26 @@ class _HoseReelAlertsPageState extends State<HoseReelAlertsPage> {
       ),
       builder: (_) {
         return Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(18),
           child: SingleChildScrollView(
-            child: DataTable(
-              columnSpacing: 20,
-              columns: const [
-                DataColumn(label: Text("Field")),
-                DataColumn(label: Text("Value")),
-              ],
-              rows: [
-                _row("ID", item["id"]),
-                _row("SOS Code", item["sos_code"]),
-                _row("Location", item["location_name"]),
-                _row("Building", item["building_name"]),
-                _row("Zone", item["zone_name"]),
-                _row("Alert Level", _levelText(_levelOf(item))),
-                _row("Reason", item["alert_reason"] ?? item["message"]),
-                _row("Status", item["status_bucket"] ?? item["operational_status"]),
-                _row("Next Inspection", item["next_inspection_due"]),
-                _row("Expiry", item["expiry_date"]),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.info_outline, color: Colors.blue, size: 40),
+                const SizedBox(height: 14),
+                const Text(
+                  "Alert Details",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 15),
+                _detailRow("SOS ID", (item["sos_code"] ?? item["serial_number"] ?? item["id"] ?? "-").toString()),
+                _detailRow("Issue", (item["alert_label"] ?? item["alert_reason"] ?? "Warning").toString()),
+                _detailRow("Location", (item["location_name"] ?? "-").toString()),
+                _detailRow("Building", (item["building_name"] ?? "-").toString()),
+                _detailRow("Zone", (item["zone_name"] ?? "-").toString()),
+                _detailRow("Next Inspection", (item["next_inspection_due"] ?? "-").toString()),
+                _detailRow("Expiry", (item["expiry_date"] ?? "-").toString()),
+                _detailRow("Status", (item["status_bucket"] ?? item["operational_status"] ?? "-").toString()),
               ],
             ),
           ),
@@ -236,12 +237,16 @@ class _HoseReelAlertsPageState extends State<HoseReelAlertsPage> {
     );
   }
 
-  DataRow _row(String key, dynamic value) {
-    return DataRow(
-      cells: [
-        DataCell(Text(key)),
-        DataCell(Text(value?.toString() ?? "-")),
-      ],
+  Widget _detailRow(String a, String b) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(flex: 4, child: Text(a, style: const TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(flex: 6, child: Text(b)),
+        ],
+      ),
     );
   }
 

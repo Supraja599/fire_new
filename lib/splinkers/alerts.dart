@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'services/sprinkler_api_service.dart';
 
-class AlertsPage extends StatefulWidget {
-  const AlertsPage({super.key});
+class SprinklerAlertsPage extends StatefulWidget {
+  const SprinklerAlertsPage({super.key});
 
   @override
-  State<AlertsPage> createState() => _AlertsPageState();
+  State<SprinklerAlertsPage> createState() => _SprinklerAlertsPageState();
 }
 
-class _AlertsPageState extends State<AlertsPage> {
+class _SprinklerAlertsPageState extends State<SprinklerAlertsPage> {
   final api = SprinklerApiService();
   final List<Map<String, dynamic>> all = [];
 
@@ -170,11 +170,11 @@ class _AlertsPageState extends State<AlertsPage> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
-                              color: Colors.red.withValues(alpha: 0.25),
+                              color: Colors.red.withOpacity(0.25),
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.04),
+                                color: Colors.black.withOpacity(0.04),
                                 blurRadius: 6,
                               ),
                             ],
@@ -182,14 +182,21 @@ class _AlertsPageState extends State<AlertsPage> {
                           child: Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(10),
+                                padding: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(
-                                  color: Colors.red.withValues(alpha: 0.1),
-                                  shape: BoxShape.circle,
+                                  color: Colors.red.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: const Icon(
-                                  Icons.water_drop,
-                                  color: Colors.red,
+                                child: Image.asset(
+                                  'assets/sprinkler.png',
+                                  width: 45,
+                                  height: 45,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) => const Icon(
+                                    Icons.water_drop,
+                                    color: Colors.red,
+                                    size: 28,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -198,20 +205,24 @@ class _AlertsPageState extends State<AlertsPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      item["id"],
+                                      "SOS ID: ${item["id"]}",
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
+                                        fontSize: 15,
                                       ),
                                     ),
+                                    const SizedBox(height: 4),
                                     Text(
                                       item["location"],
                                       style: TextStyle(
                                         color: Colors.grey.shade600,
+                                        fontSize: 13,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
+                              const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
                             ],
                           ),
                         ),
@@ -228,32 +239,45 @@ class _AlertsPageState extends State<AlertsPage> {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.all(16),
+        return Container(
+          padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.water_drop, size: 45, color: Colors.red),
-              const SizedBox(height: 10),
+              Container(
+                height: 80,
+                width: 80,
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Image.asset(
+                  'assets/sprinkler.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.water_drop, size: 40, color: Colors.red),
+                ),
+              ),
+              const SizedBox(height: 15),
               Text(
-                item["id"],
+                "SOS ID: ${item["id"]}",
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               _row("Location", item["location"]),
               _row("Pressure", item["pressure"]),
               _row("System", item["system_type"]),
-              _row("Status", item["status"].toString()),
+              _row("Status", item["status"].toString().toUpperCase()),
               _row(
-                "Date",
+                "Alert Date",
                 "${item["date"].day}/${item["date"].month}/${item["date"].year}",
               ),
+              const SizedBox(height: 20),
             ],
           ),
         );

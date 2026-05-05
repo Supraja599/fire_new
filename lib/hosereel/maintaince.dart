@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'services/apiservice.dart';
 
-class MaintenanceScreen extends StatefulWidget {
-  const MaintenanceScreen({super.key});
+class HoseReelMaintenancePage extends StatefulWidget {
+  const HoseReelMaintenancePage({super.key});
 
   @override
-  State<MaintenanceScreen> createState() => _MaintenanceScreenState();
+  State<HoseReelMaintenancePage> createState() => _HoseReelMaintenancePageState();
 }
 
-class _MaintenanceScreenState extends State<MaintenanceScreen> {
+class _HoseReelMaintenancePageState extends State<HoseReelMaintenancePage> {
   final api = HoseReelApiService();
   final List<Map<String, dynamic>> all = [];
 
@@ -51,11 +51,14 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
         final date = _parseDate(item["next_inspection_due"]?.toString());
         if (date == null) continue;
 
+        final status = item["status_bucket"]?.toString().toLowerCase() ?? "active";
+        if (status == "expired") continue; // 🔥 EXPIRED ITEMS SHOULD GO TO ALERTS
+
         all.add({
           "id":
               item["sos_code"] ?? item["serial_number"] ?? item["id"] ?? "N/A",
           "location": item["location_name"] ?? item["zone_name"] ?? "Unknown",
-          "status": item["status_bucket"] ?? "active",
+          "status": status,
           "hose_length":
               item["details"]?["hose_length_m"]?.toString() ?? "N/A",
           "pressure":
@@ -168,78 +171,114 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: ListView.builder(
-                itemCount: _selectedList().length,
-                itemBuilder: (context, index) {
-                  final item = _selectedList()[index];
-
-                  return GestureDetector(
-                    onTap: () => _showDetails(item),
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 8,
+              child: _selectedList().isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: color.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Image.asset(
+                              'assets/hosereel.png',
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.contain,
+                              opacity: const AlwaysStoppedAnimation(0.5),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            "No Maintenance for $selected",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            "Everything is up to date!",
+                            style: TextStyle(color: Colors.grey),
                           ),
                         ],
                       ),
-                      child: Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: const BorderRadius.horizontal(
-                              left: Radius.circular(20),
+                    )
+                  : ListView.builder(
+                      itemCount: _selectedList().length,
+                      itemBuilder: (context, index) {
+                        final item = _selectedList()[index];
+
+                        return GestureDetector(
+                          onTap: () => _showDetails(item),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 8,
+                                ),
+                              ],
                             ),
-                            child: Container(
-                              width: 96,
-                              height: 108,
-                              color: color.withValues(alpha: 0.08),
-                              child: Image.asset(
-                                'assets/hosereel.png',
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(14),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item["id"],
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.horizontal(
+                                    left: Radius.circular(20),
+                                  ),
+                                  child: Container(
+                                    width: 96,
+                                    height: 108,
+                                    color: color.withOpacity(0.08),
+                                    child: Image.asset(
+                                      'assets/hosereel.png',
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    item["location"],
-                                    style: TextStyle(color: Colors.grey.shade600),
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(14),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item["id"],
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          item["location"],
+                                          style: TextStyle(color: Colors.grey.shade600),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Wrap(
+                                          spacing: 8,
+                                          runSpacing: 6,
+                                          children: [
+                                            _chip("Hose ${item["hose_length"]}", color),
+                                            _chip("Pressure ${item["pressure"]}", Colors.grey.shade700),
+                                            _chip("${item["date"].day}/${item["date"].month}", color),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  const SizedBox(height: 10),
-                                  Wrap(
-                                    spacing: 8,
-                                    runSpacing: 6,
-                                    children: [
-                                      _chip("Hose ${item["hose_length"]}", color),
-                                      _chip("Pressure ${item["pressure"]}", Colors.grey.shade700),
-                                      _chip("${item["date"].day}/${item["date"].month}", color),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),
@@ -281,7 +320,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -313,7 +352,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                 width: 96,
                 height: 96,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.08),
+                  color: color.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: ClipRRect(

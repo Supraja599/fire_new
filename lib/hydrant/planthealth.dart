@@ -272,37 +272,81 @@ class _HydrantStatusListPage extends StatelessWidget {
           return GestureDetector(
             onTap: () => _showDetails(context, item, color),
             child: Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.all(14),
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
+                  // 🖼️ REAL IMAGE IN LIST
                   Container(
-                    width: 46,
-                    height: 46,
+                    width: 60,
+                    height: 60,
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.14),
-                      shape: BoxShape.circle,
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      image: const DecorationImage(
+                        image: AssetImage('assets/firehydrant.png'),
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                    child: Icon(Icons.fire_hydrant_alt, color: color),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          sosId.toString(),
-                          style: const TextStyle(fontWeight: FontWeight.w700),
+                          "SOS: ${sosId.toString()}",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            color: Colors.black87,
+                            fontSize: 15,
+                          ),
                         ),
-                        Text(location.toString()),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                location.toString(),
+                                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right),
+                  
+                  // 📩 BUTTON FEEL
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      "SEND DETAILS",
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

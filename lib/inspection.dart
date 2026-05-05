@@ -3,7 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'checklist.dart';
 import 'services/apiservice.dart';
-import 'local_db.dart'; // ✅ ADD THIS
+import 'local_db.dart';
 
 class InspectionPage extends StatefulWidget {
   const InspectionPage({super.key});
@@ -22,66 +22,77 @@ class _InspectionPageState extends State<InspectionPage> {
   bool showScanner = false;
   bool showSearch = true;
 
-  List<String> suggestions = []; // ✅ KEEP
+  List<String> allIds = [];
+  List<String> suggestions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAllIds();
+  }
+
+  Future<void> _loadAllIds() async {
+    final ids = await LocalDB.getAllIds();
+    setState(() => allIds = ids);
+  }
 
   String _clean(String value) {
-    return value
-        .trim()
-        .replaceAll("\n", "")
-        .replaceAll(" ", "")
-        .replaceAll("-", "")
-        .toUpperCase();
+    return value.trim().replaceAll(" ", "").replaceAll("-", "").toUpperCase();
+  }
+
+  void _onSearchChanged(String val) {
+    if (val.isEmpty) {
+      setState(() => suggestions = []);
+      return;
+    }
+    final cleaned = _clean(val);
+    setState(() {
+      suggestions = allIds.where((id) => id.contains(cleaned)).take(5).toList();
+    });
+
+    if (allIds.contains(cleaned)) {
+      fetchDetails(val);
+    }
   }
 
   void openChecklistPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const ChecklistPage()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const ChecklistPage()));
   }
 
   Future<void> openNavigation() async {
     const double lat = 17.5064803;
     const double lng = 78.3554442;
-
     final Uri uri = Uri.parse("geo:$lat,$lng?q=$lat,$lng");
-
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      final Uri webUrl = Uri.parse(
-        "https://www.google.com/maps/search/?api=1&query=$lat,$lng",
-      );
-      await launchUrl(webUrl);
+      await launchUrl(Uri.parse("https://www.google.com/maps/search/?api=1&query=$lat,$lng"));
     }
   }
 
   void onDetect(BarcodeCapture capture) {
     final raw = capture.barcodes.first.rawValue;
     if (raw == null) return;
-
-    final cleaned = _clean(raw);
-
     setState(() {
       showScanner = false;
-      idController.text = cleaned;
-      scannedId = cleaned;
+      idController.text = _clean(raw);
     });
+    fetchDetails(raw);
   }
 
-  // ✅ UPDATED (SQLite FIRST)
   Future<void> fetchDetails(String input) async {
     final id = _clean(input);
+    if (id.isEmpty) return;
 
     setState(() {
       loading = true;
       error = null;
       showSearch = false;
+      suggestions = [];
     });
 
     try {
       final localData = await LocalDB.get(id);
-
       if (localData != null) {
         setState(() {
           item = localData;
@@ -92,7 +103,6 @@ class _InspectionPageState extends State<InspectionPage> {
       }
 
       final data = await ApiService.searchAny(id);
-
       if (data == null) {
         setState(() {
           loading = false;
@@ -101,15 +111,12 @@ class _InspectionPageState extends State<InspectionPage> {
         });
         return;
       }
-
       await LocalDB.insert(id, data);
-
       setState(() {
         item = data;
         scannedId = id;
         loading = false;
       });
-
     } catch (e) {
       setState(() {
         loading = false;
@@ -119,40 +126,17 @@ class _InspectionPageState extends State<InspectionPage> {
     }
   }
 
-  // ✅ UPDATED (SQLite suggestions)
-  void updateSuggestions(String input) async {
-    final keys = await LocalDB.getAllIds();
-
-    setState(() {
-      suggestions = keys
-          .where((e) => e.contains(_clean(input)))
-          .take(5)
-          .toList();
-    });
-  }
-
   Future<void> saveData() async {
-    if (item == null || scannedId == null) return;
-
+    if (item == null) return;
     setState(() => loading = true);
-
     final success = await ApiService.insertVersion(item!);
-
     setState(() => loading = false);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(success ? "Saved Successfully ✅" : "Saved"),
-      ),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(success ? "Saved Successfully ✅" : "Saved Locally")));
   }
 
-  // ✅ UPDATED (SQLite save)
   void editAllFields() {
     if (item == null) return;
-
     final controllers = <String, TextEditingController>{};
-
     item!.forEach((key, value) {
       controllers[key] = TextEditingController(text: value.toString());
     });
@@ -161,100 +145,33 @@ class _InspectionPageState extends State<InspectionPage> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Edit Details"),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
-            child: Column(
-              children: controllers.entries.map((e) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: TextField(
-                    controller: e.value,
-                    decoration: InputDecoration(
-                      labelText: e.key,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
+        content: SizedBox(width: double.maxFinite, child: SingleChildScrollView(child: Column(children: controllers.entries.map((e) => Padding(padding: const EdgeInsets.symmetric(vertical: 6), child: TextField(controller: e.value, decoration: InputDecoration(labelText: e.key, border: const OutlineInputBorder())))).toList()))),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              controllers.forEach((key, controller) {
-                item![key] = controller.text;
-              });
-
-              await LocalDB.insert(scannedId!, item!); // ✅ SQLite save
-              setState(() {});
-              Navigator.pop(context);
-            },
-            child: const Text("Save"),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          ElevatedButton(onPressed: () async { controllers.forEach((key, controller) { item![key] = controller.text; }); await LocalDB.insert(scannedId!, item!); setState(() {}); Navigator.pop(context); }, child: const Text("Save")),
         ],
       ),
     );
   }
 
   Widget buildTable() {
-    final entries = item!.entries.toList();
+    final Map<String, String> displayFields = {};
+    void flatten(Map<dynamic, dynamic> map, [String prefix = ""]) {
+      map.forEach((key, value) {
+        final displayKey = prefix.isEmpty ? key.toString() : "${prefix}_$key";
+        if (value is Map) flatten(value, displayKey);
+        else if (value != null && value is! List) displayFields[displayKey] = value.toString();
+      });
+    }
+    flatten(item!);
 
-    return ListView(
-      padding: const EdgeInsets.all(10),
+    return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.red.shade50,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Row(
-            children: [
-              Expanded(flex: 4, child: Text("FIELD", style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 6, child: Text("VALUE", style: TextStyle(fontWeight: FontWeight.bold))),
-            ],
-          ),
-        ),
+        Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(10)), child: const Row(children: [Expanded(flex: 4, child: Text("FIELD", style: TextStyle(fontWeight: FontWeight.bold))), Expanded(flex: 6, child: Text("VALUE", style: TextStyle(fontWeight: FontWeight.bold)))])),
         const SizedBox(height: 10),
-        ...entries.map((e) {
-          return Container(
-            margin: const EdgeInsets.symmetric(vertical: 5),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
-            ),
-            child: Row(
-              children: [
-                Expanded(flex: 4, child: Text(e.key.toString(), style: const TextStyle(fontWeight: FontWeight.w600))),
-                Expanded(flex: 6, child: Text(e.value.toString())),
-              ],
-            ),
-          );
-        }),
+        ...displayFields.entries.map((e) => Container(margin: const EdgeInsets.symmetric(vertical: 5), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)]), child: Row(children: [Expanded(flex: 4, child: Text(e.key.replaceAll("_", " ").toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.blueGrey))), Expanded(flex: 6, child: Text(e.value, style: const TextStyle(fontSize: 13)))]))),
+        const SizedBox(height: 100),
       ],
-    );
-  }
-
-  Widget buildScannerBox() {
-    return Container(
-      margin: const EdgeInsets.all(12),
-      height: 220,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.red, width: 2),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: MobileScanner(onDetect: onDetect),
-      ),
     );
   }
 
@@ -266,83 +183,87 @@ class _InspectionPageState extends State<InspectionPage> {
         title: const Text("Inspection System"),
         backgroundColor: Colors.red,
         actions: [
+          if (item != null) IconButton(icon: const Icon(Icons.edit), onPressed: editAllFields),
           IconButton(icon: const Icon(Icons.save), onPressed: saveData),
-          IconButton(icon: const Icon(Icons.edit), onPressed: editAllFields),
           IconButton(icon: const Icon(Icons.navigation), onPressed: openNavigation),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              setState(() {
-                item = null;
-                scannedId = null;
-                idController.clear();
-                error = null;
-                showSearch = true;
-              });
-            },
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: () => setState(() { item = null; scannedId = null; idController.clear(); error = null; showSearch = true; suggestions = []; })),
         ],
       ),
       body: SafeArea(
         child: Column(
           children: [
-            if (showSearch)
-              Container(
-                margin: const EdgeInsets.all(10),
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: idController,
-                      onChanged: updateSuggestions,
-                      decoration: InputDecoration(
-                        hintText: "Enter Barcode or SOS Code",
-                        border: const OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.qr_code_scanner, color: Colors.red),
-                          onPressed: () {
-                            setState(() => showScanner = !showScanner);
-                          },
-                        ),
+            Expanded(
+              child: ListView(
+                children: [
+                  if (showSearch)
+                    Container(
+                      margin: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: idController,
+                            onChanged: _onSearchChanged,
+                            decoration: InputDecoration(
+                              hintText: "Enter Barcode or SOS Code",
+                              border: const OutlineInputBorder(),
+                              suffixIcon: IconButton(icon: const Icon(Icons.qr_code_scanner, color: Colors.red), onPressed: () => setState(() => showScanner = !showScanner)),
+                            ),
+                          ),
+                          if (suggestions.isNotEmpty)
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: suggestions.length,
+                              itemBuilder: (context, i) => ListTile(
+                                dense: true,
+                                title: Text(suggestions[i]),
+                                onTap: () {
+                                  idController.text = suggestions[i];
+                                  fetchDetails(suggestions[i]);
+                                },
+                              ),
+                            ),
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                            onPressed: () => fetchDetails(idController.text),
+                            child: const Text("Search", style: TextStyle(color: Colors.white)),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                      onPressed: () {
-                        final input = _clean(idController.text);
-                        if (input.isEmpty) return;
-                        fetchDetails(input);
-                      },
-                      child: const Text("Search"),
+                  if (showScanner) 
+                    Container(
+                      margin: const EdgeInsets.all(12),
+                      height: 200,
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.red, width: 2)),
+                      child: ClipRRect(borderRadius: BorderRadius.circular(16), child: MobileScanner(onDetect: onDetect)),
                     ),
-                  ],
-                ),
-              ),
-            if (showScanner) buildScannerBox(),
-            Expanded(
-              child: loading
-                  ? const Center(child: CircularProgressIndicator())
-                  : error != null
-                  ? Center(child: Text(error!, style: const TextStyle(color: Colors.red)))
-                  : item == null
-                  ? const Center(child: Text("Scan or Enter ID to view details"))
-                  : buildTable(),
-            ),
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.all(12),
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                icon: const Icon(Icons.list),
-                label: const Text("Open Checklist", style: TextStyle(fontSize: 18)),
-                onPressed: openChecklistPage,
+                  if (loading) const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
+                  if (error != null) Center(child: Padding(padding: EdgeInsets.all(20), child: Text(error!, style: const TextStyle(color: Colors.red)))),
+                  if (item != null) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: buildTable(),
+                    ),
+                  ] else if (!loading && error == null)
+                    const Center(child: Padding(padding: EdgeInsets.all(40), child: Text("Scan or Enter ID to view details"))),
+                ],
               ),
             ),
           ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        color: Colors.white,
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        child: ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red, padding: const EdgeInsets.symmetric(vertical: 16)),
+          icon: const Icon(Icons.list, color: Colors.white),
+          label: const Text("Open Checklist", style: TextStyle(fontSize: 18, color: Colors.white)),
+          onPressed: openChecklistPage,
         ),
       ),
     );

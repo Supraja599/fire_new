@@ -108,10 +108,12 @@ class _LoginPageState extends State<LoginPage>
       box.put('role', role);
       box.put('username', username);
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const IconsPage()),
-      );
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const IconsPage()),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Invalid username or password")),

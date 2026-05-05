@@ -1,213 +1,283 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-
+import 'checklist.dart';
 import 'services/apiservice.dart';
+import '../local_db.dart';
 
-class ScanScreen extends StatefulWidget {
-  const ScanScreen({super.key});
+class HoseReelScanPage extends StatefulWidget {
+  const HoseReelScanPage({super.key});
 
   @override
-  State<ScanScreen> createState() => _ScanScreenState();
+  State<HoseReelScanPage> createState() => _HoseReelScanPageState();
 }
 
-class _ScanScreenState extends State<ScanScreen> {
+class _HoseReelScanPageState extends State<HoseReelScanPage> {
   final api = HoseReelApiService();
-  final TextEditingController controller = TextEditingController();
+  final TextEditingController idController = TextEditingController();
 
+  List<Map<String, dynamic>> allEquipment = [];
+  List<Map<String, dynamic>> filteredEquipment = [];
   Map<String, dynamic>? item;
-  bool showScanner = false;
   bool loading = false;
+  String? error;
+  bool showScanner = false;
+  bool showSearch = true;
 
-  void fetchData(String input) async {
-    if (input.isEmpty) return;
+  @override
+  void initState() {
+    super.initState();
+    _loadAllEquipment();
+  }
 
-    setState(() {
-      loading = true;
-      showScanner = false;
-    });
+  Future<void> _loadAllEquipment() async {
+    final list = await api.getEquipmentList();
+    setState(() => allEquipment = list);
+  }
 
-    try {
-      final result = await api.getEquipmentByQuery(input);
+  void _onSearchChanged(String val) {
+    if (val.isEmpty) {
+      setState(() => filteredEquipment = []);
+      return;
+    }
+    final results = allEquipment.where((e) {
+      final id = (e["sos_code"] ?? e["serial_number"] ?? e["id"] ?? "").toString().toLowerCase();
+      return id.contains(val.toLowerCase());
+    }).take(5).toList();
+    
+    setState(() => filteredEquipment = results);
 
-      setState(() {
-        item = result == null ? null : _buildDisplayData(result);
-        loading = false;
-      });
-    } catch (_) {
-      setState(() {
-        item = null;
-        loading = false;
-      });
+    final exactMatch = allEquipment.firstWhere(
+      (e) => (e["sos_code"] ?? e["serial_number"] ?? e["id"] ?? "").toString().toLowerCase() == val.toLowerCase(),
+      orElse: () => {},
+    );
+    if (exactMatch.isNotEmpty) {
+      fetchDetails(val);
     }
   }
 
-  Map<String, dynamic> _buildDisplayData(Map<String, dynamic> raw) {
-    final details = Map<String, dynamic>.from(raw["details"] ?? {});
+  Future<void> fetchDetails(String input) async {
+    if (input.trim().isEmpty) return;
+    setState(() {
+      loading = true;
+      error = null;
+      showSearch = false;
+      filteredEquipment = [];
+    });
 
-    return {
-      "SOS Code": raw["sos_code"] ?? "N/A",
-      "Serial Number": raw["serial_number"] ?? "N/A",
-      "Module": raw["module_name"] ?? "Hose Reel",
-      "Location": raw["location_name"] ?? "N/A",
-      "Building": raw["building_name"] ?? "N/A",
-      "Zone": raw["zone_name"] ?? "N/A",
-      "Status": raw["status_bucket"] ?? raw["operational_status"] ?? "N/A",
-      "Readiness Score": raw["readiness_score"]?.toString() ?? "N/A",
-      "Pressure Rating": details["pressure_rating"]?.toString() ?? "N/A",
-      "Hose Length": details["hose_length_m"]?.toString() ?? "N/A",
-      "Nozzle Type": details["nozzle_type"]?.toString() ?? "N/A",
-      "Water Source": details["water_source"]?.toString() ?? "N/A",
-      "Next Inspection Due": raw["next_inspection_due"] ?? "N/A",
-      "Expiry Date": raw["expiry_date"] ?? "N/A",
-    };
+    try {
+      final data = await api.getEquipmentByQuery(input);
+      if (data == null) {
+        setState(() {
+          loading = false;
+          error = "No hose reel found for this ID";
+          showSearch = true;
+        });
+        return;
+      }
+      setState(() {
+        item = data;
+        loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        loading = false;
+        error = "Error: $e";
+        showSearch = true;
+      });
+    }
   }
 
   void onDetect(BarcodeCapture capture) {
     final raw = capture.barcodes.first.rawValue;
     if (raw == null) return;
-
-    controller.text = raw;
-
     setState(() {
       showScanner = false;
+      idController.text = raw;
     });
+    fetchDetails(raw);
+  }
 
-    fetchData(raw);
+  Future<void> _submitInspection() async {
+    if (item == null) return;
+    await LocalDB.saveSingleModuleRecord(
+      moduleCode: "hose_reel",
+      recordType: "equipment",
+      item: item!,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Hose Reel Inspection Saved Locally")));
   }
 
   Widget buildDetails() {
-    final entries = item!.entries.toList();
+    final sosId = item!["sos_code"] ?? item!["serial_number"] ?? item!["id"] ?? "-";
+    final location = item!["location_name"] ?? "General Area";
+    final Map<String, String> displayFields = {};
+    
+    void flatten(Map<dynamic, dynamic> map, [String prefix = ""]) {
+      map.forEach((key, value) {
+        final displayKey = prefix.isEmpty ? key.toString() : "${prefix}_$key";
+        if (value is Map) flatten(value, displayKey);
+        else if (value != null && value is! List) displayFields[displayKey] = value.toString();
+      });
+    }
+    flatten(item!);
 
-    return ListView(
-      padding: const EdgeInsets.all(12),
-      children: entries.map((entry) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(14),
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 8,
-              ),
-            ],
+            borderRadius: BorderRadius.circular(25),
+            boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.06), blurRadius: 15, offset: const Offset(0, 5))],
+            border: Border.all(color: Colors.red.withOpacity(0.1)),
           ),
-          child: Row(
+          child: Column(
             children: [
-              Expanded(
-                flex: 4,
-                child: Text(
-                  entry.key,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(color: const Color(0xFFB71C1C), borderRadius: BorderRadius.circular(12)),
+                    child: Text(sosId.toString(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
+                  ),
+                  const Icon(Icons.fire_hydrant_alt, color: Colors.red, size: 28),
+                ],
               ),
-              Expanded(flex: 6, child: Text(entry.value.toString())),
+              const SizedBox(height: 15),
+              Align(alignment: Alignment.centerLeft, child: Text(location, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87))),
+              const Divider(height: 30),
+              Table(
+                columnWidths: const {0: FlexColumnWidth(4), 1: FlexColumnWidth(6)},
+                children: displayFields.entries.map((e) => TableRow(
+                  children: [
+                    Padding(padding: const EdgeInsets.symmetric(vertical: 10), child: Text(e.key.replaceAll("_", " ").toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.blueGrey))),
+                    Padding(padding: const EdgeInsets.symmetric(vertical: 10), child: Text(e.value, style: const TextStyle(fontSize: 13, color: Colors.black87))),
+                  ],
+                )).toList(),
+              ),
+              const SizedBox(height: 100),
             ],
           ),
-        );
-      }).toList(),
+        ),
+      ],
     );
-  }
-
-  Widget scannerBox() {
-    return Container(
-      margin: const EdgeInsets.all(12),
-      height: 230,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.red, width: 2),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: MobileScanner(onDetect: onDetect),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FA),
+      backgroundColor: const Color(0xFFFDE8E8),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text(
-          "Scan & Get Details",
-          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+        title: const Text("Hose Reel Inspection", style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFFB71C1C),
+        actions: [
+          IconButton(icon: const Icon(Icons.refresh), onPressed: () => setState(() { item = null; idController.clear(); error = null; showSearch = true; filteredEquipment = []; })),
+        ],
+      ),
+      body: SafeArea(
+        child: ListView(
+          children: [
+            if (showSearch)
+              Container(
+                margin: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(25), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)]),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: idController,
+                      onChanged: _onSearchChanged,
+                      decoration: InputDecoration(
+                        hintText: "Enter SOS ID (e.g. SOS-HR-01)",
+                        prefixIcon: const Icon(Icons.search, color: Colors.red),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
+                      ),
+                    ),
+                    if (filteredEquipment.isNotEmpty)
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: filteredEquipment.length,
+                        itemBuilder: (context, i) {
+                          final e = filteredEquipment[i];
+                          return ListTile(
+                            dense: true,
+                            title: Text((e["sos_code"] ?? e["serial_number"] ?? e["id"] ?? "-").toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Text(e["location_name"]?.toString() ?? "General Area"),
+                            trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                            onTap: () {
+                              idController.text = (e["sos_code"] ?? e["serial_number"] ?? e["id"]).toString();
+                              fetchDetails(idController.text);
+                            },
+                          );
+                        },
+                      ),
+                    const SizedBox(height: 15),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB71C1C), padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                            onPressed: () => fetchDetails(idController.text),
+                            child: const Text("FETCH DETAILS", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        IconButton(
+                          icon: Icon(Icons.qr_code_scanner, color: const Color(0xFFB71C1C), size: 36),
+                          onPressed: () => setState(() => showScanner = !showScanner),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            if (showScanner) 
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 12),
+                height: 220,
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(25), border: Border.all(color: Colors.red, width: 2)),
+                child: ClipRRect(borderRadius: BorderRadius.circular(23), child: MobileScanner(onDetect: onDetect)),
+              ),
+            if (loading) const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(color: Colors.red))),
+            if (error != null) Center(child: Padding(padding: EdgeInsets.all(20), child: Text(error!, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)))),
+            if (item != null) buildDetails()
+            else if (!loading && error == null)
+              const Center(child: Padding(padding: EdgeInsets.all(40), child: Column(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.search, size: 80, color: Colors.grey), Text("Enter SOS ID to begin", style: TextStyle(color: Colors.grey))]))),
+          ],
         ),
       ),
-      body: Column(
-        children: [
-          Container(
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                ),
-              ],
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]),
+        child: Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade700, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
+                icon: const Icon(Icons.checklist_rtl, color: Colors.white),
+                label: const Text("CHECKLIST", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HoseReelChecklistPage())),
+              ),
             ),
-            child: Column(
-              children: [
-                TextField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    hintText: "Enter SOS code or serial number",
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.qr_code_scanner, color: Colors.red),
-                      onPressed: () {
-                        setState(() {
-                          showScanner = !showScanner;
-                        });
-                      },
-                    ),
-                  ),
+            if (item != null) ...[
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB71C1C), padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
+                  icon: const Icon(Icons.cloud_done, color: Colors.white),
+                  label: const Text("SUBMIT", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+                  onPressed: _submitInspection,
                 ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    onPressed: () => fetchData(controller.text),
-                    child: const Text("Get Details"),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (showScanner) scannerBox(),
-          Expanded(
-            child: loading
-                ? const Center(child: CircularProgressIndicator())
-                : item == null
-                    ? const Center(
-                        child: Text(
-                          "No hose reel found. Scan or enter SOS code / serial number.",
-                          style: TextStyle(color: Colors.grey),
-                          textAlign: TextAlign.center,
-                        ),
-                      )
-                    : buildDetails(),
-          ),
-        ],
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

@@ -108,7 +108,7 @@ class _DashboardState extends State<Dashboard> {
               ),
             ),
             Container(
-              height: 300,
+              height: 220,
               width: double.infinity,
               margin: const EdgeInsets.symmetric(horizontal: 12),
               padding: const EdgeInsets.all(10),
@@ -117,7 +117,7 @@ class _DashboardState extends State<Dashboard> {
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
+                    color: Colors.black.withOpacity(0.06),
                     blurRadius: 90,
                   ),
                 ],
@@ -130,7 +130,12 @@ class _DashboardState extends State<Dashboard> {
                     child: Image.asset(
                       images[index],
                       width: double.infinity,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain, // ✅ Show FULL image, not half
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                        );
+                      },
                     ),
                   );
                 },
@@ -156,7 +161,7 @@ class _DashboardState extends State<Dashboard> {
                 }),
               ),
             ),
-            const SizedBox(height: 50),
+            const SizedBox(height: 30),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -165,31 +170,31 @@ class _DashboardState extends State<Dashboard> {
                   crossAxisCount: 3,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 1,
+                  childAspectRatio: 0.95,
                   children: const [
                     _DashboardCard(
                       icon: Icons.favorite,
                       title: "Plant Health",
                       color: Colors.green,
-                      page: PlantHealthScreen(),
+                      page: HoseReelPlantHealthPage(),
                     ),
                     _DashboardCard(
                       icon: Icons.build,
                       title: "Maintenance",
                       color: Colors.orange,
-                      page: MaintenanceScreen(),
+                      page: HoseReelMaintenancePage(),
                     ),
                     _DashboardCard(
                       icon: Icons.checklist,
                       title: "Checklist",
                       color: Colors.blue,
-                      page: ChecklistPage(),
+                      page: HoseReelChecklistPage(),
                     ),
                     _DashboardCard(
                       icon: Icons.description,
                       title: "Reports",
                       color: Colors.purple,
-                      page: ReportsPage(),
+                      page: HoseReelReportsPage(),
                     ),
                     _DashboardCard(
                       icon: Icons.notifications,
@@ -201,7 +206,7 @@ class _DashboardState extends State<Dashboard> {
                       icon: Icons.qr_code_scanner,
                       title: "Scan",
                       color: Colors.teal,
-                      page: ScanScreen(),
+                      page: HoseReelScanPage(),
                     ),
                   ],
                 ),
@@ -240,7 +245,7 @@ class _DashboardCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 8,
             ),
           ],
@@ -251,7 +256,7 @@ class _DashboardCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
+                color: color.withOpacity(0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 30, color: color),

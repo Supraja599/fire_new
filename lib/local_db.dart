@@ -190,6 +190,30 @@ class LocalDB {
     await batch.commit(noResult: true);
   }
 
+  static Future<void> saveSingleModuleRecord({
+    required String moduleCode,
+    required String recordType,
+    required Map<String, dynamic> item,
+  }) async {
+    final db = await database;
+    final recordId = (item['id'] ??
+            item['sos_code'] ??
+            item['serial_number'] ??
+            'unknown')
+        .toString();
+
+    await db.insert(
+      'module_records',
+      {
+        'module_code': moduleCode,
+        'record_type': recordType,
+        'record_id': recordId,
+        'data': jsonEncode(item),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
   static Future<List<Map<String, dynamic>>> getModuleRecords({
     required String moduleCode,
     required String recordType,

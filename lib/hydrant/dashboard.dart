@@ -85,7 +85,7 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
                   ),
                   const Expanded(
                     child: Text(
-                      "Hydrant Point Command Deck",
+                      "Hydrant Command Center",
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
@@ -96,6 +96,8 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
                 ],
               ),
             ),
+
+            // 🖼️ REAL IMAGE & STATS CARD
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 14),
               padding: const EdgeInsets.all(18),
@@ -108,7 +110,7 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
                 borderRadius: BorderRadius.circular(26),
                 boxShadow: [
                   BoxShadow(
-                    color: primary.withValues(alpha: 0.18),
+                    color: primary.withOpacity(0.18),
                     blurRadius: 26,
                     offset: const Offset(0, 14),
                   ),
@@ -118,25 +120,26 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
                 children: [
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "Live Hydrant Readiness",
+                            const Text(
+                              "LIVE READINESS",
                               style: TextStyle(
                                 color: Colors.white70,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
                               ),
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Text(
-                              "Pressure, access, and response screens in one place.",
-                              style: TextStyle(
+                              isLoading ? "Loading..." : "$active Active Hydrants",
+                              style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
                                 height: 1.2,
                               ),
                             ),
@@ -144,58 +147,44 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
                         ),
                       ),
                       Container(
-                        width: 72,
-                        height: 72,
+                        width: 70,
+                        height: 70,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.14),
+                          color: Colors.white.withOpacity(0.14),
                           shape: BoxShape.circle,
+                          image: const DecorationImage(
+                            image: AssetImage('assets/firehydrant.png'),
+                            fit: BoxFit.cover,
+                          ),
                         ),
                         child: const Icon(
                           Icons.fire_hydrant_alt,
-                          size: 36,
-                          color: Colors.white,
+                          size: 30,
+                          color: Colors.white24, // Subtle fallback
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 18),
+                  
+                  // 📊 SIMPLE TREND GRAPH (Premium Custom UI)
                   SizedBox(
-                    height: 210,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: PageView.builder(
-                        controller: _pageController,
-                        itemCount: gallery.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            color: Colors.white,
-                            child: Image.asset(gallery[index], fit: BoxFit.contain),
-                          );
-                        },
+                    height: 80,
+                    width: double.infinity,
+                    child: CustomPaint(
+                      painter: TrendGraphPainter(
+                        points: [0.2, 0.5, 0.4, 0.8, 0.7, 0.9, 0.8],
+                        color: Colors.white.withOpacity(0.4),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(gallery.length, (index) {
-                      final selected = currentPage == index;
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: selected ? 20 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: selected ? Colors.white : Colors.white54,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      );
-                    }),
                   ),
                 ],
               ),
             ),
+            
             const SizedBox(height: 14),
+            
+            // METRICS
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               child: Row(
@@ -214,15 +203,19 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
                 ],
               ),
             ),
+
             const SizedBox(height: 16),
+
+            // ICON GRID
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: GridView.count(
+                  physics: const NeverScrollableScrollPhysics(),
                   crossAxisCount: 3,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 0.95,
+                  childAspectRatio: 0.9,
                   children: const [
                     _HydrantCard(
                       title: "Plant Health",
@@ -277,20 +270,20 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: color.withValues(alpha: 0.15)),
+          border: Border.all(color: color.withOpacity(0.15)),
         ),
         child: Row(
           children: [
             Container(
-              width: 12,
-              height: 12,
+              width: 10,
+              height: 10,
               decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
               ),
             ),
             Text(
@@ -306,6 +299,56 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
       ),
     );
   }
+}
+
+// ✅ TREND GRAPH PAINTER
+class TrendGraphPainter extends CustomPainter {
+  final List<double> points;
+  final Color color;
+
+  TrendGraphPainter({required this.points, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path();
+    final step = size.width / (points.length - 1);
+
+    for (int i = 0; i < points.length; i++) {
+      final x = i * step;
+      final y = size.height - (points[i] * size.height);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+
+    canvas.drawPath(path, paint);
+    
+    // Gradient under line
+    final fillPath = Path.from(path)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+      
+    final fillPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [color.withOpacity(0.2), Colors.transparent],
+      ).createShader(Rect.fromLTRB(0, 0, size.width, size.height));
+      
+    canvas.drawPath(fillPath, fillPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _HydrantCard extends StatelessWidget {
@@ -335,7 +378,7 @@ class _HydrantCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
+              color: Colors.black.withOpacity(0.06),
               blurRadius: 10,
               offset: const Offset(0, 6),
             ),
@@ -348,7 +391,7 @@ class _HydrantCard extends StatelessWidget {
               width: 58,
               height: 58,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
+                color: color.withOpacity(0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 28),

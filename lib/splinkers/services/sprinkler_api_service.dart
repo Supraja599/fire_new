@@ -117,7 +117,15 @@ class SprinklerApiService {
       }
 
       final decoded = _decodeBody(response);
-      return decoded is Map<String, dynamic> ? decoded : null;
+      if (decoded is Map<String, dynamic>) {
+        // ✅ Ensure the equipment belongs to THIS module
+        final itemModuleCode = decoded["module_code"]?.toString();
+        if (itemModuleCode != null && itemModuleCode != moduleCode) {
+          return null; 
+        }
+        return decoded;
+      }
+      return null;
     } catch (_) {
       return LocalDB.findModuleEquipment(
         moduleCode: moduleCode,

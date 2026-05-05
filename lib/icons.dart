@@ -6,6 +6,15 @@ import 'dashboard.dart';
 import 'hydrant/dashboard.dart';
 import 'hosereel/dashboard.dart' as hose;
 import 'splinkers/sprinkler.dart';
+import 'alarm_panel/dashboard.dart';
+import 'smoke_detector/dashboard.dart';
+import 'fire_trolley/dashboard.dart';
+
+// API services for each module
+import 'package:fire_new/services/apiservice.dart';
+
+// Generic module detail page for lookup by equipment ID
+import 'icons/module_detail_page.dart';
 
 class IconsPage extends StatefulWidget {
   const IconsPage({super.key});
@@ -35,9 +44,9 @@ class _IconsPageState extends State<IconsPage>
     Item('🧵', 'Hose reels', 98, 'green', 'OK', const hose.Dashboard()),
     Item('🚿', 'Sprinkler system', 100, 'green', 'OK', const SprinklerPage()),
     Item('🚒', 'Hydrant points', 100, 'green', 'OK', const HydrantDashboardPage()),
-    Item('🔔', 'Fire alarm panels', 100, 'green', 'OK', null),
-    Item('🌫️', 'Smoke detectors', 95, 'amber', 'OK', null),
-    Item('🛒', 'Fire trolley', 100, 'green', 'OK', null),
+    Item('🔔', 'Fire alarm panels', 100, 'green', 'OK', const AlarmPanelDashboard()),
+    Item('🌫️', 'Smoke detectors', 95, 'amber', 'OK', const SmokeDetectorDashboard()),
+    Item('🛒', 'Fire trolley', 100, 'green', 'OK', const FireTrolleyDashboard()),
     Item('🚪', 'Emergency exits', 100, 'green', 'OK', null),
     Item('💡', 'Emergency lighting', 97, 'green', 'OK', null),
     Item('📢', 'PA system', 100, 'green', 'OK', null),
@@ -104,7 +113,7 @@ class _IconsPageState extends State<IconsPage>
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
+                    color: Colors.black.withOpacity(0.15),
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   ),
@@ -172,7 +181,6 @@ class _IconsPageState extends State<IconsPage>
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: GridView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 4,
                     crossAxisSpacing: 6,
@@ -203,7 +211,7 @@ class _IconsPageState extends State<IconsPage>
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: getColor(item.status).withValues(alpha: 0.2),
+                            color: getColor(item.status).withOpacity(0.2),
                             border: Border.all(color: getColor(item.status)),
                             borderRadius: BorderRadius.circular(10),
                           ),

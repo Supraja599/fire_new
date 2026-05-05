@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 
 import 'services/sprinkler_api_service.dart';
 
-class PlantHealthPage extends StatefulWidget {
-  const PlantHealthPage({super.key});
+class SprinklerPlantHealthPage extends StatefulWidget {
+  const SprinklerPlantHealthPage({super.key});
 
   @override
-  State<PlantHealthPage> createState() => _PlantHealthPageState();
+  State<SprinklerPlantHealthPage> createState() => _SprinklerPlantHealthPageState();
 }
 
-class _PlantHealthPageState extends State<PlantHealthPage> {
+class _SprinklerPlantHealthPageState extends State<SprinklerPlantHealthPage> {
   final api = SprinklerApiService();
 
   int active = 0;
@@ -181,7 +181,7 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
+                      color: Colors.black.withOpacity(0.08),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
                     ),
@@ -290,7 +290,7 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
             color: color,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
-              BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 10),
+              BoxShadow(color: color.withOpacity(0.3), blurRadius: 10),
             ],
           ),
           child: Column(
@@ -382,7 +382,7 @@ class _StatusListPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
+                          color: Colors.black.withOpacity(0.05),
                           blurRadius: 8,
                         ),
                       ],
@@ -390,12 +390,18 @@ class _StatusListPage extends StatelessWidget {
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
+                            color: color.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(icon, color: color),
+                          child: Image.asset(
+                            'assets/sprinkler.png',
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) => Icon(icon, color: color, size: 30),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -403,16 +409,21 @@ class _StatusListPage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                sosId.toString(),
+                                "SOS ID: $sosId",
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 15,
                                 ),
                               ),
-                              Text(location.toString()),
+                              const SizedBox(height: 4),
+                              Text(
+                                location.toString(),
+                                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                              ),
                             ],
                           ),
                         ),
-                        const Icon(Icons.chevron_right),
+                        const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
                       ],
                     ),
                   ),

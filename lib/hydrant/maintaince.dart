@@ -32,10 +32,9 @@ class _HydrantMaintenancePageState extends State<HydrantMaintenancePage> {
   Future<void> _load() async {
     final equipment = await api.getEquipmentList();
     final filtered = equipment.where((item) {
-      final status = item["status_bucket"]?.toString() ?? "";
-      return status == "needs-service" ||
-          status == "due-inspection" ||
-          status == "expired";
+      final status = item["status_bucket"]?.toString().toLowerCase() ?? "";
+      // 🔥 EXPIRED ITEMS SHOULD GO TO ALERTS, NOT MAINTENANCE
+      return (status == "needs-service" || status == "due-inspection") && status != "expired";
     }).toList()
       ..sort((a, b) {
         final aDate = _parseDate(a["next_inspection_due"]?.toString());

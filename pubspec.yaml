@@ -98,6 +98,11 @@ flutter:
   assets:
     - assets/123.png
     - assets/11.png
+    - assets/extinguisher.png
+    - assets/alarm_panel.png
+    - assets/smoke_detector.png
+    - assets/fire_trolley.png
+    - assets/sprinkler.png
 
     - assets/hosereel.png
     - assets/hosereel2.png

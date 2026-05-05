@@ -104,54 +104,85 @@ class _HydrantAlertsPageState extends State<HydrantAlertsPage> {
                         onTap: () => _showDetails(context, item, color, severity),
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(14),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: color.withValues(alpha: 0.2)),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                            border: Border.all(color: color.withOpacity(0.1)),
                           ),
                           child: Row(
                             children: [
+                              // 🖼️ ALERT IMAGE
                               Container(
-                                width: 52,
-                                height: 52,
+                                width: 65,
+                                height: 65,
                                 decoration: BoxDecoration(
-                                  color: color.withValues(alpha: 0.12),
-                                  shape: BoxShape.circle,
+                                  borderRadius: BorderRadius.circular(15),
+                                  image: const DecorationImage(
+                                    image: AssetImage('real_fire_hydrant.png'),
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
-                                child: Icon(Icons.warning_amber_rounded, color: color),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(15),
+                                    color: color.withOpacity(0.2),
+                                  ),
+                                  child: Icon(Icons.warning_amber_rounded, color: Colors.white, size: 24),
+                                ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 14),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      (item["alert_reason"] ??
-                                              item["message"] ??
-                                              "Hydrant alert")
-                                          .toString(),
+                                      (item["alert_reason"] ?? item["message"] ?? "Hydrant Issue").toString(),
                                       style: const TextStyle(
-                                        fontWeight: FontWeight.w700,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 14,
+                                        color: Colors.black87,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
-                                    Text((item["sos_code"] ?? item["equipment_id"] ?? "-").toString()),
                                     Text(
-                                      (item["location_name"] ??
-                                              item["building_name"] ??
-                                              "Unknown")
-                                          .toString(),
-                                      style: TextStyle(color: Colors.grey.shade700),
+                                      "SOS: ${(item["sos_code"] ?? item["equipment_id"] ?? "-")}",
+                                      style: TextStyle(
+                                        color: color,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      (item["location_name"] ?? "Unknown location").toString(),
+                                      style: TextStyle(color: Colors.grey.shade600, fontSize: 11),
                                     ),
                                   ],
                                 ),
                               ),
-                              Text(
-                                _label(severity),
-                                style: TextStyle(
-                                  color: color,
-                                  fontWeight: FontWeight.w700,
+                              
+                              // STATUS CHIP
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: color.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  _label(severity).toUpperCase(),
+                                  style: TextStyle(
+                                    color: color,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                  ),
                                 ),
                               ),
                             ],
