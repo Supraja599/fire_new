@@ -24,6 +24,8 @@ class _SmokeDetectorDashboardState extends State<SmokeDetectorDashboard> {
   int deviceCount = 0;
   int efficiency = 98; // Default fallback
 
+  int total = 0, health = 0;
+
   @override
   void initState() {
     super.initState();
@@ -33,20 +35,19 @@ class _SmokeDetectorDashboardState extends State<SmokeDetectorDashboard> {
   Future<void> _loadData() async {
     try {
       await api.syncModuleData();
-      final summary = await api.getSummary();
+      final s = await api.getSummary();
       if (mounted) {
         setState(() {
-          deviceCount = summary["active"] ?? 0;
-          final risk = (summary["needs_service"] ?? 0) + (summary["expired"] ?? 0);
-          if (deviceCount + risk > 0) {
-            efficiency = ((deviceCount / (deviceCount + risk)) * 100).toInt();
-          }
+          deviceCount = s["active"] ?? 0;
+          total = s["total"] ?? (deviceCount + (s["needs_service"] ?? 0) + (s["expired"] ?? 0));
+          final hs = s["health_score"];
+          if (hs != null && hs > 0) health = hs.toInt();
+          else if (total > 0) health = ((deviceCount / total) * 100).toInt();
+          else health = 0;
           isLoading = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => isLoading = false);
-    }
+    } catch (_) { if (mounted) setState(() => isLoading = false); }
   }
 
   @override
@@ -56,22 +57,26 @@ class _SmokeDetectorDashboardState extends State<SmokeDetectorDashboard> {
       body: SafeArea(
         child: Column(
           children: [
-            // HEADER
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
+              padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.close, size: 28, color: primary),
-                  ),
+                  IconButton(icon: const Icon(Icons.arrow_back, color: primary), onPressed: () => Navigator.pop(context)),
                   const Spacer(),
-                  const Text(
-                    "Air Quality & Smoke Safety",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey),
-                  ),
+                  const Text("Smoke Detector", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
                   const Spacer(),
-                  const SizedBox(width: 28), // balance for close icon
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)]),
+                    child: Row(children: [
+                      const Icon(Icons.favorite, color: Colors.red, size: 16),
+                      const SizedBox(width: 6),
+                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        const Text("OVERALL HEALTH", style: TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.grey)),
+                        Text("$health%", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.black)),
+                      ]),
+                    ]),
+                  ),
                 ],
               ),
             ),
@@ -211,3 +216,5 @@ class _BigActionCard extends StatelessWidget {
     );
   }
 }
+
+

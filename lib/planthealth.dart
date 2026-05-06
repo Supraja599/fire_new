@@ -32,16 +32,18 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
         ApiService.getExpired(),
       ]);
 
-      setState(() {
-        activeList = responses[0];
-        serviceList = responses[1];
-        inspectionList = responses[2];
-        expiredList = responses[3];
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          activeList = responses[0];
+          serviceList = responses[1];
+          inspectionList = responses[2];
+          expiredList = responses[3];
+          isLoading = false;
+        });
+      }
     } catch (e) {
       debugPrint(e.toString());
-      setState(() => isLoading = false);
+      if (mounted) setState(() => isLoading = false);
     }
   }
 

@@ -5,11 +5,44 @@ import 'maintenance.dart';
 import 'alerts.dart';
 import 'planthealth.dart';
 import 'reports.dart';
+import 'services/apiservice.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
 
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
   static const Color primaryRed = Color(0xFFD50000); // ✅ TRUE RED
+  int total = 0, active = 0, health = 0;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final s = await ApiService.getSummary();
+      if (mounted) {
+        setState(() {
+          total = s["total_units"] ?? s["total"] ?? 0;
+          active = s["active_units"] ?? s["active"] ?? 0;
+          final hs = s["health_score"];
+          if (hs != null && hs > 0) health = hs.toInt();
+          else if (total > 0) health = ((active / total) * 100).toInt();
+          else health = 0;
+          isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,8 +63,7 @@ class DashboardPage extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 900),
             child: Column(
               children: [
-
-                /// 🔴 HEADER (ONLY COLOR CHANGED)
+                /// 🔴 HEADER (MATCHING USER'S ELTRIVE DESIGN)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 30),
@@ -54,10 +86,7 @@ class DashboardPage extends StatelessWidget {
                       SizedBox(height: 5),
                       Text(
                         "Company: Eltrive",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 20,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 20),
                       ),
                     ],
                   ),
@@ -67,9 +96,7 @@ class DashboardPage extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-
                       const SizedBox(height: 20),
-
                       const Text(
                         "What would you like to do?",
                         style: TextStyle(
@@ -77,101 +104,40 @@ class DashboardPage extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-
                       Container(
                         margin: const EdgeInsets.only(top: 6),
                         height: 3,
                         width: 50,
                         color: primaryRed,
                       ),
-
                       const SizedBox(height: 20),
 
                       /// GRID
                       Expanded(
-                        child: GridView.builder(
+                        child: GridView.count(
                           physics: const NeverScrollableScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          gridDelegate:
-                          SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: crossAxisCount,
-                            crossAxisSpacing: 20,
-                            mainAxisSpacing: 20,
-                            childAspectRatio: screenWidth > 600 ? 1.2 : 1.0,
-                          ),
-                          itemCount: 6,
-                          itemBuilder: (context, index) {
-                            final items = [
-                              ["Analytics", Icons.query_stats],
-                              ["Inspection", Icons.assignment_turned_in],
-                              ["Maintenance", Icons.handyman],
-                              ["Alerts", Icons.notification_important],
-                              ["Plant Health", Icons.health_and_safety],
-                              ["Reports", Icons.assessment],
-                            ];
-
-                            return buildBox(
-                              items[index][1] as IconData,
-                              items[index][0] as String,
-                                  () {
-                                if (index == 0) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                        const AnalyticsPage()),
-                                  );
-                                } else if (index == 1) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                        const InspectionPage()),
-                                  );
-                                } else if (index == 2) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                        const MaintenancePage()),
-                                  );
-                                } else if (index == 3) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                        const AlertsPage()),
-                                  );
-                                } else if (index == 4) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                        const PlantHealthPage()),
-                                  );
-                                } else if (index == 5) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                        const ReportsPage()),
-                                  );
-                                }
-                              },
-                            );
-                          },
+                          crossAxisCount: crossAxisCount,
+                          crossAxisSpacing: 20,
+                          mainAxisSpacing: 20,
+                          childAspectRatio: screenWidth > 600 ? 1.2 : 1.0,
+                          children: [
+                            _buildBox(context, "Analytics", Icons.query_stats, const AnalyticsPage()),
+                            _buildBox(context, "Inspection", Icons.assignment_turned_in, const InspectionPage()),
+                            _buildBox(context, "Maintenance", Icons.handyman, const MaintenancePage()),
+                            _buildBox(context, "Alerts", Icons.notification_important, const AlertsPage()),
+                            _buildBox(context, "Plant Health", Icons.health_and_safety, const PlantHealthPage()),
+                            _buildBox(context, "Reports", Icons.assessment, const ReportsPage()),
+                          ],
                         ),
                       ),
 
                       /// BOTTOM TEXT
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 20, top: 10),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 20, top: 10),
                         child: Text(
-                          "Inspection Streak: 0 months",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.black54,
-                          ),
+                          "Inspection Streak: ${isLoading ? "..." : "0 months"}",
+                          style: const TextStyle(fontSize: 16, color: Colors.black54),
                         ),
                       ),
                     ],
@@ -185,14 +151,9 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
-  /// 🔴 BOX (ONLY COLOR UPDATED)
-  Widget buildBox(
-      IconData icon,
-      String title,
-      VoidCallback onTap,
-      ) {
+  Widget _buildBox(BuildContext context, String title, IconData icon, Widget page) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
       child: Container(
         decoration: BoxDecoration(
           color: primaryRed,
@@ -208,11 +169,8 @@ class DashboardPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             Icon(icon, color: Colors.white, size: 64),
-
             const SizedBox(height: 10),
-
             Text(
               title,
               textAlign: TextAlign.center,

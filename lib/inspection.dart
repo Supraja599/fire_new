@@ -22,18 +22,18 @@ class _InspectionPageState extends State<InspectionPage> {
   bool showScanner = false;
   bool showSearch = true;
 
-  List<String> allIds = [];
-  List<String> suggestions = [];
+  List<Map<String, dynamic>> allEquipment = [];
+  List<Map<String, dynamic>> suggestions = [];
 
   @override
   void initState() {
     super.initState();
-    _loadAllIds();
+    _loadAllEquipment();
   }
 
-  Future<void> _loadAllIds() async {
-    final ids = await LocalDB.getAllIds();
-    setState(() => allIds = ids);
+  Future<void> _loadAllEquipment() async {
+    final list = await LocalDB.getAllExtinguishers();
+    setState(() => allEquipment = list);
   }
 
   String _clean(String value) {
@@ -46,17 +46,26 @@ class _InspectionPageState extends State<InspectionPage> {
       return;
     }
     final cleaned = _clean(val);
-    setState(() {
-      suggestions = allIds.where((id) => id.contains(cleaned)).take(5).toList();
-    });
+    
+    final results = allEquipment.where((e) {
+      final id = _clean((e["sos_code"] ?? e["serial_number"] ?? e["id"] ?? "").toString());
+      return id.contains(cleaned);
+    }).take(5).toList();
+    
+    setState(() => suggestions = results);
 
-    if (allIds.contains(cleaned)) {
+    final exactMatch = allEquipment.firstWhere(
+      (e) => _clean((e["sos_code"] ?? e["serial_number"] ?? e["id"] ?? "").toString()) == cleaned,
+      orElse: () => <String, dynamic>{},
+    );
+    
+    if (exactMatch.isNotEmpty) {
       fetchDetails(val);
     }
   }
 
   void openChecklistPage() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const ChecklistPage()));
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ChecklistPage(equipmentId: scannedId)));
   }
 
   Future<void> openNavigation() async {
@@ -148,7 +157,7 @@ class _InspectionPageState extends State<InspectionPage> {
         content: SizedBox(width: double.maxFinite, child: SingleChildScrollView(child: Column(children: controllers.entries.map((e) => Padding(padding: const EdgeInsets.symmetric(vertical: 6), child: TextField(controller: e.value, decoration: InputDecoration(labelText: e.key, border: const OutlineInputBorder())))).toList()))),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-          ElevatedButton(onPressed: () async { controllers.forEach((key, controller) { item![key] = controller.text; }); await LocalDB.insert(scannedId!, item!); setState(() {}); Navigator.pop(context); }, child: const Text("Save")),
+          ElevatedButton(onPressed: () async { controllers.forEach((key, controller) { item![key] = controller.text; }); await LocalDB.insert(scannedId!, item!); setState(() {}); Navigator.pop(context); await saveData(); }, child: const Text("Save")),
         ],
       ),
     );
@@ -216,14 +225,20 @@ class _InspectionPageState extends State<InspectionPage> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: suggestions.length,
-                              itemBuilder: (context, i) => ListTile(
-                                dense: true,
-                                title: Text(suggestions[i]),
-                                onTap: () {
-                                  idController.text = suggestions[i];
-                                  fetchDetails(suggestions[i]);
-                                },
-                              ),
+                              itemBuilder: (context, i) {
+                                final e = suggestions[i];
+                                final id = (e["sos_code"] ?? e["serial_number"] ?? e["id"] ?? "-").toString();
+                                return ListTile(
+                                  dense: true,
+                                  title: Text(id, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  subtitle: Text(e["location_name"]?.toString() ?? "Unknown Location", style: const TextStyle(fontSize: 12)),
+                                  trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                                  onTap: () {
+                                    idController.text = id;
+                                    fetchDetails(id);
+                                  },
+                                );
+                              },
                             ),
                           const SizedBox(height: 10),
                           ElevatedButton(

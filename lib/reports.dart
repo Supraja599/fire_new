@@ -7,6 +7,8 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:excel/excel.dart';
 
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:open_filex/open_filex.dart';
 
@@ -91,7 +93,9 @@ class _ReportsPageState extends State<ReportsPage> {
     setState(() => loading = true);
 
     try {
-      await Permission.manageExternalStorage.request();
+      if (!kIsWeb && Platform.isAndroid) {
+        await Permission.manageExternalStorage.request();
+      }
 
       final dataMap = await fetchData();
 
@@ -153,12 +157,22 @@ class _ReportsPageState extends State<ReportsPage> {
         ),
       );
 
-      final dir = Directory('/storage/emulated/0/Download');
-      final file = File(
-          "${dir.path}/Report_${DateTime.now().millisecondsSinceEpoch}.pdf");
+      final dir = kIsWeb 
+          ? null 
+          : (Platform.isAndroid ? Directory('/storage/emulated/0/Download') : await getDownloadsDirectory());
+      
+      final fileName = "Report_${DateTime.now().millisecondsSinceEpoch}.pdf";
+      
+      if (kIsWeb) {
+        // Handle web download if needed, for now just show success if we can't save
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF generation not fully supported on web yet")));
+        return;
+      }
+
+      final saveDir = dir ?? await getApplicationDocumentsDirectory();
+      final file = File("${saveDir.path}/$fileName");
 
       await file.writeAsBytes(await pdf.save());
-
       await OpenFilex.open(file.path);
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -176,7 +190,9 @@ class _ReportsPageState extends State<ReportsPage> {
     setState(() => loading = true);
 
     try {
-      await Permission.manageExternalStorage.request();
+      if (!kIsWeb && Platform.isAndroid) {
+        await Permission.manageExternalStorage.request();
+      }
 
       final dataMap = await fetchData();
 
@@ -197,15 +213,22 @@ class _ReportsPageState extends State<ReportsPage> {
         }
       });
 
-      Directory dir = Directory('/storage/emulated/0/Download');
+      final dir = kIsWeb 
+          ? null 
+          : (Platform.isAndroid ? Directory('/storage/emulated/0/Download') : await getDownloadsDirectory());
+      
+      final fileName = "Report_${DateTime.now().millisecondsSinceEpoch}.xlsx";
 
-      String path =
-          "${dir.path}/Report_${DateTime.now().millisecondsSinceEpoch}.xlsx";
+      if (kIsWeb) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Excel generation not fully supported on web yet")));
+        return;
+      }
 
+      final saveDir = dir ?? await getApplicationDocumentsDirectory();
+      final path = "${saveDir.path}/$fileName";
       File file = File(path);
 
       await file.writeAsBytes(excel.encode()!);
-
       await OpenFilex.open(path);
 
       ScaffoldMessenger.of(context).showSnackBar(

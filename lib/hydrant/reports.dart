@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:path_provider/path_provider.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -84,7 +86,9 @@ class _HydrantReportsPageState extends State<HydrantReportsPage> {
   Future<void> generatePDF() async {
     setState(() => loading = true);
     try {
-      await Permission.manageExternalStorage.request();
+      if (!kIsWeb && Platform.isAndroid) {
+        await Permission.manageExternalStorage.request();
+      }
       final dataMap = await fetchData();
       List<Map<String, dynamic>> allData = [];
       dataMap.forEach((status, list) {
@@ -129,11 +133,23 @@ class _HydrantReportsPageState extends State<HydrantReportsPage> {
         ),
       );
 
-      final dir = Directory('/storage/emulated/0/Download');
-      final file = File("${dir.path}/Hydrant_Report_${DateTime.now().millisecondsSinceEpoch}.pdf");
+      final dir = kIsWeb 
+          ? null 
+          : (Platform.isAndroid ? Directory('/storage/emulated/0/Download') : await getDownloadsDirectory());
+      
+      final fileName = "Hydrant_Report_${DateTime.now().millisecondsSinceEpoch}.pdf";
+      
+      if (kIsWeb) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF generation not fully supported on web yet")));
+        return;
+      }
+
+      final saveDir = dir ?? await getApplicationDocumentsDirectory();
+      final file = File("${saveDir.path}/$fileName");
+
       await file.writeAsBytes(await pdf.save());
       await OpenFilex.open(file.path);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF saved in Downloads")));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF saved")));
     } catch (e) {
       debugPrint("PDF ERROR: $e");
     }
@@ -143,7 +159,9 @@ class _HydrantReportsPageState extends State<HydrantReportsPage> {
   Future<void> downloadExcel() async {
     setState(() => loading = true);
     try {
-      await Permission.manageExternalStorage.request();
+      if (!kIsWeb && Platform.isAndroid) {
+        await Permission.manageExternalStorage.request();
+      }
       final dataMap = await fetchData();
       var excel = Excel.createExcel();
 
@@ -160,12 +178,24 @@ class _HydrantReportsPageState extends State<HydrantReportsPage> {
         }
       });
 
-      Directory dir = Directory('/storage/emulated/0/Download');
-      String path = "${dir.path}/Hydrant_Report_${DateTime.now().millisecondsSinceEpoch}.xlsx";
+      final dir = kIsWeb 
+          ? null 
+          : (Platform.isAndroid ? Directory('/storage/emulated/0/Download') : await getDownloadsDirectory());
+      
+      final fileName = "Hydrant_Report_${DateTime.now().millisecondsSinceEpoch}.xlsx";
+
+      if (kIsWeb) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Excel generation not fully supported on web yet")));
+        return;
+      }
+
+      final saveDir = dir ?? await getApplicationDocumentsDirectory();
+      final path = "${saveDir.path}/$fileName";
       File file = File(path);
+
       await file.writeAsBytes(excel.encode()!);
       await OpenFilex.open(path);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Excel saved in Downloads")));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Excel saved")));
     } catch (e) {
       debugPrint("EXCEL ERROR: $e");
     }

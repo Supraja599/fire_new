@@ -23,6 +23,7 @@ class _AlarmPanelDashboardState extends State<AlarmPanelDashboard> {
   bool isLoading = true;
   int activeLoops = 0;
   int openFaults = 0;
+  int total = 0, health = 0;
 
   @override
   void initState() {
@@ -33,17 +34,20 @@ class _AlarmPanelDashboardState extends State<AlarmPanelDashboard> {
   Future<void> _loadData() async {
     try {
       await api.syncModuleData();
-      final summary = await api.getSummary();
+      final s = await api.getSummary();
       if (mounted) {
         setState(() {
-          activeLoops = summary["active_loops"] ?? summary["active"] ?? 0;
-          openFaults = (summary["needs_service"] ?? 0) + (summary["expired"] ?? 0);
+          activeLoops = s["active_loops"] ?? s["active"] ?? 0;
+          total = s["total_loops"] ?? s["total"] ?? (activeLoops + (s["needs_service"] ?? 0) + (s["expired"] ?? 0));
+          final hs = s["health_score"];
+          if (hs != null && hs > 0) health = hs.toInt();
+          else if (total > 0) health = ((activeLoops / total) * 100).toInt();
+          else health = 0;
+          openFaults = (s["needs_service"] ?? 0) + (s["expired"] ?? 0);
           isLoading = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => isLoading = false);
-    }
+    } catch (_) { if (mounted) setState(() => isLoading = false); }
   }
 
   @override
@@ -54,24 +58,24 @@ class _AlarmPanelDashboardState extends State<AlarmPanelDashboard> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 25, 20, 15),
+              padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.1), blurRadius: 10)]),
-                      child: const Icon(Icons.arrow_back_ios_new, size: 22, color: primary),
-                    ),
-                  ),
-                  const SizedBox(width: 15),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Alarm Panel", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFFB71C1C))),
-                      Text("Command Center", style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                    ],
+                  IconButton(icon: const Icon(Icons.arrow_back, color: primary), onPressed: () => Navigator.pop(context)),
+                  const Spacer(),
+                  const Text("Alarm Panel", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)]),
+                    child: Row(children: [
+                      const Icon(Icons.favorite, color: Colors.red, size: 16),
+                      const SizedBox(width: 6),
+                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        const Text("OVERALL HEALTH", style: TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.grey)),
+                        Text("$health%", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.black)),
+                      ]),
+                    ]),
                   ),
                 ],
               ),
@@ -196,3 +200,4 @@ class _ActionCard extends StatelessWidget {
     );
   }
 }
+

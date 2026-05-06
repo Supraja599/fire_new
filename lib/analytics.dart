@@ -377,7 +377,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
                     Column(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         Icon(
                           Icons.local_fire_department,
                           color: Colors.red,

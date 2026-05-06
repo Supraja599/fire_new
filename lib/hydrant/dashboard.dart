@@ -34,6 +34,8 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
   int active = 0;
   int risk = 0;
 
+  int total = 0, health = 0;
+
   @override
   void initState() {
     super.initState();
@@ -51,11 +53,16 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
 
   Future<void> _loadSummary() async {
     await api.syncModuleData();
-    final summary = await api.getSummary();
+    final s = await api.getSummary();
     if (!mounted) return;
     setState(() {
-      active = summary["active"] ?? 0;
-      risk = (summary["needs_service"] ?? 0) + (summary["expired"] ?? 0);
+      active = s["active"] ?? 0;
+      risk = (s["needs_service"] ?? 0) + (s["expired"] ?? 0);
+      total = s["total"] ?? (active + risk);
+      final hs = s["health_score"];
+      if (hs != null && hs > 0) health = hs.toInt();
+      else if (total > 0) health = ((active / total) * 100).toInt();
+      else health = 0;
       isLoading = false;
     });
   }
@@ -70,28 +77,29 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F2EE),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 14, 12, 10),
+              padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back),
-                    color: primary,
-                  ),
-                  const Expanded(
-                    child: Text(
-                      "Hydrant Command Center",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: deep,
-                      ),
-                    ),
+                  IconButton(icon: const Icon(Icons.arrow_back, color: primary), onPressed: () => Navigator.pop(context)),
+                  const Spacer(),
+                  const Text("Hydrant", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)]),
+                    child: Row(children: [
+                      const Icon(Icons.favorite, color: Colors.red, size: 16),
+                      const SizedBox(width: 6),
+                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        const Text("OVERALL HEALTH", style: TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.grey)),
+                        Text("$health%", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.black)),
+                      ]),
+                    ]),
                   ),
                 ],
               ),
@@ -99,20 +107,20 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
 
             // 🖼️ REAL IMAGE & STATS CARD
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 14),
-              padding: const EdgeInsets.all(18),
+              margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+              padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFFD84315), Color(0xFF8E1C1C)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(26),
+                borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
                     color: primary.withOpacity(0.18),
-                    blurRadius: 26,
-                    offset: const Offset(0, 14),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
@@ -128,17 +136,17 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
                               "LIVE READINESS",
                               style: TextStyle(
                                 color: Colors.white70,
-                                fontSize: 11,
+                                fontSize: 9,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 1.2,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 5),
                             Text(
                               isLoading ? "Loading..." : "$active Active Hydrants",
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 20,
+                                fontSize: 18,
                                 fontWeight: FontWeight.w900,
                                 height: 1.2,
                               ),
@@ -147,29 +155,23 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
                         ),
                       ),
                       Container(
-                        width: 70,
-                        height: 70,
+                        width: 55,
+                        height: 55,
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.14),
                           shape: BoxShape.circle,
-                          image: const DecorationImage(
-                            image: AssetImage('assets/firehydrant.png'),
-                            fit: BoxFit.cover,
-                          ),
                         ),
                         child: const Icon(
                           Icons.fire_hydrant_alt,
-                          size: 30,
-                          color: Colors.white24, // Subtle fallback
+                          size: 25,
+                          color: Colors.white,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 18),
-                  
-                  // 📊 SIMPLE TREND GRAPH (Premium Custom UI)
+                  const SizedBox(height: 10),
                   SizedBox(
-                    height: 80,
+                    height: 50,
                     width: double.infinity,
                     child: CustomPaint(
                       painter: TrendGraphPainter(

@@ -9,9 +9,26 @@ import 'splinkers/sprinkler.dart';
 import 'alarm_panel/dashboard.dart';
 import 'smoke_detector/dashboard.dart';
 import 'fire_trolley/dashboard.dart';
+import 'emergency_exits/dashboard.dart';
+import 'emergency_lighting/dashboard.dart';
+import 'pa_system/dashboard.dart';
+import 'wind_sock/dashboard.dart';
+import 'scba_units/dashboard.dart';
+import 'ambulance/dashboard.dart';
+import 'first_aid/dashboard.dart';
+import 'emergency_shower/dashboard.dart';
+import 'eye_wash/dashboard.dart';
+import 'spill_kits/dashboard.dart';
+import 'chemical_shower/dashboard.dart';
+import 'ppe_cabinets/dashboard.dart';
+import 'co2_system/dashboard.dart';
+import 'signage/dashboard.dart';
+import 'emergency_comm/dashboard.dart';
+import 'fire_blankets/dashboard.dart';
+import 'muster_points/dashboard.dart';
 
 // API services for each module
-import 'package:fire_new/services/apiservice.dart';
+import 'services/apiservice.dart';
 
 // Generic module detail page for lookup by equipment ID
 import 'icons/module_detail_page.dart';
@@ -47,23 +64,23 @@ class _IconsPageState extends State<IconsPage>
     Item('🔔', 'Fire alarm panels', 100, 'green', 'OK', const AlarmPanelDashboard()),
     Item('🌫️', 'Smoke detectors', 95, 'amber', 'OK', const SmokeDetectorDashboard()),
     Item('🛒', 'Fire trolley', 100, 'green', 'OK', const FireTrolleyDashboard()),
-    Item('🚪', 'Emergency exits', 100, 'green', 'OK', null),
-    Item('💡', 'Emergency lighting', 97, 'green', 'OK', null),
-    Item('📢', 'PA system', 100, 'green', 'OK', null),
-    Item('📡', 'Wind sock', 100, 'green', 'OK', null),
-    Item('🫁', 'SCBA units', 66, 'amber', 'Check', null),
-    Item('🚑', 'Ambulance', 50, 'red', 'Needs attention', null),
-    Item('🏥', 'First aid', 93, 'green', 'OK', null),
-    Item('🚰', 'Emergency shower', 100, 'green', 'OK', null),
-    Item('👀', 'Eye wash', 87, 'green', 'Check', null),
-    Item('⚗️', 'Spill kits', 90, 'green', 'OK', null),
-    Item('🛁', 'Chemical shower', 100, 'green', 'OK', null),
-    Item('🥾', 'PPE cabinets', 91, 'green', 'OK', null),
-    Item('☁️', 'CO2 system', 100, 'green', 'OK', null),
-    Item('⚠️', 'Signage', 96, 'green', 'OK', null),
-    Item('📞', 'Emergency comm.', 80, 'amber', 'Check', null),
-    Item('🧲', 'Fire blankets', 100, 'green', 'OK', null),
-    Item('📍', 'Muster points', 100, 'green', 'OK', null),
+    Item('🚪', 'Emergency exits', 100, 'green', 'OK', const EmergencyExitsDashboard()),
+    Item('💡', 'Emergency lighting', 97, 'green', 'OK', const EmergencyLightingDashboard()),
+    Item('📢', 'PA system', 100, 'green', 'OK', const PASystemDashboard()),
+    Item('📡', 'Wind sock', 100, 'green', 'OK', const WindSockDashboard()),
+    Item('🫁', 'SCBA units', 66, 'amber', 'Check', const SCBAUnitsDashboard()),
+    Item('🚑', 'Ambulance', 50, 'red', 'Needs attention', const AmbulanceDashboard()),
+    Item('🏥', 'First aid', 93, 'green', 'OK', const FirstAidDashboard()),
+    Item('🚰', 'Emergency shower', 100, 'green', 'OK', const EmergencyShowerDashboard()),
+    Item('👀', 'Eye wash', 87, 'green', 'Check', const EyeWashDashboard()),
+    Item('⚗️', 'Spill kits', 90, 'green', 'OK', const SpillKitsDashboard()),
+    Item('🛁', 'Chemical shower', 100, 'green', 'OK', const ChemicalShowerDashboard()),
+    Item('🥾', 'PPE cabinets', 91, 'green', 'OK', const PPECabinetsDashboard()),
+    Item('☁️', 'CO2 system', 100, 'green', 'OK', const CO2SystemDashboard()),
+    Item('⚠️', 'Signage', 96, 'green', 'OK', const SignageDashboard()),
+    Item('📞', 'Emergency comm.', 80, 'amber', 'Check', const EmergencyCommDashboard()),
+    Item('🧲', 'Fire blankets', 100, 'green', 'OK', const FireBlanketsDashboard()),
+    Item('📍', 'Muster points', 100, 'green', 'OK', const MusterPointsDashboard()),
   ];
 
   @override
@@ -104,9 +121,17 @@ class _IconsPageState extends State<IconsPage>
       body: SafeArea(
         child: Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+              child: Row(
+                children: [
+                  const Text("Safety Ecosystem", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.blueGrey)),
+                  const Spacer(),
+                ],
+              ),
+            ),
             Container(
-              height: MediaQuery.of(context).size.height * 0.24,
-              margin: const EdgeInsets.all(12),
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isDark ? Colors.white70 : Colors.white,
@@ -128,23 +153,15 @@ class _IconsPageState extends State<IconsPage>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
-                          "Plant Health",
+                          "System Status",
                           style: TextStyle(
-                            fontSize: 30,
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 10),
-                        Text(
-                          "${overallHealth.toStringAsFixed(0)}%",
-                          style: const TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
                         Wrap(
-                          spacing: 20,
+                          spacing: 15,
                           children: [
                             _legend(Colors.green, "Active"),
                             _legend(Colors.orange, "Service"),
@@ -159,6 +176,7 @@ class _IconsPageState extends State<IconsPage>
                     children: [
                       Switch(
                         value: isDark,
+                        activeColor: Colors.blue,
                         onChanged: (value) {
                           setState(() {
                             isDark = value;
@@ -166,8 +184,8 @@ class _IconsPageState extends State<IconsPage>
                         },
                       ),
                       SizedBox(
-                        height: 100,
-                        width: 110,
+                        height: 80,
+                        width: 90,
                         child: CustomPaint(
                           painter: GaugePainter(overallHealth),
                         ),

@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -7,6 +7,9 @@ class LocalDB {
   static Database? _db;
 
   static Future<Database> get database async {
+    if (kIsWeb) {
+      throw UnsupportedError("sqflite (LocalDB) is not supported on Web. Please run on Android or Windows.");
+    }
     if (_db != null) return _db!;
     _db = await _initDB();
     return _db!;
@@ -85,6 +88,7 @@ class LocalDB {
   }
 
   static Future<void> insert(String id, Map<String, dynamic> data) async {
+    if (kIsWeb) return;
     final db = await database;
 
     await db.insert(
@@ -98,6 +102,7 @@ class LocalDB {
   }
 
   static Future<Map<String, dynamic>?> get(String id) async {
+    if (kIsWeb) return null;
     final db = await database;
 
     final result = await db.query(
@@ -114,12 +119,21 @@ class LocalDB {
   }
 
   static Future<List<String>> getAllIds() async {
+    if (kIsWeb) return [];
     final db = await database;
     final result = await db.query('extinguishers');
     return result.map((e) => e['id'].toString()).toList();
   }
 
+  static Future<List<Map<String, dynamic>>> getAllExtinguishers() async {
+    if (kIsWeb) return [];
+    final db = await database;
+    final result = await db.query('extinguishers');
+    return result.map((row) => Map<String, dynamic>.from(jsonDecode(row['data'] as String))).toList();
+  }
+
   static Future<void> insertPending(String id, String data) async {
+    if (kIsWeb) return;
     final db = await database;
 
     await db.insert(
@@ -134,6 +148,7 @@ class LocalDB {
   }
 
   static Future<List<Map<String, dynamic>>> getPending() async {
+    if (kIsWeb) return [];
     final db = await database;
     return db.query(
       'pending_sync',
@@ -143,6 +158,7 @@ class LocalDB {
   }
 
   static Future<void> markSynced(String id) async {
+    if (kIsWeb) return;
     final db = await database;
 
     await db.update(
@@ -158,6 +174,7 @@ class LocalDB {
     required String recordType,
     required List<Map<String, dynamic>> items,
   }) async {
+    if (kIsWeb) return;
     final db = await database;
     final batch = db.batch();
 
@@ -195,6 +212,7 @@ class LocalDB {
     required String recordType,
     required Map<String, dynamic> item,
   }) async {
+    if (kIsWeb) return;
     final db = await database;
     final recordId = (item['id'] ??
             item['sos_code'] ??
@@ -212,12 +230,17 @@ class LocalDB {
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+
+    if (recordType == 'equipment' && recordId != 'unknown') {
+      await insertPending(recordId, jsonEncode(item));
+    }
   }
 
   static Future<List<Map<String, dynamic>>> getModuleRecords({
     required String moduleCode,
     required String recordType,
   }) async {
+    if (kIsWeb) return [];
     final db = await database;
     final result = await db.query(
       'module_records',
@@ -235,6 +258,7 @@ class LocalDB {
     required String recordType,
     required Map<String, dynamic> data,
   }) async {
+    if (kIsWeb) return;
     final db = await database;
     await db.insert(
       'module_records',
@@ -252,6 +276,7 @@ class LocalDB {
     required String moduleCode,
     required String recordType,
   }) async {
+    if (kIsWeb) return <String, dynamic>{};
     final db = await database;
     final result = await db.query(
       'module_records',
@@ -296,6 +321,7 @@ class LocalDB {
     required String equipmentId,
     required Map<String, dynamic> payload,
   }) async {
+    if (kIsWeb) return;
     final db = await database;
     await db.insert(
       'pending_module_sync',
@@ -311,6 +337,7 @@ class LocalDB {
   }
 
   static Future<List<Map<String, dynamic>>> getPendingModuleInspections() async {
+    if (kIsWeb) return [];
     final db = await database;
     final result = await db.query(
       'pending_module_sync',
@@ -331,6 +358,7 @@ class LocalDB {
   }
 
   static Future<void> markModuleInspectionSynced(String eventId) async {
+    if (kIsWeb) return;
     final db = await database;
     await db.update(
       'pending_module_sync',

@@ -1,7 +1,10 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'signup.dart';
 import 'icons.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'services/apiservice.dart';
 import 'sync_service.dart';
 
@@ -10,6 +13,11 @@ void main() async {
 
   await Hive.initFlutter();
   await Hive.openBox('inspectionBox');
+
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
 
   runApp(const MyApp());
 

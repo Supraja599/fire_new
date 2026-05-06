@@ -34,10 +34,14 @@ class _DashboardState extends State<Dashboard> {
   Timer? timer;
   int currentPage = 0;
 
+  int active = 0, total = 0, health = 0;
+  bool isLoadingSummary = true;
+
   @override
   void initState() {
     super.initState();
     unawaited(api.syncModuleData());
+    _loadSummary();
 
     timer = Timer.periodic(const Duration(seconds: 4), (_) {
       currentPage = (currentPage + 1) % images.length;
@@ -52,6 +56,23 @@ class _DashboardState extends State<Dashboard> {
         setState(() {});
       }
     });
+  }
+
+  Future<void> _loadSummary() async {
+    try {
+      final s = await api.getSummary();
+      if (mounted) {
+        setState(() {
+          total = s["total_units"] ?? s["total"] ?? 0;
+          active = s["active_units"] ?? s["active"] ?? 0;
+          final hs = s["health_score"];
+          if (hs != null && hs > 0) health = hs.toInt();
+          else if (total > 0) health = ((active / total) * 100).toInt();
+          else health = 0;
+          isLoadingSummary = false;
+        });
+      }
+    } catch (_) { if (mounted) setState(() => isLoadingSummary = false); }
   }
 
   @override
@@ -88,21 +109,24 @@ class _DashboardState extends State<Dashboard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(8, 16, 16, 10),
+              padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    color: primaryRed,
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Text(
-                    "Fire Hose Reel Dashboard",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: primaryRed,
-                    ),
+                  IconButton(icon: const Icon(Icons.arrow_back, color: primaryRed), onPressed: () => Navigator.pop(context)),
+                  const Spacer(),
+                  const Text("Hose Reel", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)]),
+                    child: Row(children: [
+                      const Icon(Icons.favorite, color: Colors.red, size: 16),
+                      const SizedBox(width: 6),
+                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        const Text("OVERALL HEALTH", style: TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.grey)),
+                        Text("$health%", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.black)),
+                      ]),
+                    ]),
                   ),
                 ],
               ),
@@ -282,3 +306,4 @@ class _SettingsPage extends StatelessWidget {
     return const Scaffold(body: Center(child: Text("Settings Page")));
   }
 }
+

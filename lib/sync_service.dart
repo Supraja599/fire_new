@@ -12,8 +12,8 @@ class SyncService {
   static void init() {
     _subscription = Connectivity()
         .onConnectivityChanged
-        .listen((result) {
-      if (result != ConnectivityResult.none) {
+        .listen((List<ConnectivityResult> results) {
+      if (results.isNotEmpty && results.first != ConnectivityResult.none) {
         syncData();
       }
     });
