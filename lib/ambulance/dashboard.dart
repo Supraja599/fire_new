@@ -1,27 +1,31 @@
 import 'package:flutter/material.dart';
-import 'alerts.dart';
-import 'checklist.dart';
 import 'maintaince.dart';
+import 'alerts.dart';
 import 'planthealth.dart';
 import 'reports.dart';
+import 'checklist.dart';
 import 'scan.dart';
 import 'services/api_service.dart';
 
 class AmbulanceDashboard extends StatefulWidget {
   const AmbulanceDashboard({super.key});
+
   @override
   State<AmbulanceDashboard> createState() => _AmbulanceDashboardState();
 }
 
 class _AmbulanceDashboardState extends State<AmbulanceDashboard> {
   final api = AmbulanceApiService();
-  int total = 0, active = 0, health = 0;
   bool isLoading = true;
+  int total = 0, active = 0, health = 0;
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
-  Future<void> _load() async {
+  Future<void> _loadData() async {
     try {
       final s = await api.getSummary();
       if (mounted) {
@@ -35,120 +39,160 @@ class _AmbulanceDashboardState extends State<AmbulanceDashboard> {
           isLoading = false;
         });
       }
-    } catch (_) { if (mounted) setState(() => isLoading = false); }
+    } catch (_) {
+      if (mounted) setState(() => isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    const Color primary = Color(0xFF1976D2);
-    const Color accent = Color(0xFFBBDEFB);
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F4F8),
+      backgroundColor: const Color(0xFFFDE8E8),
       body: SafeArea(
-        child: Column(children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 15, 20, 10),
-            child: Row(children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: primary.withOpacity(0.1), blurRadius: 10)]),
-                  child: const Icon(Icons.arrow_back_ios_new, size: 18, color: primary),
-                ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 25, 20, 15),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.1), blurRadius: 10)]),
+                      child: const Icon(Icons.arrow_back_ios_new, size: 22, color: Colors.red),
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Ambulance", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFFB71C1C))),
+                      Text("Emergency Response Unit", style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                    ],
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text("Ambulance", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: primary)),
-                Text("Emergency Response Unit", style: TextStyle(fontSize: 9, color: Colors.grey, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
-              ]),
-              const Spacer(),
-              Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)]), child: Row(children: [const Icon(Icons.favorite, color: Colors.red, size: 16), const SizedBox(width: 6), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("OVERALL HEALTH", style: TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.grey)), Text("$health%", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.black))])])),
-            ]),
-          ),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [primary, Color(0xFF0D47A1)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-              borderRadius: BorderRadius.circular(25),
-              boxShadow: [BoxShadow(color: primary.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))],
             ),
-            child: Row(children: [
-              const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text("LIVE MONITORING", style: TextStyle(color: Colors.white70, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-                SizedBox(height: 5),
-                Text("Response Readiness", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, height: 1.1)),
-                SizedBox(height: 5),
-                Text("Tracking unit location & equipment.", style: TextStyle(color: Colors.white60, fontSize: 11)),
-              ])),
-              Image.asset("assets/ambulance.png", height: 60, fit: BoxFit.contain, errorBuilder: (c,e,s) => const Icon(Icons.medical_services, size: 50, color: Colors.white)),
-            ]),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: Row(children: [
-              _metricTile("Active Units", isLoading ? "..." : "$active", Colors.green.shade700),
-              const SizedBox(width: 12),
-              _metricTile("Service Due", isLoading ? "..." : "${total - active}", primary),
-            ]),
-          ),
-          Expanded(child: GridView.count(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.25,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              _ActionCard("Plant Health", Icons.analytics_outlined, Colors.green, const AmbulancePlantHealthPage(), "Device Health"),
-              _ActionCard("Safety Alerts", Icons.notification_important_outlined, Colors.red, const AmbulanceAlertsPage(), "Active Alerts"),
-              _ActionCard("Maintenance", Icons.build_circle_outlined, Colors.orange, const AmbulanceMaintenancePage(), "Services"),
-              _ActionCard("Reports", Icons.summarize_outlined, Colors.purple, const AmbulanceReportsPage(), "History"),
-              _ActionCard("Checklist", Icons.fact_check_outlined, Colors.teal, const AmbulanceChecklistPage(), "Forms"),
-              _ActionCard("Inspection", Icons.qr_code_scanner, Colors.blue, const AmbulanceScanPage(), "Search"),
-            ],
-          )),
-        ]),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.all(25),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFFD32F2F), Color(0xFF424242)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
+              ),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("UNIT STATUS", style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                        SizedBox(height: 10),
+                        Text("Emergency Readiness", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, height: 1.2)),
+                        SizedBox(height: 12),
+                        Text("Tracking ambulance location & equipment.", style: TextStyle(color: Colors.white60, fontSize: 13)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Image.asset('assets/ambulance.png', height: 110, fit: BoxFit.contain, errorBuilder: (c, e, s) => const Icon(Icons.medical_services, color: Colors.white, size: 80)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 25),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  _metricTile("Active Units", isLoading ? "..." : "$active", Colors.green.shade700),
+                  const SizedBox(width: 15),
+                  _metricTile("Service Due", isLoading ? "..." : "${total - active}", Colors.red.shade800),
+                ],
+              ),
+            ),
+            const SizedBox(height: 25),
+            Expanded(
+              child: GridView.count(
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                crossAxisCount: 2,
+                crossAxisSpacing: 15,
+                mainAxisSpacing: 15,
+                childAspectRatio: 1.1,
+                children: [
+                  _ActionCard("Plant Health", Icons.analytics_outlined, Colors.green, const AmbulancePlantHealthPage(), "Device Health"),
+                  _ActionCard("Alerts", Icons.notification_important_outlined, Colors.red, const AmbulanceAlertsPage(), "Safety Alerts"),
+                  _ActionCard("Maintenance", Icons.build_circle_outlined, Colors.orange, const AmbulanceMaintenancePage(), "Services"),
+                  _ActionCard("Reports", Icons.summarize_outlined, Colors.purple, const AmbulanceReportsPage(), "History"),
+                  _ActionCard("Checklist", Icons.fact_check_outlined, Colors.teal, const AmbulanceChecklistPage(), "Forms"),
+                  _ActionCard("Inspection", Icons.camera_enhance_outlined, Colors.blue, const AmbulanceScanPage(), "Scan"),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _metricTile(String label, String value, Color color) {
-    return Expanded(child: Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: color.withOpacity(0.05), blurRadius: 8)]),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(label, style: const TextStyle(fontSize: 9, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 3),
-        Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: color)),
-      ]),
-    ));
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(25), border: Border.all(color: color.withOpacity(0.1)), boxShadow: [BoxShadow(color: color.withOpacity(0.05), blurRadius: 10)]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 11, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 5),
+            Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: color)),
+          ],
+        ),
+      ),
+    );
   }
 }
 
 class _ActionCard extends StatelessWidget {
-  final String title; final IconData icon; final Color color; final Widget page; final String subtitle;
+  final String title;
+  final IconData icon;
+  final Color color;
+  final Widget page;
+  final String subtitle;
+
   const _ActionCard(this.title, this.icon, this.color, this.page, this.subtitle);
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(25),
-          boxShadow: [
-            BoxShadow(color: color.withOpacity(0.12), blurRadius: 15, offset: const Offset(0, 8)),
-            const BoxShadow(color: Colors.white, blurRadius: 10, offset: Offset(-5, -5)),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [BoxShadow(color: color.withOpacity(0.12), blurRadius: 15, offset: const Offset(0, 8))],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFFB71C1C), fontSize: 14)),
+                Text(subtitle, style: TextStyle(color: Colors.grey.shade500, fontSize: 10, fontWeight: FontWeight.bold)),
+              ],
+            ),
           ],
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: color, size: 22)),
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF0D47A1), fontSize: 12)),
-            Text(subtitle, style: TextStyle(color: Colors.grey.shade500, fontSize: 8, fontWeight: FontWeight.bold)),
-          ]),
-        ]),
       ),
     );
   }

@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:fire_new/local_db.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'package:hive/hive.dart';

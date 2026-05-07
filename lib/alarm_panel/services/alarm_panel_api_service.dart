@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 class AlarmPanelApiService {
   static const String baseUrl = "https://ehs.garrev.com/app1/v1";
   static const int moduleId = 35;
-  static const String moduleCode = "alarm_panel";
+  static const String moduleCode = "fire_alarm";
 
   Map<String, String> get headers {
     final box = Hive.isBoxOpen('inspectionBox')

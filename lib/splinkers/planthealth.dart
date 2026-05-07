@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../widgets/equipment_list_page.dart';
 
 import 'services/sprinkler_api_service.dart';
 
@@ -75,11 +76,12 @@ class _SprinklerPlantHealthPageState extends State<SprinklerPlantHealthPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => _StatusListPage(
+        builder: (_) => EquipmentListPage(
           title: title,
           color: color,
-          icon: Icons.water_drop,
           items: list,
+          imagePath: 'assets/sprinkler.png',
+          fallbackIcon: Icons.water_drop,
         ),
       ),
     );
@@ -334,142 +336,6 @@ class _SprinklerPlantHealthPageState extends State<SprinklerPlantHealthPage> {
           color: color,
         ),
       ],
-    );
-  }
-}
-
-class _StatusListPage extends StatelessWidget {
-  final String title;
-  final Color color;
-  final IconData icon;
-  final List<Map<String, dynamic>> items;
-
-  const _StatusListPage({
-    required this.title,
-    required this.color,
-    required this.icon,
-    required this.items,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FA),
-      appBar: AppBar(
-        title: Text(title),
-        backgroundColor: Colors.white,
-        elevation: 1,
-      ),
-      body: items.isEmpty
-          ? const Center(child: Text("No SOS IDs found"))
-          : ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final item = items[index];
-                final sosId =
-                    item["sos_code"] ?? item["serial_number"] ?? item["id"] ?? "-";
-                final location =
-                    item["location_name"] ?? item["building_name"] ?? "Unknown";
-
-                return GestureDetector(
-                  onTap: () => _showDetails(context, item),
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: color.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Image.asset(
-                            'assets/sprinkler.png',
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) => Icon(icon, color: color, size: 30),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "SOS ID: $sosId",
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                location.toString(),
-                                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-    );
-  }
-
-  void _showDetails(BuildContext context, Map<String, dynamic> item) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: SingleChildScrollView(
-            child: Column(
-              children: item.entries.map((entry) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 4,
-                        child: Text(
-                          entry.key,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 6,
-                        child: Text(entry.value?.toString() ?? "-"),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        );
-      },
     );
   }
 }

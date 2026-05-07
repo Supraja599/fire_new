@@ -65,7 +65,13 @@ class _HoseReelScanPageState extends State<HoseReelScanPage> {
     });
 
     try {
-      final data = await api.getEquipmentByQuery(input);
+      Map<String, dynamic>? data;
+      final searchId = input; // moved outside nested try
+      try {
+        data = allEquipment.firstWhere((e) => (e["sos_code"] ?? e["serial_number"] ?? e["id"])?.toString() == searchId);
+      } catch (_) {
+        data = await api.getEquipmentByQuery(searchId);
+      }
       if (data == null) {
         setState(() {
           loading = false;

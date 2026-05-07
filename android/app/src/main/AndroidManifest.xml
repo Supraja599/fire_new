@@ -8,7 +8,9 @@
     <application
         android:label="fire_new"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true"
+        android:usesCleartextTraffic="true">
 
         <activity
             android:name=".MainActivity"
@@ -38,7 +40,7 @@
             android:value="2" />
 
     </application>
-    android:usesCleartextTraffic="true"
+
 
     <!-- Query section -->
     <queries>

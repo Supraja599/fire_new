@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../widgets/equipment_list_page.dart';
 import 'services/api_service.dart';
 
 class EmergencyCommPlantHealthPage extends StatefulWidget {
@@ -34,7 +35,18 @@ class _EmergencyCommPlantHealthPageState extends State<EmergencyCommPlantHealthP
 
   void _openStatusList(String s, String t, Color c) {
     final list = equipment.where((item) => (item["status_bucket"]?.toString() ?? item["status"]?.toString() ?? "").toLowerCase().contains(s.toLowerCase())).toList();
-    Navigator.push(context, MaterialPageRoute(builder: (_) => _EmergencyCommStatusListPage(title: t, color: c, icon: Icons.medical_services, items: list, asset: "assets/emergency_comm.png")));
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EquipmentListPage(
+          title: t,
+          color: c,
+          items: list,
+          imagePath: "assets/emergency_comm.png",
+          fallbackIcon: Icons.medical_services,
+        ),
+      ),
+    );
   }
 
   @override
@@ -76,39 +88,5 @@ class _EmergencyCommPlantHealthPageState extends State<EmergencyCommPlantHealthP
 
   BarChartGroupData _bar(int x, int v, Color c) => BarChartGroupData(x: x, barRods: [BarChartRodData(toY: v.toDouble(), color: c, width: 28, borderRadius: BorderRadius.circular(8))]);
   Widget _box(String t, int v, Color c, VoidCallback onTap) => Expanded(child: GestureDetector(onTap: onTap, child: Container(padding: const EdgeInsets.symmetric(vertical: 25), decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(25), boxShadow: [BoxShadow(color: c.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))]), child: Column(children: [Text(t, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)), const SizedBox(height: 8), Text("$v", style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900))]))));
-}
-
-class _EmergencyCommStatusListPage extends StatelessWidget {
-  final String title; final Color color; final IconData icon; final List<Map<String, dynamic>> items; final String asset;
-  const _EmergencyCommStatusListPage({required this.title, required this.color, required this.icon, required this.items, required this.asset});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FA),
-      appBar: AppBar(title: Text(title), backgroundColor: Colors.white),
-      body: items.isEmpty ? const Center(child: Text("No items found")) : ListView.builder(padding: const EdgeInsets.all(12), itemCount: items.length, itemBuilder: (c, i) {
-        final item = items[i];
-        return GestureDetector(
-          onTap: () => _showDetails(context, item),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 12), padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)]),
-            child: Row(children: [
-              ClipRRect(borderRadius: BorderRadius.circular(10), child: Image.asset(asset, width: 40, height: 40, fit: BoxFit.cover, errorBuilder: (c,e,s) => Icon(icon, color: color, size: 30))),
-              const SizedBox(width: 15),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(item["sos_code"]?.toString() ?? item["id"]?.toString() ?? "-", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)), Text(item["location_name"]?.toString() ?? "Main Building", style: TextStyle(color: Colors.grey.shade600, fontSize: 12))])),
-              const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
-            ]),
-          ),
-        );
-      }),
-    );
-  }
-  void _showDetails(BuildContext context, Map<String, dynamic> item) {
-    showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))), builder: (_) => Container(padding: const EdgeInsets.all(24), height: MediaQuery.of(context).size.height * 0.7, child: Column(children: [
-      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text("Technical Specifications", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)), IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context))]),
-      const Divider(),
-      Expanded(child: ListView(children: item.entries.map((e) => Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Row(children: [Expanded(flex: 4, child: Text(e.key.toUpperCase(), style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.bold, fontSize: 12))), Expanded(flex: 6, child: Text(e.value?.toString() ?? "-", style: const TextStyle(fontWeight: FontWeight.w500)))]))).toList())),
-    ])));
-  }
 }
 

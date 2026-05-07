@@ -7,12 +7,15 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'services/apiservice.dart';
 import 'sync_service.dart';
+import 'local_db.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Hive.initFlutter();
-  await Hive.openBox('inspectionBox');
+  final box = await Hive.openBox('inspectionBox');
+
+  // ✅ Removed Auto-Login for main page as requested
 
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
     sqfliteFfiInit();
@@ -31,9 +34,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      title: 'SOS Emergency Platform',
+      theme: ThemeData(primarySwatch: Colors.red, useMaterial3: true),
+      home: const LoginPage(),
     );
   }
 }
@@ -90,42 +95,49 @@ class _LoginPageState extends State<LoginPage>
     super.dispose();
   }
 
-  void login() async {
-    String username = emailController.text.trim();
-    String password = passController.text.trim();
+  Future<void> login() async {
+    final username = emailController.text.trim();
+    final password = passController.text.trim();
 
     if (username.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Enter username and password")),
+        const SnackBar(content: Text("Please enter credentials")),
       );
       return;
     }
 
     setState(() => isLoading = true);
 
-    final result = await ApiService.login(username, password);
+    try {
+      final result = await ApiService.login(username, password);
+      
+      if (result != null && result["token"] != null) {
+        final box = Hive.box('inspectionBox');
+        box.put('token', result["token"]);
+        box.put('username', username);
+        box.put('role', result["user"]["role"] ?? "User");
 
-    setState(() => isLoading = false);
-
-    if (result != null && result["token"] != null) {
-      String token = result["token"];
-      String role = result["user"]["role"];
-
-      final box = Hive.box('inspectionBox');
-      box.put('token', token);
-      box.put('role', role);
-      box.put('username', username);
-
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const IconsPage()),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Login failed. Invalid credentials.")),
+          );
+        }
+      }
+    } catch (e) {
       if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const IconsPage()),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${e.toString()}")),
         );
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid username or password")),
-      );
+    } finally {
+      if (mounted) setState(() => isLoading = false);
     }
   }
 

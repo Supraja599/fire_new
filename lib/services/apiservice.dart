@@ -30,7 +30,7 @@ class ApiService {
           "username": username.trim(),
           "password": password.trim(),
         }),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 3));
 
       if (res.statusCode == 200) {
         final decoded = jsonDecode(res.body);
@@ -49,7 +49,7 @@ class ApiService {
   // =========================================================
   // 📋 FIRE EXTINGUISHER CHECKLIST API
   // =========================================================
-  static const String checklistUrl = "$baseUrl/modules/1/checklists";
+  static const String checklistUrl = "$baseUrl/modules/30/checklists";
 
   static Future<List<Map<String, dynamic>>> getFireChecklist() async {
     try {
@@ -87,24 +87,38 @@ class ApiService {
   static Future<Map<String, dynamic>?> searchAny(String input) async {
     final id = normalize(input);
     try {
-      final url = "$baseUrl/extinguishers/$id";
+      // 1. Try generic equipment endpoint first
+      final url = "$baseUrl/equipment/$id";
       final res = await http.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 5));
+      
       if (res.statusCode == 200) {
         final decoded = jsonDecode(res.body);
-        if (decoded is Map && decoded.containsKey("item")) {
-          final data = Map<String, dynamic>.from(decoded["item"]);
-          LocalDB.insert(id, data); // Cache offline
-          return data;
-        }
-        if (decoded is Map) {
-          final data = Map<String, dynamic>.from(decoded);
-          LocalDB.insert(id, data); // Cache offline
-          return data;
+        if (decoded is Map<String, dynamic>) {
+          // Some APIs wrap in "item" or "data"
+          final data = decoded.containsKey("item") ? decoded["item"] : (decoded.containsKey("data") ? decoded["data"] : decoded);
+          if (data is Map<String, dynamic>) {
+            return data;
+          }
         }
       }
+
+      // 2. Fallback to legacy extinguishers endpoint
+      final extUrl = "$baseUrl/extinguishers/$id";
+      final extRes = await http.get(Uri.parse(extUrl), headers: headers).timeout(const Duration(seconds: 5));
+      if (extRes.statusCode == 200) {
+        final decoded = jsonDecode(extRes.body);
+        if (decoded is Map && decoded.containsKey("item")) {
+          return Map<String, dynamic>.from(decoded["item"]);
+        }
+        if (decoded is Map) {
+          return Map<String, dynamic>.from(decoded);
+        }
+      }
+
+      // 3. Final fallback to local DB
       return await LocalDB.get(id);
     } catch (e) {
-      print("SEARCH ERROR (Fetching offline): $e");
+      print("GLOBAL SEARCH ERROR: $e");
       return await LocalDB.get(id);
     }
   }
@@ -113,31 +127,90 @@ class ApiService {
   // 📊 COMMON GET LIST HANDLER
   // =========================================================
   static Future<List<Map<String, dynamic>>> _getList(String url) async {
+    // Determine a unique cache key based on the endpoint
+    String cacheKey = url.split('/').last; 
+    if (cacheKey.contains('?')) cacheKey = cacheKey.split('?').first;
+    
     try {
       final res = await http.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 10));
-      if (res.statusCode != 200) return [];
+      if (res.statusCode != 200) {
+         return await LocalDB.getModuleRecords(moduleCode: "fire_extinguisher", recordType: cacheKey);
+      }
       final decoded = jsonDecode(res.body);
-      if (decoded is Map && decoded["items"] is List) return List<Map<String, dynamic>>.from(decoded["items"]);
-      if (decoded is Map && decoded["alerts"] is List) return List<Map<String, dynamic>>.from(decoded["alerts"]);
-      if (decoded is List) return List<Map<String, dynamic>>.from(decoded);
-      return [];
+      List<Map<String, dynamic>> items = [];
+      if (decoded is Map && decoded["items"] is List) items = List<Map<String, dynamic>>.from(decoded["items"]);
+      else if (decoded is Map && decoded["alerts"] is List) items = List<Map<String, dynamic>>.from(decoded["alerts"]);
+      else if (decoded is List) items = List<Map<String, dynamic>>.from(decoded);
+      
+      if (items.isNotEmpty) {
+        await LocalDB.saveModuleRecords(moduleCode: "fire_extinguisher", recordType: cacheKey, items: items);
+      }
+      return items;
     } catch (e) {
-      print("API ERROR: $e");
-      return [];
+      print("API ERROR ($cacheKey Offline Fallback): $e");
+      return await LocalDB.getModuleRecords(moduleCode: "fire_extinguisher", recordType: cacheKey);
     }
   }
 
   // ================= APIs =================
   static Future<List<Map<String, dynamic>>> getAlerts() => _getList("$baseUrl/alerts");
 
-  static Future<Map<String, dynamic>> getSummary() async {
+  static int calculateHealth(Map<String, dynamic> s) {
+    if (s.isEmpty) return 100;
+    
+    // 1. Direct fields
+    int total = s["total"] ?? s["total_units"] ?? s["total_loops"] ?? s["total_extinguishers"] ?? 0;
+    int expired = s["expired"] ?? s["expired_units"] ?? s["expired_loops"] ?? s["expired_extinguishers"] ?? 0;
+    int active = s["active"] ?? s["active_units"] ?? s["active_loops"] ?? s["active_extinguishers"] ?? 0;
+    int service = s["needs_service"] ?? s["needs_service_units"] ?? s["needs_service_extinguishers"] ?? 0;
+    
+    // 2. Dynamic pattern matching for all 24 modules
+    s.forEach((key, value) {
+      if (value is int) {
+        final lowerKey = key.toLowerCase();
+        if (lowerKey.startsWith("total_") && total == 0) total = value;
+        if (lowerKey.startsWith("expired_") && expired == 0) expired = value;
+        if (lowerKey.startsWith("active_") && active == 0) active = value;
+        if (lowerKey.contains("needs_service") && service == 0) service = value;
+      }
+    });
+    
+    // 3. Component sum fallback
+    if (total == 0) total = active + service + expired;
+    
+    // 4. Final Calculation: (Total - Expired) / Total
+    if (total > 0) {
+      return (((total - expired) / total) * 100).toInt();
+    }
+    
+    return 100; // Default to 100 if no data
+  }
+
+  static Future<Map<String, dynamic>> getGlobalDashboard() async {
     try {
-      final res = await http.get(Uri.parse("$baseUrl/modules/1/summary"), headers: headers).timeout(const Duration(seconds: 5));
-      if (res.statusCode == 200) return jsonDecode(res.body);
+      final res = await http.get(Uri.parse("$baseUrl/dashboard"), headers: headers).timeout(const Duration(seconds: 10));
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
       return {};
     } catch (e) {
-      print("SUMMARY ERROR: $e");
+      print("DASHBOARD API ERROR: $e");
       return {};
+    }
+  }
+
+  static Future<Map<String, dynamic>> getSummary() async {
+    try {
+      final res = await http.get(Uri.parse("$baseUrl/modules/30/summary"), headers: headers).timeout(const Duration(seconds: 5));
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        await LocalDB.saveModuleMap(moduleCode: "fire_extinguisher", recordType: "summary", data: data);
+        return data;
+      }
+      return await LocalDB.getModuleMap(moduleCode: "fire_extinguisher", recordType: "summary");
+    } catch (e) {
+      print("SUMMARY ERROR: $e");
+      return await LocalDB.getModuleMap(moduleCode: "fire_extinguisher", recordType: "summary");
     }
   }
 

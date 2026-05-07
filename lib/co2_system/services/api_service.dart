@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:fire_new/local_db.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'package:hive/hive.dart';
@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 class CO2SystemApiService {
   static const String baseUrl = "https://ehs.garrev.com/app1/v1";
   static const int moduleId = 42;
-  static const String moduleCode = "co2_system";
+  static const String moduleCode = "suppression_system";
 
   Map<String, String> get headers {
     final box = Hive.isBoxOpen('inspectionBox') ? Hive.box<dynamic>('inspectionBox') : null;
@@ -49,7 +49,7 @@ class CO2SystemApiService {
   }
 
   Future<Map<String, dynamic>> getSummary() => _getAndCacheMap("$baseUrl/modules/$moduleId/summary", "summary");
-  Future<List<Map<String, dynamic>>> getEquipmentList() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&limit=200", "equipment");
+  Future<List<Map<String, dynamic>>> getEquipmentList() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&limit=2000", "equipment");
   Future<List<Map<String, dynamic>>> getChecklist() => _getAndCacheList("$baseUrl/modules/$moduleId/checklists", "checklist");
   Future<List<Map<String, dynamic>>> getAlerts() => _getAndCacheList("$baseUrl/alerts?module_id=$moduleId", "alerts");
 

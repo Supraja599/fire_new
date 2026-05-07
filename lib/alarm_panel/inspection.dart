@@ -65,7 +65,13 @@ class _AlarmPanelInspectionPageState extends State<AlarmPanelInspectionPage> {
     });
 
     try {
-      final data = await api.getEquipmentByQuery(input);
+      Map<String, dynamic>? data;
+      final searchId = input; // moved outside nested try
+      try {
+        data = allEquipment.firstWhere((e) => (e["sos_code"] ?? e["equipment_id"] ?? e["id"])?.toString() == searchId);
+      } catch (_) {
+        data = await api.getEquipmentByQuery(searchId);
+      }
       if (data == null) {
         setState(() {
           loading = false;

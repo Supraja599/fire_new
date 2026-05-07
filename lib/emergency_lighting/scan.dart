@@ -25,13 +25,18 @@ class _EmergencyLightingScanPageState extends State<EmergencyLightingScanPage> {
 
   void _onSearchChanged(String val) {
     if (val.isEmpty) { setState(() => suggestions = []); return; }
-    setState(() { suggestions = allEquipment.where((e) => (e["sos_code"]?.toString() ?? "").toUpperCase().contains(val.toUpperCase())).take(5).toList(); });
+    setState(() { suggestions = allEquipment.where((e) => (e["sos_code"]?.toString() ?? e["equipment_id"]?.toString() ?? e["id"]?.toString() ?? "").toUpperCase().contains(val.toUpperCase())).take(5).toList(); });
   }
 
   Future<void> _fetchDetails(String code) async {
     if (code.isEmpty) return;
     setState(() { loading = true; suggestions = []; showScanner = false; });
-    final res = await api.getEquipmentByQuery(code);
+    Map<String, dynamic>? res;
+    try {
+      res = allEquipment.firstWhere((e) => e["sos_code"]?.toString() == code || e["equipment_id"]?.toString() == code || e["id"]?.toString() == code);
+    } catch (_) {
+      res = await api.getEquipmentByQuery(code);
+    }
     setState(() { item = res; loading = false; });
     if (res == null) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No equipment found"))); }
   }
@@ -64,12 +69,12 @@ class _EmergencyLightingScanPageState extends State<EmergencyLightingScanPage> {
           TextField(controller: idController, onChanged: _onSearchChanged, decoration: InputDecoration(hintText: "Enter SOS ID (Ex: EXT-101)", border: const OutlineInputBorder(), suffixIcon: IconButton(icon: const Icon(Icons.qr_code_scanner, color: Colors.red), onPressed: () => setState(() => showScanner = !showScanner)))),
           const SizedBox(height: 12),
           SizedBox(width: double.infinity, child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.red, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))), onPressed: () => _fetchDetails(idController.text), child: const Text("SEARCH", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)))),
-          if (suggestions.isNotEmpty) ListView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), itemCount: suggestions.length, itemBuilder: (c, i) => ListTile(dense: true, title: Text(suggestions[i]["sos_code"] ?? "-"), subtitle: Text(suggestions[i]["location_name"] ?? "-", style: const TextStyle(fontSize: 10)), onTap: () { idController.text = suggestions[i]["sos_code"] ?? ""; _fetchDetails(idController.text); })),
+          if (suggestions.isNotEmpty) ListView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), itemCount: suggestions.length, itemBuilder: (c, i) => ListTile(dense: true, title: Text(suggestions[i]["sos_code"] ?? suggestions[i]["equipment_id"] ?? suggestions[i]["id"] ?? "-"), subtitle: Text(suggestions[i]["location_name"] ?? "-", style: const TextStyle(fontSize: 10)), onTap: () { idController.text = suggestions[i]["sos_code"] ?? suggestions[i]["equipment_id"] ?? suggestions[i]["id"] ?? ""; _fetchDetails(idController.text); })),
         ])),
         if (showScanner) Container(margin: const EdgeInsets.all(15), height: 200, decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.red, width: 2)), child: ClipRRect(borderRadius: BorderRadius.circular(20), child: MobileScanner(onDetect: (c) { if (c.barcodes.isNotEmpty) { idController.text = c.barcodes.first.rawValue ?? ""; _fetchDetails(idController.text); } }))),
         if (loading) const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
         if (item != null) Container(margin: const EdgeInsets.symmetric(horizontal: 15), padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)), child: Column(children: [
-          Text(item!["sos_code"] ?? "-", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red)),
+          Text(item!["sos_code"] ?? item!["equipment_id"] ?? item!["id"] ?? "-", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red)),
           const Divider(height: 30),
           ...item!.entries.map((e) => Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Row(children: [Expanded(flex: 4, child: Text(e.key.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey))), Expanded(flex: 6, child: Text(e.value?.toString() ?? "-"))]))).toList(),
           const SizedBox(height: 20),

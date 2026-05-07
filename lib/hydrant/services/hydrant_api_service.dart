@@ -92,7 +92,7 @@ class HydrantApiService {
     return _getAndCacheMap("$baseUrl/modules/$moduleId/summary", "summary");
   }
 
-  Future<List<Map<String, dynamic>>> getEquipmentList({int limit = 200}) {
+  Future<List<Map<String, dynamic>>> getEquipmentList({int limit = 2000}) {
     return _getAndCacheList(
       "$baseUrl/equipment?module_code=$moduleCode&limit=$limit",
       "equipment",

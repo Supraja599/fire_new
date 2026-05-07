@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:fire_new/local_db.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'package:hive/hive.dart';
@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 class FireBlanketsApiService {
   static const String baseUrl = "https://ehs.garrev.com/app1/v1";
   static const int moduleId = 41;
-  static const String moduleCode = "fire_blankets";
+  static const String moduleCode = "fire_blanket";
 
   Map<String, String> get headers {
     final box = Hive.isBoxOpen('inspectionBox') ? Hive.box<dynamic>('inspectionBox') : null;

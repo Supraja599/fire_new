@@ -1,13 +1,12 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-
-import 'alerts.dart';
-import 'checklist.dart';
 import 'maintaince.dart';
+import 'alerts.dart';
 import 'plant health.dart';
 import 'reports.dart';
+import 'checklist.dart';
 import 'scan.dart';
+
+import 'package:fire_new/services/apiservice.dart';
 import 'services/apiservice.dart';
 
 class Dashboard extends StatefulWidget {
@@ -18,101 +17,50 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  static const Color primaryRed = Color(0xFFD32F2F);
+  static const Color primary = Color(0xFF00838F); // Matching Eye Wash Cyan/Teal
+  static const Color deep = Color(0xFF006064);
 
-  final HoseReelApiService api = HoseReelApiService();
-  final PageController _pageController = PageController();
-
-  final List<String> images = [
-    'assets/hosereel.png',
-    'assets/hosereel2.png',
-    'assets/hosereel3.png',
-    'assets/hosereel4.png',
-    'assets/hosereel5.png',
-  ];
-
-  Timer? timer;
-  int currentPage = 0;
-
-  int active = 0, total = 0, health = 0;
-  bool isLoadingSummary = true;
+  final api = HoseReelApiService();
+  bool isLoading = true;
+  int activeUnits = 0;
+  int openFaults = 0;
+  int total = 0, health = 0, expiredCount = 0;
 
   @override
   void initState() {
     super.initState();
-    unawaited(api.syncModuleData());
-    _loadSummary();
-
-    timer = Timer.periodic(const Duration(seconds: 4), (_) {
-      currentPage = (currentPage + 1) % images.length;
-
-      _pageController.animateToPage(
-        currentPage,
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
-
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    _loadData();
   }
 
-  Future<void> _loadSummary() async {
+  Future<void> _loadData() async {
     try {
+      await api.syncModuleData();
       final s = await api.getSummary();
       if (mounted) {
         setState(() {
-          total = s["total_units"] ?? s["total"] ?? 0;
-          active = s["active_units"] ?? s["active"] ?? 0;
-          final hs = s["health_score"];
-          if (hs != null && hs > 0) health = hs.toInt();
-          else if (total > 0) health = ((active / total) * 100).toInt();
-          else health = 0;
-          isLoadingSummary = false;
+          activeUnits = s["active_units"] ?? s["active"] ?? 0;
+          total = s["total_units"] ?? s["total"] ?? (activeUnits + (s["needs_service"] ?? 0) + (s["expired"] ?? 0));
+          expiredCount = s["expired"] ?? 0;
+          health = ApiService.calculateHealth(s);
+          openFaults = (s["needs_service"] ?? 0) + expiredCount;
+          isLoading = false;
         });
       }
-    } catch (_) { if (mounted) setState(() => isLoadingSummary = false); }
-  }
-
-  @override
-  void dispose() {
-    timer?.cancel();
-    _pageController.dispose();
-    super.dispose();
+    } catch (_) { if (mounted) setState(() => isLoading = false); }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: primaryRed,
-        onTap: (index) {
-          if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const _SettingsPage()),
-            );
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: "Settings",
-          ),
-        ],
-      ),
+      backgroundColor: const Color(0xFFE0F7FA), 
       body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(20),
+               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  IconButton(icon: const Icon(Icons.arrow_back, color: primaryRed), onPressed: () => Navigator.pop(context)),
+                  IconButton(icon: const Icon(Icons.arrow_back, color: primary), onPressed: () => Navigator.pop(context)),
                   const Spacer(),
                   const Text("Hose Reel", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
                   const Spacer(),
@@ -125,6 +73,8 @@ class _DashboardState extends State<Dashboard> {
                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         const Text("OVERALL HEALTH", style: TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.grey)),
                         Text("$health%", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.black)),
+                        if (!isLoading)
+                          Text("${total - expiredCount}/$total READY", style: const TextStyle(fontSize: 5, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
                       ]),
                     ]),
                   ),
@@ -132,108 +82,60 @@ class _DashboardState extends State<Dashboard> {
               ),
             ),
             Container(
-              height: 220,
-              width: double.infinity,
-              margin: const EdgeInsets.symmetric(horizontal: 12),
-              padding: const EdgeInsets.all(10),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 90,
+                gradient: const LinearGradient(colors: [primary, deep], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [BoxShadow(color: primary.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
+              ),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("SYSTEM OVERVIEW", style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                        SizedBox(height: 10),
+                        Text("Pressure Monitoring", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, height: 1.2)),
+                        SizedBox(height: 12),
+                        Text("Central control for all hose reel stations.", style: TextStyle(color: Colors.white60, fontSize: 13)),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 10),
+                  Image.asset('assets/hosereel.png', height: 110, fit: BoxFit.contain, errorBuilder: (c, e, s) => const Icon(Icons.fire_hydrant_alt, color: Colors.white, size: 80)),
                 ],
               ),
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: images.length,
-                itemBuilder: (context, index) {
-                  return Center(
-                    child: Image.asset(
-                      images[index],
-                      width: double.infinity,
-                      fit: BoxFit.contain, // ✅ Show FULL image, not half
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Center(
-                          child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
             ),
-            const SizedBox(height: 10),
-            Center(
+            const SizedBox(height: 25),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(images.length, (index) {
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: currentPage == index ? 18 : 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: currentPage == index
-                          ? primaryRed
-                          : Colors.grey.shade400,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  );
-                }),
+                children: [
+                  _metricTile("Active Reels", isLoading ? "..." : activeUnits.toString().padLeft(2, '0'), Colors.green.shade700),
+                  const SizedBox(width: 15),
+                  _metricTile("System Faults", isLoading ? "..." : openFaults.toString().padLeft(2, '0'), Colors.red.shade800),
+                ],
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 25),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: GridView.count(
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.95,
-                  children: const [
-                    _DashboardCard(
-                      icon: Icons.favorite,
-                      title: "Plant Health",
-                      color: Colors.green,
-                      page: HoseReelPlantHealthPage(),
-                    ),
-                    _DashboardCard(
-                      icon: Icons.build,
-                      title: "Maintenance",
-                      color: Colors.orange,
-                      page: HoseReelMaintenancePage(),
-                    ),
-                    _DashboardCard(
-                      icon: Icons.checklist,
-                      title: "Checklist",
-                      color: Colors.blue,
-                      page: HoseReelChecklistPage(),
-                    ),
-                    _DashboardCard(
-                      icon: Icons.description,
-                      title: "Reports",
-                      color: Colors.purple,
-                      page: HoseReelReportsPage(),
-                    ),
-                    _DashboardCard(
-                      icon: Icons.notifications,
-                      title: "Alerts",
-                      color: Colors.red,
-                      page: HoseReelAlertsPage(),
-                    ),
-                    _DashboardCard(
-                      icon: Icons.qr_code_scanner,
-                      title: "Scan",
-                      color: Colors.teal,
-                      page: HoseReelScanPage(),
-                    ),
-                  ],
-                ),
+              child: GridView.count(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 3,
+                crossAxisSpacing: 15,
+                mainAxisSpacing: 15,
+                childAspectRatio: 0.85,
+                children: [
+                  _ActionCard("Plant Health", Icons.health_and_safety_outlined, Colors.green, const HoseReelPlantHealthPage()),
+                  _ActionCard("Alerts", Icons.crisis_alert_outlined, Colors.red, const HoseReelAlertsPage()),
+                  _ActionCard("Maintenance", Icons.settings_suggest_outlined, Colors.orange, const HoseReelMaintenancePage()),
+                  _ActionCard("Reports", Icons.receipt_long_outlined, Colors.purple, const HoseReelReportsPage()),
+                  _ActionCard("Checklist", Icons.checklist_rtl_outlined, Colors.blue, const HoseReelChecklistPage()),
+                  _ActionCard("Inspection", Icons.center_focus_strong_outlined, Colors.teal, const HoseReelScanPage()),
+                ],
               ),
             ),
           ],
@@ -241,69 +143,62 @@ class _DashboardState extends State<Dashboard> {
       ),
     );
   }
+
+  Widget _metricTile(String label, String value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(25), border: Border.all(color: color.withOpacity(0.1)), boxShadow: [BoxShadow(color: color.withOpacity(0.05), blurRadius: 10)]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 11, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 5),
+            Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: color)),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _DashboardCard extends StatelessWidget {
-  final IconData icon;
+class _ActionCard extends StatelessWidget {
   final String title;
+  final IconData icon;
   final Color color;
   final Widget page;
 
-  const _DashboardCard({
-    required this.icon,
-    required this.title,
-    required this.color,
-    required this.page,
-  });
+  const _ActionCard(this.title, this.icon, this.color, this.page);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => page));
-      },
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-            ),
-          ],
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 15, offset: const Offset(0, 5))],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 30, color: color),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+              child: Icon(icon, color: color, size: 36),
             ),
             const SizedBox(height: 10),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF006064), fontSize: 12),
             ),
           ],
         ),
       ),
     );
-  }
-}
-
-class _SettingsPage extends StatelessWidget {
-  const _SettingsPage();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text("Settings Page")));
   }
 }
 

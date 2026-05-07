@@ -85,6 +85,16 @@ class LocalDB {
         isSynced INTEGER
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE user_session (
+        username TEXT PRIMARY KEY,
+        password TEXT,
+        token TEXT,
+        role TEXT,
+        last_login TEXT
+      )
+    ''');
   }
 
   static Future<void> insert(String id, Map<String, dynamic> data) async {
@@ -105,6 +115,7 @@ class LocalDB {
     if (kIsWeb) return null;
     final db = await database;
 
+    // 1. Try extinguishers table first (legacy)
     final result = await db.query(
       'extinguishers',
       where: 'id = ?',
@@ -115,7 +126,48 @@ class LocalDB {
       return jsonDecode(result.first['data'] as String);
     }
 
+    // 2. Try module_records table (all other modules)
+    final trimmed = id.trim().toLowerCase();
+    final moduleResult = await db.query(
+      'module_records',
+      where: 'record_type = ?',
+      whereArgs: ['equipment'],
+    );
+
+    for (final row in moduleResult) {
+      final data = jsonDecode(row['data'] as String) as Map<String, dynamic>;
+      final values = [
+        data['sos_code'],
+        data['serial_number'],
+        data['id'],
+        data['equipment_id'],
+      ].map((v) => v?.toString().toLowerCase() ?? '');
+
+      if (values.contains(trimmed)) {
+        return data;
+      }
+    }
+
     return null;
+  }
+
+  static Future<List<Map<String, dynamic>>> getAllEquipmentGlobal() async {
+    if (kIsWeb) return [];
+    final db = await database;
+    
+    // Get extinguishers
+    final extRows = await db.query('extinguishers');
+    final exts = extRows.map((row) => Map<String, dynamic>.from(jsonDecode(row['data'] as String))).toList();
+
+    // Get all other module equipment
+    final modRows = await db.query(
+      'module_records',
+      where: 'record_type = ?',
+      whereArgs: ['equipment'],
+    );
+    final mods = modRows.map((row) => Map<String, dynamic>.from(jsonDecode(row['data'] as String))).toList();
+
+    return [...exts, ...mods];
   }
 
   static Future<List<String>> getAllIds() async {
@@ -366,5 +418,75 @@ class LocalDB {
       where: 'event_id = ?',
       whereArgs: [eventId],
     );
+  }
+
+  // =========================================================
+  // 🔐 USER SESSION METHODS (SQLITE)
+  // =========================================================
+  static Future<void> saveUserSession({
+    required String username,
+    required String password,
+    required String token,
+    required String role,
+  }) async {
+    if (kIsWeb) return;
+    final db = await database;
+    await db.insert(
+      'user_session',
+      {
+        'username': username,
+        'password': password,
+        'token': token,
+        'role': role,
+        'last_login': DateTime.now().toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  static Future<Map<String, dynamic>?> getUserSession(String username) async {
+    if (kIsWeb) return null;
+    final db = await database;
+    final result = await db.query(
+      'user_session',
+      where: 'username = ?',
+      whereArgs: [username],
+      limit: 1,
+    );
+    return result.isNotEmpty ? result.first : null;
+  }
+
+  static Future<Map<String, dynamic>?> getLastSession() async {
+    if (kIsWeb) return null;
+    final db = await database;
+    final result = await db.query(
+      'user_session',
+      orderBy: 'last_login DESC',
+      limit: 1,
+    );
+    return result.isNotEmpty ? result.first : null;
+  }
+
+  // =========================================================
+  // 📋 EQUIPMENT DETAILS (SQLITE)
+  // =========================================================
+  static Future<List<Map<String, dynamic>>> getModuleEquipmentDetails(String moduleCode) async {
+    if (kIsWeb) return [];
+    final db = await database;
+    final result = await db.query(
+      'module_records',
+      where: 'module_code = ? AND record_type = ?',
+      whereArgs: [moduleCode, 'equipment'],
+    );
+
+    return result.map((row) {
+      final data = jsonDecode(row['data'] as String) as Map<String, dynamic>;
+      return {
+        'id': row['record_id'],
+        'name': data['name'] ?? data['id'] ?? 'Equipment',
+        'status': data['status'] ?? 'unknown',
+        'full_data': data,
+      };
+    }).toList();
   }
 }

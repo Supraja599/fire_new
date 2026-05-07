@@ -38,7 +38,7 @@ class _EmergencyExitsScanPageState extends State<EmergencyExitsScanPage> {
       return;
     }
     setState(() {
-      suggestions = allEquipment.where((e) => (e["sos_code"]?.toString() ?? "").toUpperCase().contains(val.toUpperCase())).take(5).toList();
+      suggestions = allEquipment.where((e) => (e["sos_code"]?.toString() ?? e["equipment_id"]?.toString() ?? e["id"]?.toString() ?? "").toUpperCase().contains(val.toUpperCase())).take(5).toList();
     });
   }
 
@@ -47,7 +47,12 @@ class _EmergencyExitsScanPageState extends State<EmergencyExitsScanPage> {
     setState(() { loading = true; suggestions = []; showScanner = false; });
     
     // First try local module records
-    var res = await api.getEquipmentByQuery(code);
+    Map<String, dynamic>? res;
+    try {
+      res = allEquipment.firstWhere((e) => e["sos_code"]?.toString() == code || e["equipment_id"]?.toString() == code || e["id"]?.toString() == code);
+    } catch (_) {
+      res = await api.getEquipmentByQuery(code);
+    }
     
     setState(() { item = res; loading = false; });
     
@@ -147,10 +152,10 @@ class _EmergencyExitsScanPageState extends State<EmergencyExitsScanPage> {
                 itemCount: suggestions.length,
                 itemBuilder: (c, i) => ListTile(
                   dense: true,
-                  title: Text(suggestions[i]["sos_code"] ?? "-"),
+                  title: Text(suggestions[i]["sos_code"] ?? suggestions[i]["equipment_id"] ?? suggestions[i]["id"] ?? "-"),
                   subtitle: Text(suggestions[i]["location_name"] ?? "-", style: const TextStyle(fontSize: 10)),
                   onTap: () {
-                    idController.text = suggestions[i]["sos_code"] ?? "";
+                    idController.text = suggestions[i]["sos_code"] ?? suggestions[i]["equipment_id"] ?? suggestions[i]["id"] ?? "";
                     _fetchDetails(idController.text);
                   },
                 ),
@@ -163,7 +168,7 @@ class _EmergencyExitsScanPageState extends State<EmergencyExitsScanPage> {
             margin: const EdgeInsets.symmetric(horizontal: 15),
             padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
             child: Column(children: [
-              Text(item!["sos_code"] ?? "-", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red)),
+              Text(item!["sos_code"] ?? item!["equipment_id"] ?? item!["id"] ?? "-", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red)),
               const Divider(height: 30),
               ...item!.entries.map((e) => Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Row(children: [
                 Expanded(flex: 4, child: Text(e.key.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey))),

@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../widgets/equipment_list_page.dart';
 import 'services/smoke_detector_api_service.dart';
 
 class SmokeDetectorPlantHealthPage extends StatefulWidget {
@@ -40,8 +41,21 @@ class _SmokeDetectorPlantHealthPageState extends State<SmokeDetectorPlantHealthP
   }
 
   void _openStatusList(String status, String title, Color color) {
-    final list = equipment.where((item) => item["status_bucket"]?.toString() == status).toList();
-    Navigator.push(context, MaterialPageRoute(builder: (_) => _StatusListPage(title: title, color: color, items: list)));
+    final list = equipment
+        .where((item) => (item["status_bucket"]?.toString() ?? item["status"]?.toString() ?? "").toLowerCase().contains(status.toLowerCase()))
+        .toList();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EquipmentListPage(
+          title: title,
+          color: color,
+          items: list,
+          imagePath: 'assets/smoke_detector.png',
+          fallbackIcon: Icons.smoke_free,
+        ),
+      ),
+    );
   }
 
   @override
@@ -143,79 +157,5 @@ class _SmokeDetectorPlantHealthPageState extends State<SmokeDetectorPlantHealthP
 
   BarChartGroupData _bar(int x, int y, Color color) {
     return BarChartGroupData(x: x, barRods: [BarChartRodData(toY: y.toDouble(), color: color, width: 30, borderRadius: BorderRadius.circular(8), backDrawRodData: BackgroundBarChartRodData(show: true, toY: y.toDouble() + 5, color: color.withOpacity(0.1)))]);
-  }
-}
-
-class _StatusListPage extends StatelessWidget {
-  final String title;
-  final Color color;
-  final List<Map<String, dynamic>> items;
-
-  const _StatusListPage({required this.title, required this.color, required this.items});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FA),
-      appBar: AppBar(title: Text(title), backgroundColor: Colors.white, elevation: 1),
-      body: items.isEmpty
-          ? const Center(child: Text("No Detectors Found"))
-          : ListView.builder(
-              padding: const EdgeInsets.all(15),
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final item = items[index];
-                return GestureDetector(
-                  onTap: () => _showDetails(context, item),
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)]),
-                    child: Row(
-                      children: [
-                        ClipRRect(borderRadius: BorderRadius.circular(10), child: Image.asset('assets/smoke_detector.png', width: 50, height: 50, errorBuilder: (c, e, s) => Icon(Icons.smoke_free, color: color))),
-                        const SizedBox(width: 15),
-                        Expanded(
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: color.withOpacity(0.2))),
-                              child: Text(
-                                (item["sos_code"] ?? item["equipment_id"] ?? item["sos_id"] ?? item["id"] ?? "-").toString(),
-                                style: TextStyle(fontWeight: FontWeight.w900, color: color, fontSize: 13, letterSpacing: 0.5),
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(item["location_name"]?.toString() ?? "General Area", style: TextStyle(color: Colors.blueGrey.shade600, fontSize: 12, fontWeight: FontWeight.w500)),
-                          ]),
-                        ),
-                        const Icon(Icons.chevron_right, color: Colors.grey),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-    );
-  }
-
-  void _showDetails(BuildContext context, Map<String, dynamic> item) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
-      builder: (_) => Container(
-        padding: const EdgeInsets.all(25),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const Text("DETECTOR DETAILS", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Colors.blue)),
-              const Divider(),
-              ...item.entries.map((e) => Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Expanded(flex: 4, child: Text(e.key.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12))), Expanded(flex: 6, child: Text(e.value?.toString() ?? "-"))]))),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

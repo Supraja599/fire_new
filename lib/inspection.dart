@@ -32,7 +32,7 @@ class _InspectionPageState extends State<InspectionPage> {
   }
 
   Future<void> _loadAllEquipment() async {
-    final list = await LocalDB.getAllExtinguishers();
+    final list = await LocalDB.getAllEquipmentGlobal();
     setState(() => allEquipment = list);
   }
 

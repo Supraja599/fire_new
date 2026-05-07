@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../widgets/equipment_list_page.dart';
 import 'services/alarm_panel_api_service.dart';
 
 class AlarmPanelPlantHealthPage extends StatefulWidget {
@@ -43,11 +44,27 @@ class _AlarmPanelPlantHealthPageState extends State<AlarmPanelPlantHealthPage> {
   }
 
   void _openStatusList(String type, String title, Color color) {
-    final list = type == "active" 
-        ? equipment.where((e) => e["status"]?.toString().toLowerCase() == "active").toList()
-        : equipment.where((e) => e["status"]?.toString().toLowerCase() != "active").toList();
+    final list = equipment.where((item) {
+      final status = (item["status_bucket"]?.toString() ?? item["status"]?.toString() ?? "").toLowerCase();
+      if (type == "active") return status.contains("active");
+      if (type == "faults") return status.contains("needs-service") || status.contains("fault");
+      if (type == "inspect") return status.contains("due-inspection");
+      if (type == "expired") return status.contains("expired");
+      return false;
+    }).toList();
     
-    Navigator.push(context, MaterialPageRoute(builder: (_) => _StatusListPage(title: title, color: color, items: list)));
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EquipmentListPage(
+          title: title,
+          color: color,
+          items: list,
+          imagePath: "assets/alarm_panel.png",
+          fallbackIcon: Icons.developer_board,
+        ),
+      ),
+    );
   }
 
   @override
@@ -149,110 +166,5 @@ class _AlarmPanelPlantHealthPageState extends State<AlarmPanelPlantHealthPage> {
 
   BarChartGroupData _bar(int x, int y, Color color) {
     return BarChartGroupData(x: x, barRods: [BarChartRodData(toY: y.toDouble(), color: color, width: 30, borderRadius: BorderRadius.circular(8), backDrawRodData: BackgroundBarChartRodData(show: true, toY: y.toDouble() + 5, color: color.withOpacity(0.1)))]);
-  }
-}
-
-class _StatusListPage extends StatelessWidget {
-  final String title;
-  final Color color;
-  final List<Map<String, dynamic>> items;
-
-  const _StatusListPage({required this.title, required this.color, required this.items});
-
-  void _showDetails(BuildContext context, Map<String, dynamic> item) {
-    final Map<String, String> displayFields = {};
-    void flatten(Map<dynamic, dynamic> map, [String prefix = ""]) {
-      map.forEach((key, value) {
-        final displayKey = prefix.isEmpty ? key.toString() : "${prefix}_$key";
-        if (value is Map) flatten(value, displayKey);
-        else if (value != null && value is! List) displayFields[displayKey] = value.toString();
-      });
-    }
-    flatten(item);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        height: MediaQuery.of(context).size.height * 0.75,
-        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
-        padding: const EdgeInsets.all(25),
-        child: Column(
-          children: [
-            Container(width: 50, height: 5, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10))),
-            const SizedBox(height: 20),
-            Text(item["sos_code"] ?? item["id"] ?? "Device Details", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: color)),
-            const Divider(height: 30),
-            Expanded(
-              child: ListView(
-                children: displayFields.entries.map((e) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 4, child: Text(e.key.replaceAll("_", " ").toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.blueGrey))),
-                      Expanded(flex: 6, child: Text(e.value, style: const TextStyle(fontSize: 13))),
-                    ],
-                  ),
-                )).toList(),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFDE8E8),
-      appBar: AppBar(backgroundColor: Colors.white, title: Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold))),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          final item = items[index];
-          return GestureDetector(
-            onTap: () => _showDetails(context, item),
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: color.withOpacity(0.05), blurRadius: 10)]),
-              child: Row(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      color: color.withOpacity(0.1),
-                      child: Image.asset('assets/alarm_panel.png', errorBuilder: (c, e, s) => Icon(Icons.developer_board, color: color)),
-                    ),
-                  ),
-                  const SizedBox(width: 15),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: color.withOpacity(0.2))),
-                          child: Text((item["sos_code"] ?? item["id"] ?? item["equipment_id"] ?? "-").toString(), style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 13)),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(item["location_name"]?.toString() ?? "General Area", style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right, color: Colors.grey),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
   }
 }

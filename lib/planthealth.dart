@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'widgets/equipment_list_page.dart';
 import 'services/apiservice.dart';
 
 class PlantHealthPage extends StatefulWidget {
@@ -57,136 +58,16 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
     return ((total / 100).ceil() * 100).toDouble();
   }
 
-  void showDetailsPopup(Map<String, dynamic> item) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-      ),
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.all(18),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.info_outline, color: Colors.blue, size: 40),
-                const SizedBox(height: 14),
-                const Text(
-                  "Equipment Details",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 15),
-                ...item.entries.map((entry) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: 4,
-                          child: Text(
-                            entry.key,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 6,
-                          child: Text(entry.value?.toString() ?? "-"),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   void openIdList(String title, List<Map<String, dynamic>> list, Color color) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => Scaffold(
-          backgroundColor: const Color(0xFFF4F6F9),
-          appBar: AppBar(
-            title: Text("$title Extinguishers"),
-            backgroundColor: Colors.white,
-            iconTheme: const IconThemeData(color: Colors.black),
-            titleTextStyle: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          body: list.isEmpty
-              ? const Center(child: Text("No items found"))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(14),
-                  itemCount: list.length,
-                  itemBuilder: (context, index) {
-                    final item = list[index];
-                    final sosId = item["sos_code"] ?? item["serial_number"] ?? item["id"] ?? "-";
-
-                    return GestureDetector(
-                      onTap: () => showDetailsPopup(item),
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            )
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: const BorderRadius.horizontal(left: Radius.circular(20)),
-                              child: Container(
-                                width: 90,
-                                height: 100,
-                                color: color.withOpacity(0.08),
-                                child: Image.asset(
-                                  'assets/extinguisher.png',
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) => Icon(Icons.fire_extinguisher, color: color, size: 30),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(14),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "SOS ID: $sosId",
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      item["location_name"] ?? "Unknown Location",
-                                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.only(right: 12),
-                              child: Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
-                            )
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
+        builder: (_) => EquipmentListPage(
+          title: "$title Extinguishers",
+          items: list,
+          color: color,
+          imagePath: 'assets/extinguisher.png',
+          fallbackIcon: Icons.fire_extinguisher,
         ),
       ),
     );
@@ -315,9 +196,11 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
         child: Row(
           children: [
-            Container(width: 14, height: 14, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4))),
-            const SizedBox(width: 12),
-            Expanded(child: Text(title)),
+            Expanded(child: Row(children: [
+              Container(width: 14, height: 14, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4))),
+              const SizedBox(width: 12),
+              Text(title),
+            ])),
             Text(
               "${list.length} (${(percent(list.length) * 100).toStringAsFixed(1)}%)",
               style: const TextStyle(fontWeight: FontWeight.bold),

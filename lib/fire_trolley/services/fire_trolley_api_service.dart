@@ -6,8 +6,8 @@ import 'package:http/http.dart' as http;
 
 class FireTrolleyApiService {
   static const String baseUrl = "https://ehs.garrev.com/app1/v1";
-  static const int moduleId = 50; // 🔥 TODO: Verify this ID as it was not in the list
-  static const String moduleCode = "fire_trolley";
+  static const int moduleId = 32; 
+  static const String moduleCode = "fpca";
 
   Map<String, String> get headers {
     final box = Hive.isBoxOpen('inspectionBox')

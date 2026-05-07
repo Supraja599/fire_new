@@ -6,6 +6,7 @@ import 'reports.dart';
 import 'checklist.dart';
 import 'inspection.dart';
 
+import 'package:fire_new/services/apiservice.dart';
 import 'services/alarm_panel_api_service.dart';
 
 class AlarmPanelDashboard extends StatefulWidget {
@@ -23,7 +24,7 @@ class _AlarmPanelDashboardState extends State<AlarmPanelDashboard> {
   bool isLoading = true;
   int activeLoops = 0;
   int openFaults = 0;
-  int total = 0, health = 0;
+  int total = 0, health = 0, expiredCount = 0;
 
   @override
   void initState() {
@@ -39,11 +40,9 @@ class _AlarmPanelDashboardState extends State<AlarmPanelDashboard> {
         setState(() {
           activeLoops = s["active_loops"] ?? s["active"] ?? 0;
           total = s["total_loops"] ?? s["total"] ?? (activeLoops + (s["needs_service"] ?? 0) + (s["expired"] ?? 0));
-          final hs = s["health_score"];
-          if (hs != null && hs > 0) health = hs.toInt();
-          else if (total > 0) health = ((activeLoops / total) * 100).toInt();
-          else health = 0;
-          openFaults = (s["needs_service"] ?? 0) + (s["expired"] ?? 0);
+          expiredCount = s["expired"] ?? 0;
+          health = ApiService.calculateHealth(s);
+          openFaults = (s["needs_service"] ?? 0) + expiredCount;
           isLoading = false;
         });
       }
@@ -74,6 +73,8 @@ class _AlarmPanelDashboardState extends State<AlarmPanelDashboard> {
                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         const Text("OVERALL HEALTH", style: TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.grey)),
                         Text("$health%", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.black)),
+                        if (!isLoading)
+                          Text("${total - expiredCount}/$total READY", style: const TextStyle(fontSize: 5, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
                       ]),
                     ]),
                   ),

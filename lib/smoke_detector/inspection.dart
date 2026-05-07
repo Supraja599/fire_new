@@ -97,7 +97,12 @@ class _SmokeDetectorInspectionPageState extends State<SmokeDetectorInspectionPag
     });
 
     try {
-      final data = await api.getEquipmentByQuery(id);
+      Map<String, dynamic>? data;
+      try {
+        data = allEquipment.firstWhere((e) => (e["sos_code"] ?? e["equipment_id"] ?? e["id"])?.toString().toLowerCase() == id.toLowerCase());
+      } catch (_) {
+        data = await api.getEquipmentByQuery(id);
+      }
       if (data == null) {
         setState(() {
           loading = false;

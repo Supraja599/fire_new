@@ -121,6 +121,17 @@ flutter:
     - assets/wind_sock.png
     - assets/scba_unit.png
     - assets/ambulance.png
+    - assets/first_aid.png
+    - assets/emergency_shower.png
+    - assets/eye_wash.png
+    - assets/spill_kits.png
+    - assets/chemical_shower.png
+    - assets/ppe_cabinets.png
+    - assets/co2_system.png
+    - assets/signage.png
+    - assets/emergency_comm.png
+    - assets/fire_blankets.png
+    - assets/muster_points.png
 
 
   # The following line ensures that the Material Icons font is
