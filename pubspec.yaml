@@ -132,6 +132,9 @@ flutter:
     - assets/emergency_comm.png
     - assets/fire_blankets.png
     - assets/muster_points.png
+    - assets/heat_detector.png
+    - assets/co_detector.png
+    - assets/fire_door.png
 
 
   # The following line ensures that the Material Icons font is

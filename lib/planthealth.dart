@@ -63,7 +63,7 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
       context,
       MaterialPageRoute(
         builder: (_) => EquipmentListPage(
-          title: "$title Extinguishers",
+          title: title,
           items: list,
           color: color,
           imagePath: 'assets/extinguisher.png',

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fire_new/services/apiservice.dart';
 
 import 'package:flutter/material.dart';
 
@@ -59,10 +60,7 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
       active = s["active"] ?? 0;
       risk = (s["needs_service"] ?? 0) + (s["expired"] ?? 0);
       total = s["total"] ?? (active + risk);
-      final hs = s["health_score"];
-      if (hs != null && hs > 0) health = hs.toInt();
-      else if (total > 0) health = ((active / total) * 100).toInt();
-      else health = 0;
+      health = ApiService.calculateHealth(s);
       isLoading = false;
     });
   }

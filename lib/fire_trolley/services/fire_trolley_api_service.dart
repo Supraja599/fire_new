@@ -6,8 +6,8 @@ import 'package:http/http.dart' as http;
 
 class FireTrolleyApiService {
   static const String baseUrl = "https://ehs.garrev.com/app1/v1";
-  static const int moduleId = 32; 
-  static const String moduleCode = "fpca";
+  static const int moduleId = 55;
+  static const String moduleCode = "fire_trolley";
 
   Map<String, String> get headers {
     final box = Hive.isBoxOpen('inspectionBox')
@@ -173,7 +173,26 @@ class FireTrolleyApiService {
       getEquipmentList(),
       getChecklist(),
       getAlerts(),
-      getAlertSummary(),
+      getActive(),
+      getNeedsService(),
+      getExpired(),
+      getDueInspection(),
+      getUpcoming(),
+      getPlantHealth()
     ]);
   }
+
+  
+
+
+
+  Future<List<Map<String, dynamic>>> getActive() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&status=active", "active");
+  Future<List<Map<String, dynamic>>> getNeedsService() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&status=needs-service", "needs_service");
+  Future<List<Map<String, dynamic>>> getExpired() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&status=expired", "expired");
+  Future<List<Map<String, dynamic>>> getDueInspection() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&status=due-inspection", "due_inspection");
+  Future<List<Map<String, dynamic>>> getUpcoming() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&status=upcoming", "upcoming");
+  Future<Map<String, dynamic>> getPlantHealth() => _getAndCacheMap("$baseUrl/modules/$moduleId/plant-health", "plant_health");
+  
+
+
 }

@@ -225,6 +225,21 @@ class ApiService {
   static Future<List<Map<String, dynamic>>> getInspections(String start, String end) =>
       _getList("$baseUrl/reports/inspections?start_date=$start&end_date=$end");
 
+  static Future<void> syncModuleData() async {
+    await Future.wait([
+      getSummary(),
+      getFireChecklist(),
+      getAlerts(),
+      getActive(),
+      getNeedsService(),
+      getExpired(),
+      getDueInspection(),
+      getUpcoming(),
+      getEquipmentStatus(),
+      syncAllExtinguishersToLocal()
+    ]);
+  }
+
   static Future<void> syncAllExtinguishersToLocal() async {
     try {
       final list = await getAll();

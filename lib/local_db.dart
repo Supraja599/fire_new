@@ -128,11 +128,9 @@ class LocalDB {
 
     // 2. Try module_records table (all other modules)
     final trimmed = id.trim().toLowerCase();
-    final moduleResult = await db.query(
-      'module_records',
-      where: 'record_type = ?',
-      whereArgs: ['equipment'],
-    );
+    
+    // Search in ALL records (active, needs_service, equipment, etc.)
+    final moduleResult = await db.query('module_records');
 
     for (final row in moduleResult) {
       final data = jsonDecode(row['data'] as String) as Map<String, dynamic>;

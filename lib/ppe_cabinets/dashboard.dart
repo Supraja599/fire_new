@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fire_new/services/apiservice.dart';
 import 'maintaince.dart';
 import 'alerts.dart';
 import 'planthealth.dart';
@@ -40,10 +41,7 @@ class _PPECabinetsDashboardState extends State<PPECabinetsDashboard> {
         setState(() {
           total = s["total_units"] ?? s["total"] ?? 0;
           deviceCount = s["active_units"] ?? s["active"] ?? 0;
-          final hs = s["health_score"];
-          if (hs != null && hs > 0) health = hs.toInt();
-          else if (total > 0) health = ((deviceCount / total) * 100).toInt();
-          else health = 0;
+          health = ApiService.calculateHealth(s);
           isLoading = false;
         });
       }

@@ -33,14 +33,18 @@ class _PPECabinetsPlantHealthPageState extends State<PPECabinetsPlantHealthPage>
     } catch (_) { if (mounted) setState(() => isLoading = false); }
   }
 
-  void _openStatusList(String s, String t, Color c) {
-    final list = equipment.where((item) => (item["status_bucket"]?.toString() ?? item["status"]?.toString() ?? "").toLowerCase().contains(s.toLowerCase())).toList();
+    void _openStatusList(String type, String title, Color color) {
+    final list = equipment.where((item) {
+      final status = (item["status_bucket"]?.toString() ?? item["status"]?.toString() ?? "").toLowerCase().replaceAll("-", " ").trim();
+      final target = type.toLowerCase().replaceAll("-", " ").trim();
+      return status.contains(target) || target.contains(status);
+    }).toList();
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => EquipmentListPage(
-          title: t,
-          color: c,
+          title: title,
+          color: color,
           items: list,
           imagePath: "assets/ppe_cabinets.png",
           fallbackIcon: Icons.medical_services,

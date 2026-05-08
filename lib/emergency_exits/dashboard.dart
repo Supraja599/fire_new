@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fire_new/services/apiservice.dart';
 import 'alerts.dart';
 import 'checklist.dart';
 import 'maintaince.dart';
@@ -32,14 +33,7 @@ class _EmergencyExitsDashboardState extends State<EmergencyExitsDashboard> {
           active = s["active_units"] ?? s["active"] ?? 0;
           
           // Logic for Health Score
-          final hs = s["health_score"];
-          if (hs != null && hs > 0) {
-            health = hs.toInt();
-          } else if (total > 0) {
-            health = ((active / total) * 100).toInt();
-          } else {
-            health = 0;
-          }
+          health = ApiService.calculateHealth(s);
           
           isLoading = false;
         });

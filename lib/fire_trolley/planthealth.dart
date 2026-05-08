@@ -43,11 +43,12 @@ class _FireTrolleyPlantHealthPageState extends State<FireTrolleyPlantHealthPage>
     }
   }
 
-  void _openStatusList(String type, String title, Color color) {
-    final list = type == "active" 
-        ? equipment.where((e) => e["status"]?.toString().toLowerCase() == "active").toList()
-        : equipment.where((e) => e["status"]?.toString().toLowerCase() != "active").toList();
-    
+    void _openStatusList(String type, String title, Color color) {
+    final list = equipment.where((item) {
+      final status = (item["status_bucket"]?.toString() ?? item["status"]?.toString() ?? "").toLowerCase().replaceAll("-", " ").trim();
+      final target = type.toLowerCase().replaceAll("-", " ").trim();
+      return status.contains(target) || target.contains(status);
+    }).toList();
     Navigator.push(
       context,
       MaterialPageRoute(

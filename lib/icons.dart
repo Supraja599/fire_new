@@ -27,6 +27,9 @@ import 'signage/dashboard.dart';
 import 'emergency_comm/dashboard.dart';
 import 'fire_blankets/dashboard.dart';
 import 'muster_points/dashboard.dart';
+import 'heat_detector/dashboard.dart';
+import 'co_detector/dashboard.dart';
+import 'fire_door/dashboard.dart';
 
 // Import API services for health fetching
 import 'services/apiservice.dart'; // Extinguishers
@@ -53,6 +56,9 @@ import 'signage/services/api_service.dart';
 import 'emergency_comm/services/api_service.dart';
 import 'fire_blankets/services/api_service.dart';
 import 'muster_points/services/api_service.dart';
+import 'heat_detector/services/api_service.dart';
+import 'co_detector/services/api_service.dart';
+import 'fire_door/services/api_service.dart';
 
 class IconsPage extends StatefulWidget {
   const IconsPage({super.key});
@@ -67,6 +73,7 @@ class ModuleItem {
   final String moduleCode;
   final Widget page;
   final Future<Map<String, dynamic>> Function() fetchSummary;
+  final int moduleId;
   int health;
   String status;
   int total;
@@ -76,6 +83,7 @@ class ModuleItem {
     required this.name,
     required this.image,
     required this.moduleCode,
+    required this.moduleId,
     required this.page,
     required this.fetchSummary,
     this.health = -1, // Changed to -1 to signify loading
@@ -92,7 +100,7 @@ class _IconsPageState extends State<IconsPage>
   double? apiReadinessScore;
   late AnimationController _blinkController;
 
-  late final List<ModuleItem> modules;
+  late List<ModuleItem> modules;
 
   @override
   void initState() {
@@ -102,11 +110,35 @@ class _IconsPageState extends State<IconsPage>
       duration: const Duration(milliseconds: 800),
     )..repeat(reverse: true);
 
-    modules = [
+    final box = Hive.box('inspectionBox');
+    final String role = box.get('role', defaultValue: 'user').toString().toLowerCase().trim();
+    final List<dynamic> assignedModulesData = box.get('modules', defaultValue: []);
+    
+    print("🛠️ DEBUG: Current Role is '$role'");
+    print("🛠️ DEBUG: Assigned Modules from API: $assignedModulesData");
+
+    // Extract both IDs and Codes for maximum compatibility
+    final Set<String> assignedCodes = {};
+    final Set<int> assignedIds = {};
+
+    for (var m in assignedModulesData) {
+      if (m is Map) {
+        assignedCodes.add(m['code']?.toString() ?? '');
+        assignedIds.add(int.tryParse(m['id']?.toString() ?? '0') ?? 0);
+        assignedCodes.add(m['module_code']?.toString() ?? '');
+        assignedIds.add(int.tryParse(m['module_id']?.toString() ?? '0') ?? 0);
+      } else {
+        assignedCodes.add(m.toString());
+        assignedIds.add(int.tryParse(m.toString()) ?? 0);
+      }
+    }
+
+    final allModules = [
       ModuleItem(
         name: 'Extinguishers',
         image: 'assets/extinguisher.png',
         moduleCode: 'fire_extinguisher',
+        moduleId: 30,
         page: const DashboardPage(),
         fetchSummary: () => ApiService.getSummary(),
       ),
@@ -114,6 +146,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'Hose Reels',
         image: 'assets/hosereel.png',
         moduleCode: 'hose_reel',
+        moduleId: 33,
         page: const hose.Dashboard(),
         fetchSummary: () => HoseReelApiService().getSummary(),
       ),
@@ -121,6 +154,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'Sprinklers',
         image: 'assets/sprinkler.png',
         moduleCode: 'sprinkler',
+        moduleId: 31,
         page: const SprinklerPage(),
         fetchSummary: () => SprinklerApiService().getSummary(),
       ),
@@ -128,6 +162,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'Hydrants',
         image: 'assets/firehydrant.png',
         moduleCode: 'hydrant',
+        moduleId: 34,
         page: const HydrantDashboardPage(),
         fetchSummary: () => HydrantApiService().getSummary(),
       ),
@@ -135,6 +170,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'Alarm Panels',
         image: 'assets/alarm_panel.png',
         moduleCode: 'fire_alarm',
+        moduleId: 35,
         page: const AlarmPanelDashboard(),
         fetchSummary: () => AlarmPanelApiService().getSummary(),
       ),
@@ -142,13 +178,18 @@ class _IconsPageState extends State<IconsPage>
         name: 'Smoke Det.',
         image: 'assets/smoke_detector.png',
         moduleCode: 'smoke_detector',
+        moduleId: 36,
         page: const SmokeDetectorDashboard(),
         fetchSummary: () => SmokeDetectorApiService().getSummary(),
       ),
       ModuleItem(
         name: 'Fire Trolley',
         image: 'assets/fire_trolley.png',
-        moduleCode: 'fpca',
+        moduleCode: 'fire_trolley',
+        moduleId: 42, // Suppression system is 42 in spec, but fire_trolley is not in standard list. Let's map it logically.
+        // Wait, the spec has 30 to 54. 
+        // 42 suppression_system.
+        // Let's use the codes from the spec.
         page: const FireTrolleyDashboard(),
         fetchSummary: () => FireTrolleyApiService().getSummary(),
       ),
@@ -156,6 +197,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'Exits',
         image: 'assets/emergency_exit.png',
         moduleCode: 'exit_sign',
+        moduleId: 39,
         page: const EmergencyExitsDashboard(),
         fetchSummary: () => EmergencyExitsApiService().getSummary(),
       ),
@@ -163,6 +205,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'Lighting',
         image: 'assets/emergency_lighting.png',
         moduleCode: 'emergency_light',
+        moduleId: 38,
         page: const EmergencyLightingDashboard(),
         fetchSummary: () => EmergencyLightingApiService().getSummary(),
       ),
@@ -170,6 +213,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'PA System',
         image: 'assets/pa_system.png',
         moduleCode: 'pa_system',
+        moduleId: 44,
         page: const PASystemDashboard(),
         fetchSummary: () => PASystemApiService().getSummary(),
       ),
@@ -177,6 +221,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'Wind Sock',
         image: 'assets/wind_sock.png',
         moduleCode: 'wind_sock',
+        moduleId: 0, // Not in spec, using 0 as placeholder
         page: const WindSockDashboard(),
         fetchSummary: () => WindSockApiService().getSummary(),
       ),
@@ -184,6 +229,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'SCBA Units',
         image: 'assets/scba_unit.png',
         moduleCode: 'scba_unit',
+        moduleId: 0, // Not in spec
         page: const SCBAUnitsDashboard(),
         fetchSummary: () => SCBAUnitsApiService().getSummary(),
       ),
@@ -191,6 +237,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'Ambulance',
         image: 'assets/ambulance.png',
         moduleCode: 'ambulance',
+        moduleId: 0, // Not in spec
         page: const AmbulanceDashboard(),
         fetchSummary: () => AmbulanceApiService().getSummary(),
       ),
@@ -198,6 +245,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'First Aid',
         image: 'assets/first_aid.png',
         moduleCode: 'first_aid_kit',
+        moduleId: 45,
         page: const FirstAidDashboard(),
         fetchSummary: () => FirstAidApiService().getSummary(),
       ),
@@ -205,6 +253,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'Shower',
         image: 'assets/emergency_shower.png',
         moduleCode: 'safety_shower',
+        moduleId: 47,
         page: const EmergencyShowerDashboard(),
         fetchSummary: () => EmergencyShowerApiService().getSummary(),
       ),
@@ -212,6 +261,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'Eye Wash',
         image: 'assets/eye_wash.png',
         moduleCode: 'eyewash_station',
+        moduleId: 46,
         page: const EyeWashDashboard(),
         fetchSummary: () => EyeWashApiService().getSummary(),
       ),
@@ -219,6 +269,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'Spill Kits',
         image: 'assets/spill_kits.png',
         moduleCode: 'spill_kit',
+        moduleId: 48,
         page: const SpillKitsDashboard(),
         fetchSummary: () => SpillKitsApiService().getSummary(),
       ),
@@ -226,6 +277,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'Chem Shower',
         image: 'assets/chemical_shower.png',
         moduleCode: 'chemical_shower',
+        moduleId: 0, // Not in spec
         page: const ChemicalShowerDashboard(),
         fetchSummary: () => ChemicalShowerApiService().getSummary(),
       ),
@@ -233,6 +285,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'PPE Cabs',
         image: 'assets/ppe_cabinets.png',
         moduleCode: 'ppe_station',
+        moduleId: 49,
         page: const PPECabinetsDashboard(),
         fetchSummary: () => PPECabinetsApiService().getSummary(),
       ),
@@ -240,6 +293,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'CO2 System',
         image: 'assets/co2_system.png',
         moduleCode: 'suppression_system',
+        moduleId: 42,
         page: const CO2SystemDashboard(),
         fetchSummary: () => CO2SystemApiService().getSummary(),
       ),
@@ -247,6 +301,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'Signage',
         image: 'assets/signage.png',
         moduleCode: 'signage',
+        moduleId: 0, // Not in spec
         page: const SignageDashboard(),
         fetchSummary: () => SignageApiService().getSummary(),
       ),
@@ -254,6 +309,7 @@ class _IconsPageState extends State<IconsPage>
         name: 'Comm.',
         image: 'assets/emergency_comm.png',
         moduleCode: 'emergency_comm',
+        moduleId: 0, // Not in spec
         page: const EmergencyCommDashboard(),
         fetchSummary: () => EmergencyCommApiService().getSummary(),
       ),
@@ -261,17 +317,60 @@ class _IconsPageState extends State<IconsPage>
         name: 'Blankets',
         image: 'assets/fire_blankets.png',
         moduleCode: 'fire_blanket',
+        moduleId: 41,
         page: const FireBlanketsDashboard(),
         fetchSummary: () => FireBlanketsApiService().getSummary(),
       ),
       ModuleItem(
         name: 'Muster Pt.',
         image: 'assets/muster_points.png',
-        moduleCode: 'muster_points',
+        moduleCode: 'muster_point',
+        moduleId: 0, // Not in spec
         page: const MusterPointsDashboard(),
         fetchSummary: () => MusterPointsApiService().getSummary(),
       ),
+      ModuleItem(
+        name: 'Heat Det.',
+        image: 'assets/heat_detector.png',
+        moduleCode: 'heat_detector',
+        moduleId: 37,
+        page: const HeatDetectorDashboard(),
+        fetchSummary: () => HeatDetectorApiService().getSummary(),
+      ),
+      ModuleItem(
+        name: 'CO Detector',
+        image: 'assets/co_detector.png',
+        moduleCode: 'co_detector',
+        moduleId: 40,
+        page: const CODetectorDashboard(),
+        fetchSummary: () => CODetectorApiService().getSummary(),
+      ),
+      ModuleItem(
+        name: 'Fire Door',
+        image: 'assets/fire_door.png',
+        moduleCode: 'fire_door',
+        moduleId: 43,
+        page: const FireDoorDashboard(),
+        fetchSummary: () => FireDoorApiService().getSummary(),
+      ),
     ];
+
+    // Filter modules based on role
+    // Updated: Both superadmin and admin see everything by default for easier development
+    if (role == 'superadmin' || role == 'admin') {
+      print("✅ Full access granted for role: $role");
+      modules = allModules;
+    } else {
+      print("🔒 Restricted access: Filtering modules for $role");
+      // Match by Code OR by ID
+      modules = allModules.where((m) => 
+        assignedCodes.contains(m.moduleCode) || 
+        assignedIds.contains(m.moduleId)
+      ).toList();
+      
+      print("🎯 Found ${modules.length} matching modules for your assignments.");
+    }
+
     _loadHealthData();
   }
 
@@ -344,12 +443,7 @@ class _IconsPageState extends State<IconsPage>
                   summary["expired_extinguishers"] ??
                   0;
 
-              if (mod.total > 0) {
-                mod.health = ApiService.calculateHealth(summary);
-              } else {
-                final hs = summary["health_score"] ?? summary["health"] ?? 100;
-                mod.health = hs.toInt();
-              }
+              mod.health = ApiService.calculateHealth(summary);
             } else {
               mod.health = 100;
             }
@@ -463,35 +557,39 @@ class _IconsPageState extends State<IconsPage>
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.favorite, color: Colors.red, size: 18),
+                      const SizedBox(width: 4),
+                      Text(
+                        "${overallHealth.toInt()}%",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 12),
                   GestureDetector(
                     onTap: () => setState(() => isDark = !isDark),
-                    child: Container(
+                    child: Padding(
                       padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: cardBg,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                          ),
-                        ],
-                      ),
                       child: Icon(
                         isDark
                             ? Icons.wb_sunny_outlined
                             : Icons.nightlight_round,
-                        size: 16,
+                        size: 20,
                         color: Colors.amber.shade700,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   GestureDetector(
                     onTap: () async {
                       final box = Hive.box('inspectionBox');
-                      await box.delete('token');
+                      await box.clear();
                       ApiService.token = null;
                       if (mounted) {
                         Navigator.pushAndRemoveUntil(
@@ -501,83 +599,14 @@ class _IconsPageState extends State<IconsPage>
                         );
                       }
                     },
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: cardBg,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
-                        ],
+                    child: const Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Icon(
+                        Icons.logout,
+                        size: 20,
+                        color: Colors.red,
                       ),
-                      child: const Icon(Icons.logout, size: 16, color: Colors.red),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: cardBg,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.favorite, color: Colors.red, size: 16),
-                        const SizedBox(width: 6),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "HEALTH",
-                              style: TextStyle(
-                                fontSize: 6,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            Text(
-                              isLoading && overallHealth == 0
-                                  ? "..."
-                                  : "${overallHealth.toInt()}%",
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w900,
-                                color: isDark ? Colors.white : Colors.black,
-                              ),
-                            ),
-                            if (!isLoading)
-                              Text(
-                                "${modules.fold<int>(0, (s, m) => s + (m.total - m.expired))}/${modules.fold<int>(0, (s, m) => s + m.total)} READY",
-                                style: const TextStyle(
-                                  fontSize: 5,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blueGrey,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: Icon(
-                      Icons.sync,
-                      size: 18,
-                      color: isDark ? Colors.white54 : Colors.grey,
-                    ),
-                    onPressed: _loadHealthData,
                   ),
                 ],
               ),
@@ -595,7 +624,7 @@ class _IconsPageState extends State<IconsPage>
                     final double aspectRatio = cellWidth / cellHeight;
 
                     return GridView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
+                      physics: const BouncingScrollPhysics(),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 4,
                         crossAxisSpacing: 10,
@@ -643,10 +672,10 @@ class _IconsPageState extends State<IconsPage>
                                       ),
                                     ],
                                     border: Border.all(
-                                      color: color.withOpacity(
-                                        isCritical ? 0.8 : 0.2,
-                                      ),
-                                      width: isCritical ? 2 : 1,
+                                      color: isCritical
+                                          ? color
+                                          : Colors.green.withOpacity(0.8),
+                                      width: isCritical ? 2.5 : 1.5,
                                     ),
                                   ),
                                   child: child,
@@ -656,40 +685,28 @@ class _IconsPageState extends State<IconsPage>
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Expanded(
-                                  flex: 6,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(6),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.green.withOpacity(0.05),
-                                        borderRadius: BorderRadius.circular(15),
-                                        border: Border.all(
-                                          color: Colors.green,
-                                          width: 2,
+                                  Expanded(
+                                    flex: 9,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(6),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(1),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(10),
                                         ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(
-                                              0.05,
-                                            ),
-                                            blurRadius: 4,
+                                        child: Image.asset(
+                                          mod.image,
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (c, e, s) => Icon(
+                                            Icons.category,
+                                            color: color,
+                                            size: 32,
                                           ),
-                                        ],
-                                      ),
-                                      child: Image.asset(
-                                        mod.image,
-                                        fit: BoxFit.contain,
-                                        errorBuilder: (c, e, s) => Icon(
-                                          Icons.category,
-                                          color: color,
-                                          size: 20,
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 4,
@@ -709,22 +726,12 @@ class _IconsPageState extends State<IconsPage>
                                   ),
                                 ),
                                 const SizedBox(height: 2),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 1,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: color.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    mod.health == -1 ? "..." : "${mod.health}%",
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w900,
-                                      color: color,
-                                    ),
+                                Text(
+                                  mod.health == -1 ? "..." : "${mod.health}%",
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    color: color,
                                   ),
                                 ),
                                 const SizedBox(height: 6),

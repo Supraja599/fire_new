@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:fire_new/local_db.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'package:hive/hive.dart';
@@ -6,8 +6,8 @@ import 'package:http/http.dart' as http;
 
 class MusterPointsApiService {
   static const String baseUrl = "https://ehs.garrev.com/app1/v1";
-  static const int moduleId = 111;
-  static const String moduleCode = "muster_points";
+  static const int moduleId = 59;
+  static const String moduleCode = "muster_point";
 
   Map<String, String> get headers {
     final box = Hive.isBoxOpen('inspectionBox') ? Hive.box<dynamic>('inspectionBox') : null;
@@ -54,7 +54,18 @@ class MusterPointsApiService {
   Future<List<Map<String, dynamic>>> getAlerts() => _getAndCacheList("$baseUrl/alerts?module_id=$moduleId", "alerts");
 
   Future<void> syncModuleData() async {
-    await Future.wait([getSummary(), getEquipmentList(), getChecklist(), getAlerts()]);
+    await Future.wait([
+      getSummary(),
+      getEquipmentList(),
+      getChecklist(),
+      getAlerts(),
+      getActive(),
+      getNeedsService(),
+      getExpired(),
+      getDueInspection(),
+      getUpcoming(),
+      getPlantHealth()
+    ]);
   }
 
   Future<Map<String, dynamic>?> getEquipmentByQuery(String query) async {
@@ -90,5 +101,25 @@ class MusterPointsApiService {
       );
     }
   }
+
+
+  
+  Future<List<Map<String, dynamic>>> getInspectionReports({required String fromDate, required String toDate}) {
+    return _getAndCacheList("$baseUrl/reports/inspections?date_from=$fromDate&date_to=$toDate&module_id=$moduleId", "inspection_reports");
+  }
+
+  Future<List<Map<String, dynamic>>> getEquipmentStatusReport() {
+    return _getAndCacheList("$baseUrl/reports/equipment-status?module_id=$moduleId", "equipment_status_report");
+  }
+
+
+  Future<List<Map<String, dynamic>>> getActive() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&status=active", "active");
+  Future<List<Map<String, dynamic>>> getNeedsService() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&status=needs-service", "needs_service");
+  Future<List<Map<String, dynamic>>> getExpired() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&status=expired", "expired");
+  Future<List<Map<String, dynamic>>> getDueInspection() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&status=due-inspection", "due_inspection");
+  Future<List<Map<String, dynamic>>> getUpcoming() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&status=upcoming", "upcoming");
+  Future<Map<String, dynamic>> getPlantHealth() => _getAndCacheMap("$baseUrl/modules/$moduleId/plant-health", "plant_health");
+  
+
 
 }

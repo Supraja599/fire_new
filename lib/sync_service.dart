@@ -3,6 +3,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'local_db.dart';
 import 'services/apiservice.dart';
+import 'services/sync_registry.dart';
 
 class SyncService {
   static bool _isSyncing = false;
@@ -40,6 +41,7 @@ class SyncService {
       }
 
       await ApiService.syncPendingModuleInspections();
+      await SyncRegistry.syncEverything();
     } catch (e) {
       print("Sync error: $e");
     }

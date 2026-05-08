@@ -43,16 +43,12 @@ class _AlarmPanelPlantHealthPageState extends State<AlarmPanelPlantHealthPage> {
     }
   }
 
-  void _openStatusList(String type, String title, Color color) {
+    void _openStatusList(String type, String title, Color color) {
     final list = equipment.where((item) {
-      final status = (item["status_bucket"]?.toString() ?? item["status"]?.toString() ?? "").toLowerCase();
-      if (type == "active") return status.contains("active");
-      if (type == "faults") return status.contains("needs-service") || status.contains("fault");
-      if (type == "inspect") return status.contains("due-inspection");
-      if (type == "expired") return status.contains("expired");
-      return false;
+      final status = (item["status_bucket"]?.toString() ?? item["status"]?.toString() ?? "").toLowerCase().replaceAll("-", " ").trim();
+      final target = type.toLowerCase().replaceAll("-", " ").trim();
+      return status.contains(target) || target.contains(status);
     }).toList();
-    
     Navigator.push(
       context,
       MaterialPageRoute(

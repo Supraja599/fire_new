@@ -116,6 +116,7 @@ class _LoginPageState extends State<LoginPage>
         box.put('token', result["token"]);
         box.put('username', username);
         box.put('role', result["user"]["role"] ?? "User");
+        box.put('modules', result["user"]["modules"] ?? []);
 
         if (mounted) {
           Navigator.pushReplacement(

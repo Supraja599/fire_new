@@ -54,7 +54,18 @@ class PASystemApiService {
   Future<List<Map<String, dynamic>>> getAlerts() => _getAndCacheList("$baseUrl/alerts?module_id=$moduleId", "alerts");
 
   Future<void> syncModuleData() async {
-    await Future.wait([getSummary(), getEquipmentList(), getChecklist(), getAlerts()]);
+    await Future.wait([
+      getSummary(),
+      getEquipmentList(),
+      getChecklist(),
+      getAlerts(),
+      getActive(),
+      getNeedsService(),
+      getExpired(),
+      getDueInspection(),
+      getUpcoming(),
+      getPlantHealth()
+    ]);
   }
 
   Future<Map<String, dynamic>?> getEquipmentByQuery(String query) async {
@@ -90,5 +101,25 @@ class PASystemApiService {
       );
     }
   }
+
+
+  
+  Future<List<Map<String, dynamic>>> getInspectionReports({required String fromDate, required String toDate}) {
+    return _getAndCacheList("$baseUrl/reports/inspections?date_from=$fromDate&date_to=$toDate&module_id=$moduleId", "inspection_reports");
+  }
+
+  Future<List<Map<String, dynamic>>> getEquipmentStatusReport() {
+    return _getAndCacheList("$baseUrl/reports/equipment-status?module_id=$moduleId", "equipment_status_report");
+  }
+
+
+  Future<List<Map<String, dynamic>>> getActive() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&status=active", "active");
+  Future<List<Map<String, dynamic>>> getNeedsService() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&status=needs-service", "needs_service");
+  Future<List<Map<String, dynamic>>> getExpired() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&status=expired", "expired");
+  Future<List<Map<String, dynamic>>> getDueInspection() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&status=due-inspection", "due_inspection");
+  Future<List<Map<String, dynamic>>> getUpcoming() => _getAndCacheList("$baseUrl/equipment?module_id=$moduleId&status=upcoming", "upcoming");
+  Future<Map<String, dynamic>> getPlantHealth() => _getAndCacheMap("$baseUrl/modules/$moduleId/plant-health", "plant_health");
+  
+
 
 }

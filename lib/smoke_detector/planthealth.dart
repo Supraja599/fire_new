@@ -40,10 +40,12 @@ class _SmokeDetectorPlantHealthPageState extends State<SmokeDetectorPlantHealthP
     }
   }
 
-  void _openStatusList(String status, String title, Color color) {
-    final list = equipment
-        .where((item) => (item["status_bucket"]?.toString() ?? item["status"]?.toString() ?? "").toLowerCase().contains(status.toLowerCase()))
-        .toList();
+    void _openStatusList(String type, String title, Color color) {
+    final list = equipment.where((item) {
+      final status = (item["status_bucket"]?.toString() ?? item["status"]?.toString() ?? "").toLowerCase().replaceAll("-", " ").trim();
+      final target = type.toLowerCase().replaceAll("-", " ").trim();
+      return status.contains(target) || target.contains(status);
+    }).toList();
     Navigator.push(
       context,
       MaterialPageRoute(
