@@ -131,22 +131,31 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
               ),
             ),
             const SizedBox(height: 25),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              crossAxisCount: 2,
-              crossAxisSpacing: 15,
-              mainAxisSpacing: 15,
-              childAspectRatio: 1.0,
-              children: [
-                _ActionCard("Plant Health", Icons.analytics_outlined, Colors.green, const FireTrolleyPlantHealthPage(), "Device Health"),
-                _ActionCard("Alerts", Icons.notification_important_outlined, Colors.red, const FireTrolleyAlertsPage(), "Safety Alerts"),
-                _ActionCard("Maintenance", Icons.build_circle_outlined, Colors.orange, const FireTrolleyMaintenancePage(), "Services"),
-                _ActionCard("Reports", Icons.summarize_outlined, Colors.purple, const FireTrolleyReportsPage(), "History"),
-                _ActionCard("Checklist", Icons.fact_check_outlined, Colors.teal, const FireTrolleyChecklistPage(), "Forms"),
-                _ActionCard("Inspection", Icons.camera_enhance_outlined, Colors.blue, const FireTrolleyInspectionPage(), "Scan"),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final double width = MediaQuery.of(context).size.width;
+                int crossAxisCount = 2;
+                if (width > 900) crossAxisCount = 4;
+                else if (width > 600) crossAxisCount = 3;
+
+                return GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 15,
+                  mainAxisSpacing: 15,
+                  childAspectRatio: width > 600 ? 1.1 : 1.0,
+                  children: [
+                    _ActionCard("Plant Health", Icons.analytics_outlined, Colors.green, const FireTrolleyPlantHealthPage(), "Device Health"),
+                    _ActionCard("Alerts", Icons.notification_important_outlined, Colors.red, const FireTrolleyAlertsPage(), "Safety Alerts"),
+                    _ActionCard("Maintenance", Icons.build_circle_outlined, Colors.orange, const FireTrolleyMaintenancePage(), "Services"),
+                    _ActionCard("Reports", Icons.summarize_outlined, Colors.purple, const FireTrolleyReportsPage(), "History"),
+                    _ActionCard("Checklist", Icons.fact_check_outlined, Colors.teal, const FireTrolleyChecklistPage(), "Forms"),
+                    _ActionCard("Inspection", Icons.camera_enhance_outlined, Colors.blue, const FireTrolleyInspectionPage(), "Scan"),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 30),
           ],

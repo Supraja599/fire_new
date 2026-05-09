@@ -140,22 +140,31 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
             const SizedBox(height: 20),
 
             // GRID
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              crossAxisCount: 2,
-              crossAxisSpacing: 15,
-              mainAxisSpacing: 15,
-              childAspectRatio: 1.0,
-              children: [
-                _buildBox(context, "Plant Health", Icons.health_and_safety_outlined, const HydrantPlantHealthPage(), Colors.green, "Unit Health"),
-                _buildBox(context, "Alerts", Icons.crisis_alert_outlined, const HydrantAlertsPage(), Colors.red, "Safety"),
-                _buildBox(context, "Maintenance", Icons.build_circle_outlined, const HydrantMaintenancePage(), Colors.orange, "Services"),
-                _buildBox(context, "Reports", Icons.receipt_long_outlined, const HydrantReportsPage(), Colors.purple, "History"),
-                _buildBox(context, "Checklist", Icons.checklist_rtl_outlined, const HydrantChecklistPage(), Colors.blue, "Forms"),
-                _buildBox(context, "Inspection", Icons.center_focus_strong_outlined, const HydrantScanPage(), Colors.teal, "Check"),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final double width = MediaQuery.of(context).size.width;
+                int crossAxisCount = 2;
+                if (width > 900) crossAxisCount = 4;
+                else if (width > 600) crossAxisCount = 3;
+
+                return GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 15,
+                  mainAxisSpacing: 15,
+                  childAspectRatio: width > 600 ? 1.1 : 1.0,
+                  children: [
+                    _buildBox(context, "Plant Health", Icons.health_and_safety_outlined, const HydrantPlantHealthPage(), Colors.green, "Unit Health"),
+                    _buildBox(context, "Alerts", Icons.crisis_alert_outlined, const HydrantAlertsPage(), Colors.red, "Safety"),
+                    _buildBox(context, "Maintenance", Icons.build_circle_outlined, const HydrantMaintenancePage(), Colors.orange, "Services"),
+                    _buildBox(context, "Reports", Icons.receipt_long_outlined, const HydrantReportsPage(), Colors.purple, "History"),
+                    _buildBox(context, "Checklist", Icons.checklist_rtl_outlined, const HydrantChecklistPage(), Colors.blue, "Forms"),
+                    _buildBox(context, "Inspection", Icons.center_focus_strong_outlined, const HydrantScanPage(), Colors.teal, "Check"),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 30),
           ],

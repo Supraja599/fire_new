@@ -145,24 +145,33 @@ class _SpillKitsDashboardState extends State<SpillKitsDashboard> {
 
             const SizedBox(height: 20),
 
-            // BIG ACTION CARDS (2x3 GRID)
-             GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                crossAxisCount: 2,
-                crossAxisSpacing: 15,
-                mainAxisSpacing: 15,
-                childAspectRatio: 1.0,
-                children: [
-                  _BigActionCard("Plant Health", Icons.analytics_outlined, const SpillKitsPlantHealthPage(), Colors.green.shade600, "Device Health"),
-                  _BigActionCard("Safety Alerts", Icons.notification_important_outlined, const SpillKitsAlertsPage(), Colors.red.shade600, "Active Alerts"),
-                  _BigActionCard("Maintenance", Icons.build_circle_outlined, const SpillKitsMaintenancePage(), Colors.orange.shade700, "Services"),
-                  _BigActionCard("Reports", Icons.summarize_outlined, const SpillKitsReportsPage(), Colors.purple.shade600, "History"),
-                  _BigActionCard("Checklist", Icons.fact_check_outlined, const SpillKitsChecklistPage(), Colors.teal.shade700, "Forms"),
-                  _BigActionCard("Inspection", Icons.camera_enhance_outlined, const SpillKitsScanPage(), Colors.blue.shade700, "Scan"),
-                ],
-              ),
+            // BIG ACTION CARDS (RESPONSIVE GRID)
+             LayoutBuilder(
+               builder: (context, constraints) {
+                 final double width = MediaQuery.of(context).size.width;
+                 int crossAxisCount = 2;
+                 if (width > 900) crossAxisCount = 4;
+                 else if (width > 600) crossAxisCount = 3;
+
+                 return GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 15,
+                    mainAxisSpacing: 15,
+                    childAspectRatio: width > 600 ? 1.1 : 1.0,
+                    children: [
+                      _BigActionCard("Plant Health", Icons.analytics_outlined, const SpillKitsPlantHealthPage(), Colors.green.shade600, "Device Health"),
+                      _BigActionCard("Safety Alerts", Icons.notification_important_outlined, const SpillKitsAlertsPage(), Colors.red.shade600, "Active Alerts"),
+                      _BigActionCard("Maintenance", Icons.build_circle_outlined, const SpillKitsMaintenancePage(), Colors.orange.shade700, "Services"),
+                      _BigActionCard("Reports", Icons.summarize_outlined, const SpillKitsReportsPage(), Colors.purple.shade600, "History"),
+                      _BigActionCard("Checklist", Icons.fact_check_outlined, const SpillKitsChecklistPage(), Colors.teal.shade700, "Forms"),
+                      _BigActionCard("Inspection", Icons.camera_enhance_outlined, const SpillKitsScanPage(), Colors.blue.shade700, "Scan"),
+                    ],
+                  );
+               },
+             ),
             const SizedBox(height: 30),
           ],
         ),

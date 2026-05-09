@@ -89,22 +89,31 @@ class _EmergencyLightingDashboardState extends State<EmergencyLightingDashboard>
               ]),
             ),
             const SizedBox(height: 20),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              crossAxisCount: 2,
-              crossAxisSpacing: 15,
-              mainAxisSpacing: 15,
-              childAspectRatio: 1.0,
-              children: [
-                _Card("Plant Health", Icons.analytics_outlined, const EmergencyLightingPlantHealthPage(), Colors.green.shade600, "Device Health"),
-                _Card("Safety Alerts", Icons.notification_important_outlined, const EmergencyLightingAlertsPage(), Colors.red.shade600, "Active Alerts"),
-                _Card("Maintenance", Icons.build_circle_outlined, const EmergencyLightingMaintenancePage(), Colors.orange.shade700, "Services"),
-                _Card("Reports", Icons.summarize_outlined, const EmergencyLightingReportsPage(), Colors.purple.shade600, "History"),
-                _Card("Checklist", Icons.fact_check_outlined, const EmergencyLightingChecklistPage(), Colors.teal.shade700, "Forms"),
-                _Card("Inspection", Icons.qr_code_scanner, const EmergencyLightingScanPage(), Colors.blue.shade700, "Search"),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final double width = MediaQuery.of(context).size.width;
+                int crossAxisCount = 2;
+                if (width > 900) crossAxisCount = 4;
+                else if (width > 600) crossAxisCount = 3;
+
+                return GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 15,
+                  mainAxisSpacing: 15,
+                  childAspectRatio: width > 600 ? 1.1 : 1.0,
+                  children: [
+                    _Card("Plant Health", Icons.analytics_outlined, const EmergencyLightingPlantHealthPage(), Colors.green.shade600, "Device Health"),
+                    _Card("Safety Alerts", Icons.notification_important_outlined, const EmergencyLightingAlertsPage(), Colors.red.shade600, "Active Alerts"),
+                    _Card("Maintenance", Icons.build_circle_outlined, const EmergencyLightingMaintenancePage(), Colors.orange.shade700, "Services"),
+                    _Card("Reports", Icons.summarize_outlined, const EmergencyLightingReportsPage(), Colors.purple.shade600, "History"),
+                    _Card("Checklist", Icons.fact_check_outlined, const EmergencyLightingChecklistPage(), Colors.teal.shade700, "Forms"),
+                    _Card("Inspection", Icons.qr_code_scanner, const EmergencyLightingScanPage(), Colors.blue.shade700, "Search"),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 30),
           ],
