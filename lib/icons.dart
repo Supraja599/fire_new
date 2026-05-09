@@ -517,7 +517,8 @@ class _IconsPageState extends State<IconsPage>
     return Scaffold(
       backgroundColor: themeBg,
       body: SafeArea(
-        child: Column(
+        child: ListView(
+          physics: const BouncingScrollPhysics(),
           children: [
             if (isLoading)
               const LinearProgressIndicator(
@@ -557,19 +558,27 @@ class _IconsPageState extends State<IconsPage>
                       ],
                     ),
                   ),
-                  Row(
-                    children: [
-                      const Icon(Icons.favorite, color: Colors.red, size: 18),
-                      const SizedBox(width: 4),
-                      Text(
-                        "${overallHealth.toInt()}%",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          color: isDark ? Colors.white : Colors.black,
+                  AnimatedBuilder(
+                    animation: _blinkController,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: 0.3 + (_blinkController.value * 0.7),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.favorite, color: Colors.red, size: 24),
+                            const SizedBox(width: 6),
+                            Text(
+                              "${overallHealth.toInt()}%",
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                   const SizedBox(width: 12),
                   GestureDetector(
@@ -612,142 +621,134 @@ class _IconsPageState extends State<IconsPage>
               ),
             ),
 
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 5, 14, 15),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final double gridHeight = constraints.maxHeight;
-                    final double gridWidth = constraints.maxWidth;
-                    final double cellWidth = gridWidth / 4;
-                    final double cellHeight = gridHeight / 6;
-                    final double aspectRatio = cellWidth / cellHeight;
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 5, 14, 15),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final double width = MediaQuery.of(context).size.width;
+                  int crossAxisCount = 4;
+                  if (width > 1200) crossAxisCount = 8;
+                  else if (width > 900) crossAxisCount = 7;
+                  else if (width > 600) crossAxisCount = 6;
 
-                    return GridView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 4,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        childAspectRatio: aspectRatio,
-                      ),
-                      itemCount: modules.length,
-                      itemBuilder: (context, index) {
-                        final mod = modules[index];
-                        final color = getStatusColor(mod.status);
-                        final isCritical = mod.health != -1 && mod.health < 20;
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 0.85,
+                    ),
+                    itemCount: modules.length,
+                    itemBuilder: (context, index) {
+                  final mod = modules[index];
+                  final color = getStatusColor(mod.status);
+                  final isCritical = mod.health != -1 && mod.health < 20;
 
-                        return GestureDetector(
-                          onTap: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => mod.page),
-                            );
-                            _loadHealthData();
-                          },
-                          child: AnimatedBuilder(
-                            animation: _blinkController,
-                            builder: (context, child) {
-                              return Opacity(
-                                opacity: (isCritical)
-                                    ? (0.4 + (_blinkController.value * 0.6))
-                                    : 1.0,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color:
-                                        (isCritical &&
-                                            _blinkController.value > 0.5)
-                                        ? color.withOpacity(0.1)
-                                        : cardBg,
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: (isCritical)
-                                            ? color.withOpacity(0.3)
-                                            : Colors.black.withOpacity(
-                                                isDark ? 0.3 : 0.08,
-                                              ),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                    border: Border.all(
-                                      color: isCritical
-                                          ? color
-                                          : Colors.green.withOpacity(0.8),
-                                      width: isCritical ? 2.5 : 1.5,
-                                    ),
-                                  ),
-                                  child: child,
+                  return GestureDetector(
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => mod.page),
+                      );
+                      _loadHealthData();
+                    },
+                    child: AnimatedBuilder(
+                      animation: _blinkController,
+                      builder: (context, child) {
+                        return Opacity(
+                          opacity: (isCritical)
+                              ? (0.4 + (_blinkController.value * 0.6))
+                              : 1.0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: (isCritical && _blinkController.value > 0.5)
+                                  ? color.withOpacity(0.1)
+                                  : cardBg,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (isCritical)
+                                      ? color.withOpacity(0.3)
+                                      : Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
                                 ),
-                              );
-                            },
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                  Expanded(
-                                    flex: 9,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(6),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(1),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        child: Image.asset(
-                                          mod.image,
-                                          fit: BoxFit.contain,
-                                          errorBuilder: (c, e, s) => Icon(
-                                            Icons.category,
-                                            color: color,
-                                            size: 32,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 4,
-                                  ),
-                                  child: Text(
-                                    mod.name.toUpperCase(),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 7.5,
-                                      fontWeight: FontWeight.w900,
-                                      color: isDark
-                                          ? Colors.white
-                                          : const Color(0xFF1E293B),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  mod.health == -1 ? "..." : "${mod.health}%",
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                    color: color,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
                               ],
+                              border: Border.all(
+                                color: isCritical ? color : Colors.green.withOpacity(0.8),
+                                width: isCritical ? 2.5 : 1.5,
+                              ),
                             ),
+                            child: child,
                           ),
                         );
                       },
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            flex: 9,
+                            child: Padding(
+                              padding: const EdgeInsets.all(6),
+                              child: Container(
+                                padding: const EdgeInsets.all(1),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Image.asset(
+                                  mod.image,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (c, e, s) => Icon(
+                                    Icons.category,
+                                    color: color,
+                                    size: 32,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                mod.name.toUpperCase(),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 7.5,
+                                  fontWeight: FontWeight.w900,
+                                  color: isDark ? Colors.white : const Color(0xFF1E293B),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            mod.health == -1 ? "..." : "${mod.health}%",
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: color,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+);
   }
 }

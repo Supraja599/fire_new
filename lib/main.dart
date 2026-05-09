@@ -38,6 +38,14 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'SOS Emergency Platform',
       theme: ThemeData(primarySwatch: Colors.red, useMaterial3: true),
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: const TextScaler.linear(1.1),
+          ),
+          child: child!,
+        );
+      },
       home: const LoginPage(),
     );
   }
@@ -185,12 +193,14 @@ class _LoginPageState extends State<LoginPage>
                 ),
                 child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center, // Force center
                   children: [
                     Icon(Icons.verified_user_rounded,
                         size: 90, color: Colors.white),
                     SizedBox(height: 10),
                     Text(
                       "SOS EMERGENCY PLATFORM",
+                      textAlign: TextAlign.center, // Center text
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 22,
@@ -200,6 +210,7 @@ class _LoginPageState extends State<LoginPage>
                     SizedBox(height: 6),
                     Text(
                       "Inspection • Safety • Monitoring System",
+                      textAlign: TextAlign.center, // Center text
                       style: TextStyle(color: Colors.white70, fontSize: 13),
                     ),
                   ],

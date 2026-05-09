@@ -17,7 +17,7 @@ class FirstAidDashboard extends StatefulWidget {
 }
 
 class _FirstAidDashboardState extends State<FirstAidDashboard> {
-  static const Color primary = Color(0xFF2E7D32); // Using green theme for First Aid
+  static const Color primary = Color(0xFF2E7D32);
   static const Color deep = Color(0xFF1B5E20);
 
   final api = FirstAidApiService();
@@ -36,7 +36,7 @@ class _FirstAidDashboardState extends State<FirstAidDashboard> {
     try {
       await api.syncModuleData();
       final s = await api.getSummary();
-      if (mounted) {
+      if (mounted && s != null) {
         setState(() {
           activeUnits = s["active_units"] ?? s["active"] ?? 0;
           total = s["total_units"] ?? s["total"] ?? (activeUnits + (s["needs_service"] ?? 0) + (s["expired"] ?? 0));
@@ -44,6 +44,8 @@ class _FirstAidDashboardState extends State<FirstAidDashboard> {
           openFaults = (s["needs_service"] ?? 0) + (s["expired"] ?? 0);
           isLoading = false;
         });
+      } else if (mounted) {
+        setState(() => isLoading = false);
       }
     } catch (_) { if (mounted) setState(() => isLoading = false); }
   }
@@ -51,29 +53,38 @@ class _FirstAidDashboardState extends State<FirstAidDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F5E9), // Light green background
+      backgroundColor: const Color(0xFFE8F5E9),
       body: SafeArea(
-        child: Column(
+        child: ListView(
+          physics: const BouncingScrollPhysics(),
           children: [
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
               child: Row(
                 children: [
                   IconButton(icon: const Icon(Icons.arrow_back, color: primary), onPressed: () => Navigator.pop(context)),
-                  const Spacer(),
-                  const Text("First Aid", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
-                  const Spacer(),
+                  const Expanded(
+                    child: Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text("First Aid", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                      ),
+                    ),
+                  ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)]),
-                    child: Row(children: [
-                      const Icon(Icons.favorite, color: Colors.red, size: 16),
-                      const SizedBox(width: 6),
-                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        const Text("OVERALL HEALTH", style: TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.grey)),
-                        Text("$health%", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.black)),
-                      ]),
-                    ]),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.favorite, color: Colors.red, size: 14),
+                        const SizedBox(width: 4),
+                        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          const Text("HEALTH", style: TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.grey)),
+                          Text("$health%", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.black)),
+                        ]),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -83,7 +94,7 @@ class _FirstAidDashboardState extends State<FirstAidDashboard> {
               padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(colors: [primary, deep], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(40),
                 boxShadow: [BoxShadow(color: primary.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
               ),
               child: Row(
@@ -94,9 +105,12 @@ class _FirstAidDashboardState extends State<FirstAidDashboard> {
                       children: [
                         Text("SYSTEM OVERVIEW", style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
                         SizedBox(height: 10),
-                        Text("Response Readiness", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, height: 1.2)),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text("Response Readiness", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, height: 1.2)),
+                        ),
                         SizedBox(height: 12),
-                        Text("Central control for all first aid units.", style: TextStyle(color: Colors.white60, fontSize: 13)),
+                        Text("Central control for all units.", style: TextStyle(color: Colors.white60, fontSize: 13)),
                       ],
                     ),
                   ),
@@ -108,33 +122,45 @@ class _FirstAidDashboardState extends State<FirstAidDashboard> {
             const SizedBox(height: 25),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
+              child: Wrap(
+                spacing: 15,
+                runSpacing: 15,
+                alignment: WrapAlignment.center,
                 children: [
                   _metricTile("Units Active", isLoading ? "..." : activeUnits.toString().padLeft(2, '0'), Colors.green.shade700),
-                  const SizedBox(width: 15),
                   _metricTile("System Faults", isLoading ? "..." : openFaults.toString().padLeft(2, '0'), Colors.red.shade800),
                 ],
               ),
             ),
             const SizedBox(height: 25),
-            Expanded(
-              child: GridView.count(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 3,
-                crossAxisSpacing: 15,
-                mainAxisSpacing: 15,
-                childAspectRatio: 0.85,
-                children: [
-                  _ActionCard("Plant Health", Icons.health_and_safety_outlined, Colors.green, const FirstAidPlantHealthPage()),
-                  _ActionCard("Alerts", Icons.crisis_alert_outlined, Colors.red, const FirstAidAlertsPage()),
-                  _ActionCard("Maintenance", Icons.settings_suggest_outlined, Colors.orange, const FirstAidMaintenancePage()),
-                  _ActionCard("Reports", Icons.receipt_long_outlined, Colors.purple, const FirstAidReportsPage()),
-                  _ActionCard("Checklist", Icons.checklist_rtl_outlined, Colors.blue, const FirstAidChecklistPage()),
-                  _ActionCard("Inspection", Icons.center_focus_strong_outlined, Colors.teal, const FirstAidScanPage()),
-                ],
-              ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final double width = MediaQuery.of(context).size.width;
+                int crossAxisCount = 3;
+                if (width < 420) crossAxisCount = 2;
+                else if (width > 900) crossAxisCount = 5;
+                else if (width > 650) crossAxisCount = 4;
+
+                return GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 15,
+                  mainAxisSpacing: 15,
+                  childAspectRatio: crossAxisCount <= 2 ? 1.0 : 0.85,
+                  children: [
+                    _ActionCard("Plant Health", Icons.health_and_safety_outlined, Colors.green, const FirstAidPlantHealthPage()),
+                    _ActionCard("Alerts", Icons.crisis_alert_outlined, Colors.red, const FirstAidAlertsPage()),
+                    _ActionCard("Maintenance", Icons.settings_suggest_outlined, Colors.orange, const FirstAidMaintenancePage()),
+                    _ActionCard("Reports", Icons.receipt_long_outlined, Colors.purple, const FirstAidReportsPage()),
+                    _ActionCard("Checklist", Icons.checklist_rtl_outlined, Colors.blue, const FirstAidChecklistPage()),
+                    _ActionCard("Inspection", Icons.center_focus_strong_outlined, Colors.teal, const FirstAidScanPage()),
+                  ],
+                );
+              },
             ),
+            const SizedBox(height: 30),
           ],
         ),
       ),
@@ -142,18 +168,17 @@ class _FirstAidDashboardState extends State<FirstAidDashboard> {
   }
 
   Widget _metricTile(String label, String value, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(25), border: Border.all(color: color.withOpacity(0.1)), boxShadow: [BoxShadow(color: color.withOpacity(0.05), blurRadius: 10)]),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 11, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 5),
-            Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: color)),
-          ],
-        ),
+    return Container(
+      width: 160,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(25), border: Border.all(color: color.withOpacity(0.1)), boxShadow: [BoxShadow(color: color.withOpacity(0.05), blurRadius: 10)]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 11, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 5),
+          Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: color)),
+        ],
       ),
     );
   }
@@ -187,10 +212,13 @@ class _ActionCard extends StatelessWidget {
               child: Icon(icon, color: color, size: 36),
             ),
             const SizedBox(height: 10),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1B5E20), fontSize: 12),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1B5E20), fontSize: 12),
+              ),
             ),
           ],
         ),

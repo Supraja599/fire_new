@@ -20,6 +20,7 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
   bool isLoading = true;
   int activeCount = 0;
   int alertCount = 0;
+  int health = 100;
 
   @override
   void initState() {
@@ -32,12 +33,15 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
       await api.syncModuleData();
       final summary = await api.getSummary();
       final alertSum = await api.getAlertSummary();
-      if (mounted) {
+      if (mounted && summary != null) {
         setState(() {
-          activeCount = summary["active"] ?? 0;
-          alertCount = alertSum["active_alerts"] ?? 0;
+          activeCount = summary["active"] ?? summary["active_units"] ?? 0;
+          alertCount = alertSum["active_alerts"] ?? (summary["needs_service"] ?? 0);
+          health = ApiService.calculateHealth(summary);
           isLoading = false;
         });
+      } else if (mounted) {
+        setState(() => isLoading = false);
       }
     } catch (_) {
       if (mounted) setState(() => isLoading = false);
@@ -49,27 +53,36 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
     return Scaffold(
       backgroundColor: const Color(0xFFFDE8E8),
       body: SafeArea(
-        child: Column(
+        child: ListView(
+          physics: const BouncingScrollPhysics(),
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 25, 20, 15),
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
               child: Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.1), blurRadius: 10)]),
-                      child: const Icon(Icons.arrow_back_ios_new, size: 22, color: Colors.red),
+                  IconButton(icon: const Icon(Icons.arrow_back, color: Colors.red), onPressed: () => Navigator.pop(context)),
+                  const Expanded(
+                    child: Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text("Fire Trolley", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 15),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Fire Trolley", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFFB71C1C))),
-                      Text("Mobile Safety Unit", style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                    ],
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)]),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.favorite, color: Colors.red, size: 14),
+                        const SizedBox(width: 4),
+                        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          const Text("HEALTH", style: TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.grey)),
+                          Text("$health%", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.black)),
+                        ]),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -79,7 +92,7 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
               padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(colors: [Color(0xFFD32F2F), Color(0xFF424242)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(40),
                 boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
               ),
               child: Row(
@@ -90,9 +103,12 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
                       children: [
                         Text("UNIT STATUS", style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
                         SizedBox(height: 10),
-                        Text("High-Capacity Response", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, height: 1.2)),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text("High-Capacity Response", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, height: 1.2)),
+                        ),
                         SizedBox(height: 12),
-                        Text("Monitoring mobile extinguishers and units.", style: TextStyle(color: Colors.white60, fontSize: 13)),
+                        Text("Monitoring mobile units.", style: TextStyle(color: Colors.white60, fontSize: 13)),
                       ],
                     ),
                   ),
@@ -104,32 +120,35 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
             const SizedBox(height: 25),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
+              child: Wrap(
+                spacing: 15,
+                runSpacing: 15,
+                alignment: WrapAlignment.center,
                 children: [
                   _metricTile("Active Units", isLoading ? "..." : "$activeCount", Colors.green.shade700),
-                  const SizedBox(width: 15),
                   _metricTile("Active Alerts", isLoading ? "..." : "$alertCount", Colors.red.shade800),
                 ],
               ),
             ),
             const SizedBox(height: 25),
-            Expanded(
-              child: GridView.count(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                crossAxisCount: 2,
-                crossAxisSpacing: 15,
-                mainAxisSpacing: 15,
-                childAspectRatio: 1.1,
-                children: [
-                  _ActionCard("Plant Health", Icons.analytics_outlined, Colors.green, const FireTrolleyPlantHealthPage(), "Device Health"),
-                  _ActionCard("Alerts", Icons.notification_important_outlined, Colors.red, const FireTrolleyAlertsPage(), "Safety Alerts"),
-                  _ActionCard("Maintenance", Icons.build_circle_outlined, Colors.orange, const FireTrolleyMaintenancePage(), "Services"),
-                  _ActionCard("Reports", Icons.summarize_outlined, Colors.purple, const FireTrolleyReportsPage(), "History"),
-                  _ActionCard("Checklist", Icons.fact_check_outlined, Colors.teal, const FireTrolleyChecklistPage(), "Forms"),
-                  _ActionCard("Inspection", Icons.camera_enhance_outlined, Colors.blue, const FireTrolleyInspectionPage(), "Scan"),
-                ],
-              ),
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              crossAxisCount: 2,
+              crossAxisSpacing: 15,
+              mainAxisSpacing: 15,
+              childAspectRatio: 1.0,
+              children: [
+                _ActionCard("Plant Health", Icons.analytics_outlined, Colors.green, const FireTrolleyPlantHealthPage(), "Device Health"),
+                _ActionCard("Alerts", Icons.notification_important_outlined, Colors.red, const FireTrolleyAlertsPage(), "Safety Alerts"),
+                _ActionCard("Maintenance", Icons.build_circle_outlined, Colors.orange, const FireTrolleyMaintenancePage(), "Services"),
+                _ActionCard("Reports", Icons.summarize_outlined, Colors.purple, const FireTrolleyReportsPage(), "History"),
+                _ActionCard("Checklist", Icons.fact_check_outlined, Colors.teal, const FireTrolleyChecklistPage(), "Forms"),
+                _ActionCard("Inspection", Icons.camera_enhance_outlined, Colors.blue, const FireTrolleyInspectionPage(), "Scan"),
+              ],
             ),
+            const SizedBox(height: 30),
           ],
         ),
       ),
@@ -137,18 +156,17 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
   }
 
   Widget _metricTile(String label, String value, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(25), border: Border.all(color: color.withOpacity(0.1)), boxShadow: [BoxShadow(color: color.withOpacity(0.05), blurRadius: 10)]),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 11, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 5),
-            Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: color)),
-          ],
-        ),
+    return Container(
+      width: 160,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(25), border: Border.all(color: color.withOpacity(0.1)), boxShadow: [BoxShadow(color: color.withOpacity(0.05), blurRadius: 10)]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 11, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 5),
+          Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: color)),
+        ],
       ),
     );
   }
@@ -168,10 +186,10 @@ class _ActionCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(25),
           boxShadow: [BoxShadow(color: color.withOpacity(0.12), blurRadius: 15, offset: const Offset(0, 8))],
         ),
         child: Column(
@@ -183,11 +201,24 @@ class _ActionCard extends StatelessWidget {
               decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
               child: Icon(icon, color: color, size: 28),
             ),
+            const SizedBox(height: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFFB71C1C), fontSize: 14)),
-                Text(subtitle, style: TextStyle(color: Colors.grey.shade500, fontSize: 10, fontWeight: FontWeight.bold)),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFFB71C1C), fontSize: 14),
+                  ),
+                ),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    subtitle,
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ],
             ),
           ],
