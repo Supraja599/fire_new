@@ -625,14 +625,10 @@ class _IconsPageState extends State<IconsPage>
               padding: const EdgeInsets.fromLTRB(14, 5, 14, 15),
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  final double width = MediaQuery.of(context).size.width;
-                  int crossAxisCount = 4;
-                  if (width > 1200) crossAxisCount = 8;
-                  else if (width > 900) crossAxisCount = 7;
-                  else if (width > 600) crossAxisCount = 6;
-
+                  const int crossAxisCount = 4;
                   return GridView.builder(
                     shrinkWrap: true,
+
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: crossAxisCount,
