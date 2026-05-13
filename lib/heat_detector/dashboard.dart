@@ -153,17 +153,42 @@ class _HeatDetectorDashboardState extends State<HeatDetectorDashboard> {
                           SizedBox(
                             width: 100, // Upgraded size for dominance
                             height: 100, // Upgraded size for dominance
-                            child: CircularProgressIndicator(
-                              value: isLoading ? 0.0 : (health / 100.0),
-                              strokeWidth: 9.5,
-                              backgroundColor: Colors.grey.withValues(alpha: 0.08),
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                isLoading 
-                                  ? Colors.grey 
-                                  : (health >= 85 
-                                      ? const Color(0xFF1E8E3E) 
-                                      : (health >= 60 ? const Color(0xFFFF8F00) : const Color(0xFFD50000))),
-                              ),
+                            child: TweenAnimationBuilder<double>(
+
+                              tween: Tween<double>(begin: 0.0, end: isLoading ? 0.0 : (health / 100.0)),
+
+                              duration: const Duration(milliseconds: 1400),
+
+                              curve: Curves.fastOutSlowIn,
+
+                              builder: (context, sweepVal, _) {
+
+                                return CircularProgressIndicator(
+
+                                  value: sweepVal,
+
+                                  strokeWidth: 9.5,
+
+                                  backgroundColor: Colors.grey.withValues(alpha: 0.08),
+
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+
+                                    isLoading 
+
+                                      ? Colors.grey 
+
+                                      : (health >= 85 
+
+                                          ? const Color(0xFF1E8E3E) 
+
+                                          : (health >= 60 ? const Color(0xFFFF8F00) : const Color(0xFFD50000))),
+
+                                  ),
+
+                                );
+
+                              }
+
                             ),
                           ),
                           Column(
@@ -196,8 +221,8 @@ class _HeatDetectorDashboardState extends State<HeatDetectorDashboard> {
                         tag: "hero_image_assets/heat_detector.png",
                         child: Image.asset(
                           "assets/heat_detector.png",
-                          width: 115, // Exploded size!
-                          height: 115, // Exploded size!
+                          width: 130,
+                          height: 130, // Exploded size!
                           fit: BoxFit.contain,
                         ),
                       ),
@@ -304,9 +329,9 @@ class _HeatDetectorDashboardState extends State<HeatDetectorDashboard> {
   }
 }
 
-class _ActionCard extends StatelessWidget {
+class _ActionCard extends StatefulWidget {
   final String title;
-  final String imagePath;
+  final dynamic imagePath; // dynamic to support both String assets and IconData safely!
   final Color color;
   final Widget page;
   final String? subtitle;
@@ -314,13 +339,20 @@ class _ActionCard extends StatelessWidget {
   const _ActionCard(this.title, this.imagePath, this.color, this.page, [this.subtitle]);
 
   @override
+  State<_ActionCard> createState() => _ActionCardState();
+}
+
+class _ActionCardState extends State<_ActionCard> {
+  double _scale = 1.0;
+
+  @override
   Widget build(BuildContext context) {
-    final String t = title.toLowerCase();
+    final String t = widget.title.toLowerCase();
     List<Color> bgGradient = [Colors.white, Colors.white];
     Color shadowColor = Colors.grey.withValues(alpha: 0.1);
     Color borderColor = Colors.grey.withValues(alpha: 0.3);
     
-    // Boost opacity levels to make the colored borders bold, highly visible, and striking!
+    // Tailored accent borders and shadows for each card identity!
     if (t.contains("analytics")) {
       shadowColor = const Color(0xFF1A73E8).withValues(alpha: 0.18);
       borderColor = const Color(0xFF1A73E8).withValues(alpha: 0.65);
@@ -339,69 +371,114 @@ class _ActionCard extends StatelessWidget {
     } else if (t.contains("reports")) {
       shadowColor = const Color(0xFF9334E6).withValues(alpha: 0.18);
       borderColor = const Color(0xFF9334E6).withValues(alpha: 0.65);
+    } else if (t.contains("checklist") || t.contains("forms")) {
+      shadowColor = const Color(0xFF3F51B5).withValues(alpha: 0.18);
+      borderColor = const Color(0xFF3F51B5).withValues(alpha: 0.65);
     }
     
-    return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: bgGradient,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    // Calculate staggered delay to create dynamic entrance pop!
+    int delayMs = 0;
+    if (t.contains("inspection")) delayMs = 80;
+    else if (t.contains("maintenance")) delayMs = 160;
+    else if (t.contains("alerts")) delayMs = 240;
+    else if (t.contains("plant health")) delayMs = 320;
+    else if (t.contains("reports")) delayMs = 400;
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 800),
+      curve: Interval(
+        (delayMs / 1000.0).clamp(0.0, 0.6), 
+        1.0, 
+        curve: Curves.easeOutBack
+      ),
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: 0.85 + (value * 0.15),
+          child: Opacity(
+            opacity: value.clamp(0.0, 1.0),
+            child: child,
           ),
-          borderRadius: BorderRadius.circular(22),
-          boxShadow: [
-            BoxShadow(
-              color: shadowColor,
-              blurRadius: 20,
-              spreadRadius: 1,
-              offset: const Offset(0, 6),
-            ),
-          ],
-          border: Border.all(
-            color: borderColor,
-            width: 2.2, // Bold 2.2px width for ultimate visual definition
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              flex: 6,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 16.0, left: 12.0, right: 12.0, bottom: 4.0),
-                  child: Image.asset(
-                    imagePath,
-                    fit: BoxFit.contain,
-                  ),
+        );
+      },
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _scale = 0.94),
+        onTapUp: (_) => setState(() => _scale = 1.0),
+        onTapCancel: () => setState(() => _scale = 1.0),
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => widget.page)),
+        child: AnimatedScale(
+          scale: _scale,
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOutCubic,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: bgGradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: shadowColor,
+                  blurRadius: 20,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 6),
                 ),
+              ],
+              border: Border.all(
+                color: borderColor,
+                width: 2.2, 
               ),
             ),
-            Expanded(
-              flex: 3,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      title,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Color(0xFF202124),
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
-                        letterSpacing: -0.2,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  flex: 7,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 10.0, left: 8.0, right: 8.0, bottom: 2.0),
+                      child: widget.imagePath is IconData
+                          ? FittedBox(
+                              fit: BoxFit.contain,
+                              child: Icon(
+                                widget.imagePath as IconData,
+                                color: borderColor.withValues(alpha: 1.0),
+                              ),
+                            )
+                          : Image.asset(
+                              widget.imagePath as String,
+                              fit: BoxFit.contain,
+                            ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          widget.title,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Color(0xFF202124),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

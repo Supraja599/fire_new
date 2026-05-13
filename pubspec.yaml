@@ -135,6 +135,7 @@ flutter:
     - assets/heat_detector.png
     - assets/co_detector.png
     - assets/fire_door.png
+    - assets/dashboard_icons/
 
 
   # The following line ensures that the Material Icons font is

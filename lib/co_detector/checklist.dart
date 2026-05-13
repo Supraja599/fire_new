@@ -76,16 +76,35 @@ class _CODetectorChecklistPageState extends State<CODetectorChecklistPage> {
           const SizedBox(height: 10),
           TextField(controller: inspectorController, decoration: const InputDecoration(labelText: "Inspector Name", border: OutlineInputBorder())),
         ])),
-        Expanded(child: ListView.builder(itemCount: questions.length, itemBuilder: (c, i) => Container(
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)]),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(questions[i]["item"], style: const TextStyle(fontWeight: FontWeight.w500)),
-            const SizedBox(height: 10),
-            Row(children: [_b(i, "YES", Colors.green), const SizedBox(width: 8), _b(i, "NO", Colors.red), const SizedBox(width: 8), _b(i, "NA", Colors.orange)]),
-          ]),
-        ))),
+          Expanded(
+            child: questions.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No checklist items available.',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: questions.length,
+                    itemBuilder: (c, i) => Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(questions[i]["item"], style: const TextStyle(fontWeight: FontWeight.w500)),
+                          const SizedBox(height: 10),
+                          Row(children: [_b(i, "YES", Colors.green), const SizedBox(width: 8), _b(i, "NO", Colors.red), const SizedBox(width: 8), _b(i, "NA", Colors.orange)]),
+                        ],
+                      ),
+                    ),
+                  ),
+          ),
         Container(width: double.infinity, padding: const EdgeInsets.all(12), child: ElevatedButton(
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
           onPressed: _save,

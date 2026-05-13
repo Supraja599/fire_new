@@ -694,13 +694,16 @@ class _IconsPageState extends State<IconsPage>
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: Image.asset(
-                                  mod.image,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (c, e, s) => Icon(
-                                    Icons.category,
-                                    color: color,
-                                    size: 32,
+                                child: Hero(
+                                  tag: "hero_image_${mod.image}",
+                                  child: Image.asset(
+                                    mod.image,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (c, e, s) => Icon(
+                                      Icons.category,
+                                      color: color,
+                                      size: 32,
+                                    ),
                                   ),
                                 ),
                               ),
