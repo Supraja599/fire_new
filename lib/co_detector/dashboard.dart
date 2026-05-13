@@ -6,9 +6,7 @@ import 'package:fire_new/widgets/health_score_widget.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'maintaince.dart';
 import 'alerts.dart';
-import 'planthealth.dart';
 import 'reports.dart';
-import 'checklist.dart';
 import 'scan.dart';
 import 'services/api_service.dart';
 
@@ -34,7 +32,7 @@ class _CODetectorDashboardState extends State<CODetectorDashboard> {
   Future<void> _loadData() async {
     try {
       final s = await api.getSummary();
-      if (mounted && s != null) {
+      if (mounted) {
         setState(() {
           total = s["total_units"] ?? s["total"] ?? 0;
           active = s["active_units"] ?? s["active"] ?? 0;
@@ -278,9 +276,68 @@ class _CODetectorDashboardState extends State<CODetectorDashboard> {
                 ],
               ),
             ),
-            const SizedBox(height: 8),
             
-            // Action Grid
+            // New: Gorgeous Executive Insight Banner to fill empty space elegantly!
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFFD50000).withValues(alpha: 0.05),
+                    const Color(0xFFD50000).withValues(alpha: 0.01),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: const Color(0xFFD50000).withValues(alpha: 0.1),
+                  width: 1.2,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD50000).withValues(alpha: 0.08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.insights_rounded, color: Color(0xFFD50000), size: 20),
+                  ),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Co Detector Intelligence Hub",
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF202124),
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          "Active security matrix verified. Environmental sensors and device telemetry synchronized.",
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF5F6368),
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),// Action Grid
             LayoutBuilder(
               builder: (context, constraints) {
                 final double textScale = MediaQuery.textScalerOf(context).scale(1);

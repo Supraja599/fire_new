@@ -26,17 +26,31 @@ class _SmokeDetectorChecklistPageState extends State<SmokeDetectorChecklistPage>
   }
 
   Future<void> _loadChecklist() async {
-    final items = await api.getChecklist();
-    if (!mounted) return;
-    setState(() {
-      checklist = items.isNotEmpty ? items : [
-        {"id": 1, "item_text": "Device LED indicator functional?"},
-        {"id": 2, "item_text": "Testing with smoke spray successful?"},
-        {"id": 3, "item_text": "Mounting secure and centered?"},
-        {"id": 4, "item_text": "Ventilation openings clear of dust?"},
-      ];
-      isLoading = false;
-    });
+    try {
+      final items = await api.getChecklist();
+      if (!mounted) return;
+      setState(() {
+        checklist = items.isNotEmpty ? items : [
+          {"id": 1, "item_text": "Device LED indicator functional?"},
+          {"id": 2, "item_text": "Testing with smoke spray successful?"},
+          {"id": 3, "item_text": "Mounting secure and centered?"},
+          {"id": 4, "item_text": "Ventilation openings clear of dust?"},
+        ];
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint("Smoke Detector Checklist Error: $e");
+      if (!mounted) return;
+      setState(() {
+        checklist = [
+          {"id": 1, "item_text": "Device LED indicator functional?"},
+          {"id": 2, "item_text": "Testing with smoke spray successful?"},
+          {"id": 3, "item_text": "Mounting secure and centered?"},
+          {"id": 4, "item_text": "Ventilation openings clear of dust?"},
+        ];
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -130,7 +144,7 @@ class _SmokeDetectorChecklistPageState extends State<SmokeDetectorChecklistPage>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item["item_text"] ?? "", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      Text(item["item_text"] ?? item["item"] ?? item["question"] ?? item["question_text"] ?? item["name"] ?? item["title"] ?? item["description"] ?? item["text"] ?? item["checklist_item"] ?? item["content"] ?? "Unknown Question", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                       const SizedBox(height: 12),
                       Row(
                         children: [

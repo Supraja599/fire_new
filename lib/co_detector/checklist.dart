@@ -24,20 +24,40 @@ class _CODetectorChecklistPageState extends State<CODetectorChecklistPage> {
       final list = await api.getChecklist();
       if (mounted) {
         setState(() {
-          questions = list.map((q) => {
-            "id": q["id"],
-            "item": q["item_text"] ?? q["item"] ?? "Unknown Question",
-            "yes": false,
-            "no": false,
-            "na": false
-          }).toList();
-          if (questions.isEmpty) {
-            questions = [{"id": 1, "item": "Is equipment accessible and in good condition?", "yes": false, "no": false, "na": false}];
+          if (list.isNotEmpty) {
+            questions = list.map((q) => {
+              "id": q["id"] ?? 0,
+              "item": q["item_text"] ?? q["item"] ?? q["question"] ?? q["question_text"] ?? q["name"] ?? q["title"] ?? q["description"] ?? q["text"] ?? q["checklist_item"] ?? q["content"] ?? "Unknown Question",
+              "yes": false,
+              "no": false,
+              "na": false
+            }).toList();
+          } else {
+            questions = _fallbackQuestions();
           }
           isLoading = false;
         });
       }
-    } catch (_) { if (mounted) setState(() => isLoading = false); }
+    } catch (e) {
+      debugPrint("CO Detector Checklist Error: $e");
+      if (mounted) {
+        setState(() {
+          questions = _fallbackQuestions();
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  List<Map<String, dynamic>> _fallbackQuestions() {
+    return [
+      {"id": 1, "item": "Is CO Detector accessible, visible, and mounted securely?", "yes": false, "no": false, "na": false},
+      {"id": 2, "item": "Verify LED power indicator is green/normal?", "yes": false, "no": false, "na": false},
+      {"id": 3, "item": "Press 'Test' button and verify audible alarm response?", "yes": false, "no": false, "na": false},
+      {"id": 4, "item": "Check cover/sensor grill for dust or obstructions?", "yes": false, "no": false, "na": false},
+      {"id": 5, "item": "Check manufacture / expiry date on device?", "yes": false, "no": false, "na": false},
+      {"id": 6, "item": "Verify battery compartments are free of corrosion?", "yes": false, "no": false, "na": false},
+    ];
   }
 
   void _save() async {

@@ -78,7 +78,17 @@ class _HeatDetectorPlantHealthPageState extends State<HeatDetectorPlantHealthPag
                 ],
                 titlesData: FlTitlesData(
                   leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 40, getTitlesWidget: (v, _) => Text(v.toInt().toString(), style: const TextStyle(fontSize: 10)))),
-                  bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, _) => Padding(padding: const EdgeInsets.only(top: 8), child: Text(["ACTIVE", "SERVICE", "INSPECT", "EXPIRED"][v.toInt()], style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold))))),
+                  bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, _) {
+                    int idx = v.toInt();
+                    if (idx < 0 || idx > 3) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        ["ACTIVE", "SERVICE", "INSPECT", "EXPIRED"][idx],
+                        style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
+                      ),
+                    );
+                  })),
                   rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)), topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
                 gridData: const FlGridData(show: true, drawVerticalLine: false), borderData: FlBorderData(show: false),

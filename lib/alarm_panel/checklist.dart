@@ -130,7 +130,7 @@ class _AlarmPanelChecklistPageState extends State<AlarmPanelChecklistPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item["item_text"] ?? "", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      Text(item["item_text"] ?? item["item"] ?? item["question"] ?? item["question_text"] ?? item["name"] ?? item["title"] ?? item["description"] ?? item["text"] ?? item["checklist_item"] ?? item["content"] ?? "Unknown Question", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                       const SizedBox(height: 12),
                       Row(
                         children: [

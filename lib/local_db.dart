@@ -47,6 +47,13 @@ class LocalDB {
           ''');
         }
       },
+      onOpen: (db) async {
+        await db.execute('CREATE TABLE IF NOT EXISTS extinguishers (id TEXT PRIMARY KEY, data TEXT)');
+        await db.execute('CREATE TABLE IF NOT EXISTS pending_sync (id TEXT PRIMARY KEY, data TEXT, isSynced INTEGER)');
+        await db.execute('CREATE TABLE IF NOT EXISTS module_records (module_code TEXT, record_type TEXT, record_id TEXT, data TEXT, PRIMARY KEY (module_code, record_type, record_id))');
+        await db.execute('CREATE TABLE IF NOT EXISTS pending_module_sync (event_id TEXT PRIMARY KEY, module_code TEXT, equipment_id TEXT, payload TEXT, isSynced INTEGER)');
+        await db.execute('CREATE TABLE IF NOT EXISTS user_session (username TEXT PRIMARY KEY, password TEXT, token TEXT, role TEXT, last_login TEXT)');
+      },
     );
   }
 
@@ -291,16 +298,20 @@ class LocalDB {
     required String recordType,
   }) async {
     if (kIsWeb) return [];
-    final db = await database;
-    final result = await db.query(
-      'module_records',
-      where: 'module_code = ? AND record_type = ?',
-      whereArgs: [moduleCode, recordType],
-    );
+    try {
+      final db = await database;
+      final result = await db.query(
+        'module_records',
+        where: 'module_code = ? AND record_type = ?',
+        whereArgs: [moduleCode, recordType],
+      );
 
-    return result
-        .map((row) => Map<String, dynamic>.from(jsonDecode(row['data'] as String)))
-        .toList();
+      return result
+          .map((row) => Map<String, dynamic>.from(jsonDecode(row['data'] as String)))
+          .toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   static Future<void> saveModuleMap({
@@ -327,16 +338,20 @@ class LocalDB {
     required String recordType,
   }) async {
     if (kIsWeb) return <String, dynamic>{};
-    final db = await database;
-    final result = await db.query(
-      'module_records',
-      where: 'module_code = ? AND record_type = ? AND record_id = ?',
-      whereArgs: [moduleCode, recordType, 'single'],
-      limit: 1,
-    );
+    try {
+      final db = await database;
+      final result = await db.query(
+        'module_records',
+        where: 'module_code = ? AND record_type = ? AND record_id = ?',
+        whereArgs: [moduleCode, recordType, 'single'],
+        limit: 1,
+      );
 
-    if (result.isEmpty) return <String, dynamic>{};
-    return Map<String, dynamic>.from(jsonDecode(result.first['data'] as String));
+      if (result.isEmpty) return <String, dynamic>{};
+      return Map<String, dynamic>.from(jsonDecode(result.first['data'] as String));
+    } catch (_) {
+      return <String, dynamic>{};
+    }
   }
 
   static Future<Map<String, dynamic>?> findModuleEquipment({

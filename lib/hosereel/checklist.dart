@@ -41,17 +41,16 @@ class _HoseReelChecklistPageState extends State<HoseReelChecklistPage> {
       "Surrounding area is safe for emergency operation",
     ];
 
-    return items
-        .map(
-          (item) => {
-            "id": null,
-            "item": item,
-            "yes": false,
-            "no": false,
-            "na": false,
-          },
-        )
-        .toList();
+    return List.generate(
+      items.length,
+      (i) => {
+        "id": 300 + i, // Safe unique fallback IDs
+        "item": items[i],
+        "yes": false,
+        "no": false,
+        "na": false,
+      },
+    );
   }
 
   Future<void> _loadChecklist() async {
@@ -65,7 +64,7 @@ class _HoseReelChecklistPageState extends State<HoseReelChecklistPage> {
               .map(
                 (item) => {
                   "id": item["id"],
-                  "item": item["item_text"] ?? "",
+                  "item": item["item_text"] ?? item["item"] ?? item["question"] ?? item["question_text"] ?? item["name"] ?? item["title"] ?? item["description"] ?? item["text"] ?? item["checklist_item"] ?? item["content"] ?? "Unknown Question",
                   "yes": false,
                   "no": false,
                   "na": false,

@@ -166,7 +166,7 @@ class _HydrantChecklistPageState extends State<HydrantChecklistPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        (item["item_text"] ?? "").toString(),
+                        (item["item_text"] ?? item["item"] ?? item["question"] ?? item["question_text"] ?? item["name"] ?? item["title"] ?? item["description"] ?? item["text"] ?? item["checklist_item"] ?? item["content"] ?? "Unknown Question").toString(),
                         style: const TextStyle(
                           fontWeight: FontWeight.w700,
                           height: 1.3,

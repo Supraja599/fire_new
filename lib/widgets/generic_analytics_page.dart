@@ -260,9 +260,9 @@ class _GenericAnalyticsPageState extends State<GenericAnalyticsPage> {
         onTap: () => openIdList(label, list),
         child: Container(
           margin: const EdgeInsets.all(8),
-          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16), // Increased vertical padding
+          padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16), // Substantially increased vertical padding
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22), // Enhanced rounding for larger size
+            borderRadius: BorderRadius.circular(24), // Enhanced rounding for larger size
             gradient: LinearGradient(
               colors: [
                 color.withValues(alpha: 0.95),
@@ -274,31 +274,31 @@ class _GenericAnalyticsPageState extends State<GenericAnalyticsPage> {
             boxShadow: [
               BoxShadow(
                 color: color.withValues(alpha: 0.25),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
+                blurRadius: 14,
+                offset: const Offset(0, 7),
               )
             ],
           ),
           child: Column(
             children: [
-              Icon(icon, color: Colors.white, size: 38), // Increased from 32
-              const SizedBox(height: 10),
+              Icon(icon, color: Colors.white, size: 44), // Increased from 38 for dominance
+              const SizedBox(height: 12),
               Text(
                 label,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 15, // Increased from 13
+                  fontSize: 16, // Increased from 15
                   letterSpacing: 0.2,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Text(
                 "$count",
                 style: const TextStyle(
-                  fontSize: 28, // Increased from 22
-                  fontWeight: FontWeight.w900, // Extra bold
+                  fontSize: 32, // Increased from 28
+                  fontWeight: FontWeight.w900, // Maximized extra bold
                   color: Colors.white,
                 ),
               ),
@@ -407,7 +407,81 @@ class _GenericAnalyticsPageState extends State<GenericAnalyticsPage> {
                     // ================= TOTAL CONSOLE =================
                     totalCard(),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
+
+                    // 🎉 NEW: Elegant Module Icon Info Card to fill empty space and describe the unit!
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(22),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 15,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                        border: Border.all(
+                          color: Colors.grey.withValues(alpha: 0.12),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          // 🎨 Custom-framed dynamic module icon
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD50000).withValues(alpha: 0.06),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Image.asset(
+                              widget.imagePath,
+                              width: 38,
+                              height: 38,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => Icon(
+                                widget.fallbackIcon,
+                                color: const Color(0xFFD50000),
+                                size: 28,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          // 📝 Module descriptive telemetry copy
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "${widget.shortName} Utility Hub",
+                                  style: TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.grey[850],
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Comprehensive status oversight, live hazard monitoring, and real-time operational metrics for this emergency response equipment category.",
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[500],
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
 
                     // ================= METRICS ACTION GRID =================
                     Padding(

@@ -114,7 +114,17 @@ class _SmokeDetectorPlantHealthPageState extends State<SmokeDetectorPlantHealthP
                         alignment: BarChartAlignment.spaceAround,
                         titlesData: FlTitlesData(
                           leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 35)),
-                          bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, _) => Padding(padding: const EdgeInsets.only(top: 10), child: Text(["ACT", "SVC", "INS", "EXP"][v.toInt()], style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueGrey))))),
+                          bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, _) {
+                            int idx = v.toInt();
+                            if (idx < 0 || idx > 3) return const SizedBox.shrink();
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: Text(
+                                ["ACT", "SVC", "INS", "EXP"][idx],
+                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                              ),
+                            );
+                          })),
                           rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                         ),

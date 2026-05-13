@@ -25,8 +25,13 @@ class FireBlanketsApiService {
   }
 
   List<Map<String, dynamic>> _readList(dynamic decoded) {
-    if (decoded is Map && decoded["items"] is List) return List<Map<String, dynamic>>.from(decoded["items"]);
     if (decoded is List) return List<Map<String, dynamic>>.from(decoded);
+    if (decoded is Map) {
+      if (decoded["items"] is List) return List<Map<String, dynamic>>.from(decoded["items"]);
+      if (decoded["data"] is List) return List<Map<String, dynamic>>.from(decoded["data"]);
+      if (decoded["checklists"] is List) return List<Map<String, dynamic>>.from(decoded["checklists"]);
+      if (decoded["records"] is List) return List<Map<String, dynamic>>.from(decoded["records"]);
+    }
     return [];
   }
 

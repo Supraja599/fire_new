@@ -44,40 +44,48 @@ class _ChecklistPageState extends State<ChecklistPage> {
       "No signs of leakage around the valve assembly",
     ];
 
-    return items
-        .map(
-          (item) => {
-            "id": null,
-            "item": item,
-            "yes": false,
-            "no": false,
-            "na": false,
-          },
-        )
-        .toList();
+    return List.generate(
+      items.length,
+      (i) => {
+        "id": 400 + i, // Safe unique IDs for saving offline
+        "item": items[i],
+        "yes": false,
+        "no": false,
+        "na": false,
+      },
+    );
   }
 
   Future<void> _loadChecklist() async {
-    final items = await ApiService.getFireChecklist();
+    try {
+      final items = await ApiService.getFireChecklist();
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() {
-      checklist = items.isNotEmpty
-          ? items
-              .map(
-                (item) => {
-                  "id": item["id"],
-                  "item": item["item_text"] ?? item["item"] ?? "",
-                  "yes": false,
-                  "no": false,
-                  "na": false,
-                },
-              )
-              .toList()
-          : _fallbackChecklist();
-      isLoading = false;
-    });
+      setState(() {
+        checklist = items.isNotEmpty
+            ? items
+                .map(
+                  (item) => {
+                    "id": item["id"],
+                    "item": item["item_text"] ?? item["item"] ?? item["question"] ?? item["question_text"] ?? item["name"] ?? item["title"] ?? item["description"] ?? item["text"] ?? item["checklist_item"] ?? item["content"] ?? "Unknown Question",
+                    "yes": false,
+                    "no": false,
+                    "na": false,
+                  },
+                )
+                .toList()
+            : _fallbackChecklist();
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint("Fire Extinguisher Checklist Error: $e");
+      if (!mounted) return;
+      setState(() {
+        checklist = _fallbackChecklist();
+        isLoading = false;
+      });
+    }
   }
 
   void _setValue(int index, String type) {

@@ -26,7 +26,7 @@ class _ChemicalShowerChecklistPageState extends State<ChemicalShowerChecklistPag
         setState(() {
           questions = list.map((q) => {
             "id": q["id"],
-            "item": q["item_text"] ?? q["item"] ?? "Unknown Question",
+            "item": q["item_text"] ?? q["item"] ?? q["question"] ?? q["question_text"] ?? q["name"] ?? q["title"] ?? q["description"] ?? q["text"] ?? q["checklist_item"] ?? q["content"] ?? "Unknown Question",
             "yes": false,
             "no": false,
             "na": false
