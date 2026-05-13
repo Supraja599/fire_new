@@ -1,3 +1,5 @@
+import 'package:fire_new/widgets/generic_plant_health_page.dart';
+import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:fire_new/widgets/health_score_widget.dart';
@@ -23,6 +25,7 @@ class _FireExtinguisherDashboardState extends State<FireExtinguisherDashboard> {
   final api = FireExtinguisherApiService();
   int activeUnits = 0, needsService = 0, total = 0, health = 0;
   bool isLoading = true;
+  Map<String, dynamic>? summaryData;
 
   @override
   void initState() {
@@ -38,6 +41,7 @@ class _FireExtinguisherDashboardState extends State<FireExtinguisherDashboard> {
           activeUnits = s["active_units"] ?? s["active"] ?? 0;
           needsService = (s["needs_service"] ?? 0) + (s["expired"] ?? 0) + (s["needs-service"] ?? 0);
           total = s["total_units"] ?? s["total"] ?? (activeUnits + needsService);
+          summaryData = s;
           health = ApiService.calculateHealth(s);
           isLoading = false;
         });
@@ -47,7 +51,7 @@ class _FireExtinguisherDashboardState extends State<FireExtinguisherDashboard> {
     }
   }
 
-  @override
+    @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     
@@ -253,7 +257,7 @@ class _FireExtinguisherDashboardState extends State<FireExtinguisherDashboard> {
             const SizedBox(height: 8),
             
             // Action Grid
-                                    LayoutBuilder(
+            LayoutBuilder(
               builder: (context, constraints) {
                 final double textScale = MediaQuery.textScalerOf(context).scale(1);
                 int crossAxisCount = 3;
@@ -270,31 +274,29 @@ class _FireExtinguisherDashboardState extends State<FireExtinguisherDashboard> {
                     mainAxisSpacing: 10,
                     childAspectRatio: aspectRatio,
                     children: [
-                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.png", const Color(0xFFD32F2F), const AnalyticsPage(), "Trends"),
+                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.png", const Color(0xFFD32F2F), GenericAnalyticsPage(
+                        title: "Fire Extinguisher Analytics",
+                        shortName: "Fire Extinguisher",
+                        assetLabel: "TOTAL FIRE EXTINGUISHER",
+                        apiService: api,
+                        imagePath: "assets/extinguisher.png",
+                        fallbackIcon: Icons.analytics_rounded,
+                      ), "Trends"),
                       _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const InspectionPage(), "Scan"),
                       _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const MaintenancePage(), "Service"),
                       _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const AlertsPage(), "Critical"),
-                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), const PlantHealthPage(), "Score"),
+                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(
+                        title: "Fire Extinguisher Health",
+                        shortName: "Fire Extinguisher",
+                        apiService: api,
+                        imagePath: "assets/extinguisher.png",
+                        fallbackIcon: Icons.health_and_safety_rounded,
+                      ), "Score"),
                       _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const ReportsPage(), "Logs"),
                     ],
                   ),
                 );
               },
-            ),
-
-            // Inspection Streak
-            Padding(
-              padding: const EdgeInsets.only(top: 30, bottom: 20),
-              child: Center(
-                child: Text(
-                  "Inspection Streak: 0 months",
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: width * 0.035,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
             ),
           ],
         ),

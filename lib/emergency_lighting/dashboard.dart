@@ -1,3 +1,5 @@
+import 'package:fire_new/widgets/generic_plant_health_page.dart';
+import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:fire_new/widgets/health_score_widget.dart';
@@ -22,6 +24,7 @@ class _EmergencyLightingDashboardState extends State<EmergencyLightingDashboard>
   final api = EmergencyLightingApiService();
   int total = 0, active = 0, health = 0;
   bool isLoading = true;
+  Map<String, dynamic>? summaryData;
 
   @override
   void initState() { super.initState(); _load(); }
@@ -33,6 +36,7 @@ class _EmergencyLightingDashboardState extends State<EmergencyLightingDashboard>
         setState(() {
           total = s["total_units"] ?? s["total"] ?? 0;
           active = s["active_units"] ?? s["active"] ?? 0;
+          summaryData = s;
           health = ApiService.calculateHealth(s);
           isLoading = false;
         });
@@ -42,7 +46,7 @@ class _EmergencyLightingDashboardState extends State<EmergencyLightingDashboard>
     } catch (_) { if (mounted) setState(() => isLoading = false); }
   }
 
-    @override
+      @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     
@@ -248,7 +252,7 @@ class _EmergencyLightingDashboardState extends State<EmergencyLightingDashboard>
             const SizedBox(height: 8),
             
             // Action Grid
-                        LayoutBuilder(
+            LayoutBuilder(
               builder: (context, constraints) {
                 final double textScale = MediaQuery.textScalerOf(context).scale(1);
                 int crossAxisCount = 3;
@@ -265,31 +269,29 @@ class _EmergencyLightingDashboardState extends State<EmergencyLightingDashboard>
                     mainAxisSpacing: 10,
                     childAspectRatio: aspectRatio,
                     children: [
-                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), const EmergencyLightingPlantHealthPage(), "Score"),
-                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const EmergencyLightingAlertsPage(), "Critical"),
-                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const EmergencyLightingMaintenancePage(), "Service"),
-                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const EmergencyLightingReportsPage(), "Logs"),
-                      _ActionCard("Checklist", Icons.library_books_rounded, const Color(0xFFD32F2F), const EmergencyLightingChecklistPage(), "Forms"),
+                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.png", const Color(0xFFD32F2F), GenericAnalyticsPage(
+                        title: "Emergency Lighting Analytics",
+                        shortName: "Emergency Lighting",
+                        assetLabel: "TOTAL EMERGENCY LIGHTING",
+                        apiService: api,
+                        imagePath: "assets/emergency_lighting.png",
+                        fallbackIcon: Icons.analytics_rounded,
+                      ), "Trends"),
                       _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const EmergencyLightingScanPage(), "Scan"),
+                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const EmergencyLightingMaintenancePage(), "Service"),
+                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const EmergencyLightingAlertsPage(), "Critical"),
+                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(
+                        title: "Emergency Lighting Health",
+                        shortName: "Emergency Lighting",
+                        apiService: api,
+                        imagePath: "assets/emergency_lighting.png",
+                        fallbackIcon: Icons.health_and_safety_rounded,
+                      ), "Score"),
+                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const EmergencyLightingReportsPage(), "Logs"),
                     ],
                   ),
                 );
               },
-            ),
-
-            // Inspection Streak
-            Padding(
-              padding: const EdgeInsets.only(top: 30, bottom: 20),
-              child: Center(
-                child: Text(
-                  "Inspection Streak: 0 months",
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: width * 0.035,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
             ),
           ],
         ),
@@ -300,7 +302,7 @@ class _EmergencyLightingDashboardState extends State<EmergencyLightingDashboard>
 
 class _ActionCard extends StatelessWidget {
   final String title;
-  final dynamic imagePath; // dynamic to support both String assets and IconData safely!
+  final String imagePath;
   final Color color;
   final Widget page;
   final String? subtitle;
@@ -314,7 +316,7 @@ class _ActionCard extends StatelessWidget {
     Color shadowColor = Colors.grey.withValues(alpha: 0.1);
     Color borderColor = Colors.grey.withValues(alpha: 0.3);
     
-    // Tailored accent borders and shadows for each card identity!
+    // Boost opacity levels to make the colored borders bold, highly visible, and striking!
     if (t.contains("analytics")) {
       shadowColor = const Color(0xFF1A73E8).withValues(alpha: 0.18);
       borderColor = const Color(0xFF1A73E8).withValues(alpha: 0.65);
@@ -333,10 +335,6 @@ class _ActionCard extends StatelessWidget {
     } else if (t.contains("reports")) {
       shadowColor = const Color(0xFF9334E6).withValues(alpha: 0.18);
       borderColor = const Color(0xFF9334E6).withValues(alpha: 0.65);
-    } else if (t.contains("checklist") || t.contains("forms")) {
-      // Tailored elegant deep indigo for checklist/forms
-      shadowColor = const Color(0xFF3F51B5).withValues(alpha: 0.18);
-      borderColor = const Color(0xFF3F51B5).withValues(alpha: 0.65);
     }
     
     return GestureDetector(
@@ -359,7 +357,7 @@ class _ActionCard extends StatelessWidget {
           ],
           border: Border.all(
             color: borderColor,
-            width: 2.2, // Vibrant 2.2px definition from fire_extinguisher
+            width: 2.2, // Bold 2.2px width for ultimate visual definition
           ),
         ),
         child: Column(
@@ -371,18 +369,10 @@ class _ActionCard extends StatelessWidget {
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 16.0, left: 12.0, right: 12.0, bottom: 4.0),
-                  child: imagePath is IconData
-                      ? FittedBox(
-                          fit: BoxFit.contain,
-                          child: Icon(
-                            imagePath as IconData,
-                            color: borderColor.withValues(alpha: 1.0),
-                          ),
-                        )
-                      : Image.asset(
-                          imagePath as String,
-                          fit: BoxFit.contain,
-                        ),
+                  child: Image.asset(
+                    imagePath,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ),

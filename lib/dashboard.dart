@@ -293,21 +293,6 @@ class _DashboardPageState extends State<DashboardPage> {
                         );
                       },
                     ),
-
-                    // Inspection Streak
-                    Padding(
-                      padding: const EdgeInsets.only(top: 30, bottom: 20),
-                      child: Center(
-                        child: Text(
-                          "Inspection Streak: 0 months",
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: screenWidth * 0.035,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
