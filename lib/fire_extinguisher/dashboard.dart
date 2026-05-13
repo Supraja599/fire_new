@@ -1,3 +1,4 @@
+import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:fire_new/widgets/health_score_widget.dart';
 import '../inspection.dart';
@@ -56,85 +57,225 @@ class _FireExtinguisherDashboardState extends State<FireExtinguisherDashboard> {
         child: ListView(
           physics: const BouncingScrollPhysics(),
           children: [
-            // Red Header Section
+            // Minimal Header Section
             Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFFD32F2F), Color(0xFFC62828)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(50),
-                  bottomRight: Radius.circular(50),
-                ),
-              ),
-              padding: EdgeInsets.symmetric(vertical: 30, horizontal: width * 0.05),
+              padding: EdgeInsets.only(top: 25, bottom: 20, left: width * 0.05, right: width * 0.05),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  if (Navigator.canPop(context))
+                    Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87, size: 18),
+                        ),
+                      ),
+                    ),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            "Fire Extinguisher",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: width * 0.07,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        Text(
+                          "Fire Extinguisher",
+                          style: TextStyle(
+                            color: Colors.grey[900],
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.5,
                           ),
                         ),
-                        const SizedBox(height: 5),
+                        const SizedBox(height: 2),
                         Text(
                           "Company Eltrive",
                           style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: width * 0.04,
+                            color: Colors.grey[500],
+                            fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
                   ),
+                  const SizedBox(width: 8),
                   HealthScoreWidget(health: health),
                 ],
               ),
             ),
-             const SizedBox(height: 10),
-
+            const SizedBox(height: 5),
+            // 🏆 MASTER EXECUTIVE RADIAL TELEMETRY BANNER
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.grey.withValues(alpha: 0.08),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 22,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // 🚀 TOP TIER: Massive Radial Dial & Upgraded 3D Device Asset
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // 1. LEFT: Gorgeous Circular Radial Indicator
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            width: 100, // Upgraded size for dominance
+                            height: 100, // Upgraded size for dominance
+                            child: CircularProgressIndicator(
+                              value: isLoading ? 0.0 : (health / 100.0),
+                              strokeWidth: 9.5,
+                              backgroundColor: Colors.grey.withValues(alpha: 0.08),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                isLoading 
+                                  ? Colors.grey 
+                                  : (health >= 85 
+                                      ? const Color(0xFF1E8E3E) 
+                                      : (health >= 60 ? const Color(0xFFFF8F00) : const Color(0xFFD50000))),
+                              ),
+                            ),
+                          ),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                isLoading ? "--" : "${health}%",
+                                style: TextStyle(
+                                  fontSize: 23, // Huge executive look
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.grey[850],
+                                  letterSpacing: -0.8,
+                                ),
+                              ),
+                              const Text(
+                                "HEALTH",
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.8,
+                                  color: Colors.grey,
+                                ),
+                              )
+                            ],
+                          )
+                        ],
+                      ),
+                      // 2. RIGHT: The HUGE, BEAUTIFUL Device Asset Image!
+                      Hero(
+                        tag: "hero_image_assets/extinguisher.png",
+                        child: Image.asset(
+                          "assets/extinguisher.png",
+                          width: 115, // Exploded size!
+                          height: 115, // Exploded size!
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  const Divider(height: 1, thickness: 1),
+                  const SizedBox(height: 16),
+                  // 📝 BOTTOM TIER: System Diagnostic Summary
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const BlinkingActiveBadge(),
+                      const SizedBox(width: 15),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isLoading
+                                  ? "Accessing systems..."
+                                  : (health >= 85 
+                                      ? "Optimal Status Standing" 
+                                      : (health >= 60 ? "Advisory Maintenance Required" : "Critical System Attention Required")),
+                              style: TextStyle(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w900,
+                                color: isLoading 
+                                    ? Colors.grey 
+                                    : (health >= 85 
+                                        ? const Color(0xFF1E8E3E) 
+                                        : (health >= 60 ? const Color(0xFFFF8F00) : const Color(0xFFD50000))),
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              isLoading
+                                  ? "Decrypting real-time sensor telemetry streams..."
+                                  : "Successfully validating $activeUnits active units currently operational out of ${total} deployed devices.",
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: Colors.grey[600],
+                                height: 1.4,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            
             // Action Grid
-            LayoutBuilder(
+                                    LayoutBuilder(
               builder: (context, constraints) {
                 final double textScale = MediaQuery.textScalerOf(context).scale(1);
-                int crossAxisCount = width >= 600 ? 3 : 2;
+                int crossAxisCount = 3;
                 
-                double aspectRatio = 0.95;
-                if (crossAxisCount == 2) {
-                   aspectRatio = (0.95 / textScale).clamp(0.7, 0.95);
-                } else {
-                   aspectRatio = (1.05 / textScale).clamp(0.8, 1.05);
-                }
+                double aspectRatio = (0.85 / textScale).clamp(0.6, 0.9);
                 
                 return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: width * 0.04),
+                  padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.04),
                   child: GridView.count(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
                     childAspectRatio: aspectRatio,
                     children: [
-                      _ActionCard("Analytics", Icons.bar_chart_rounded, primary, const AnalyticsPage(), "Trends"),
-                      _ActionCard("Inspection", Icons.fact_check_rounded, primary, const InspectionPage(), "Scan"),
-                      _ActionCard("Maintenance", Icons.construction_rounded, primary, const MaintenancePage(), "Service"),
-                      _ActionCard("Alerts", Icons.emergency_rounded, primary, const AlertsPage(), "Critical"),
-                      _ActionCard("Plant Health", Icons.monitor_heart_rounded, primary, const PlantHealthPage(), "Score"),
-                      _ActionCard("Reports", Icons.history_edu_rounded, primary, const ReportsPage(), "Logs"),
+                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.png", const Color(0xFFD32F2F), const AnalyticsPage(), "Trends"),
+                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const InspectionPage(), "Scan"),
+                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const MaintenancePage(), "Service"),
+                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const AlertsPage(), "Critical"),
+                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), const PlantHealthPage(), "Score"),
+                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const ReportsPage(), "Logs"),
                     ],
                   ),
                 );
@@ -164,55 +305,98 @@ class _FireExtinguisherDashboardState extends State<FireExtinguisherDashboard> {
 
 class _ActionCard extends StatelessWidget {
   final String title;
-  final IconData icon;
+  final String imagePath;
   final Color color;
   final Widget page;
-  final String subtitle;
+  final String? subtitle;
 
-  const _ActionCard(this.title, this.icon, this.color, this.page, this.subtitle);
+  const _ActionCard(this.title, this.imagePath, this.color, this.page, [this.subtitle]);
 
   @override
   Widget build(BuildContext context) {
-    final double width = MediaQuery.of(context).size.width;
+    final String t = title.toLowerCase();
+    List<Color> bgGradient = [Colors.white, Colors.white];
+    Color shadowColor = Colors.grey.withValues(alpha: 0.1);
+    Color borderColor = Colors.grey.withValues(alpha: 0.3);
+    
+    // Boost opacity levels to make the colored borders bold, highly visible, and striking!
+    if (t.contains("analytics")) {
+      shadowColor = const Color(0xFF1A73E8).withValues(alpha: 0.18);
+      borderColor = const Color(0xFF1A73E8).withValues(alpha: 0.65);
+    } else if (t.contains("inspection")) {
+      shadowColor = const Color(0xFF1E8E3E).withValues(alpha: 0.18);
+      borderColor = const Color(0xFF1E8E3E).withValues(alpha: 0.65);
+    } else if (t.contains("maintenance")) {
+      shadowColor = const Color(0xFFF9AB00).withValues(alpha: 0.18);
+      borderColor = const Color(0xFFF9AB00).withValues(alpha: 0.65);
+    } else if (t.contains("alerts")) {
+      shadowColor = const Color(0xFFD93025).withValues(alpha: 0.18);
+      borderColor = const Color(0xFFD93025).withValues(alpha: 0.65);
+    } else if (t.contains("plant health")) {
+      shadowColor = const Color(0xFF0097A7).withValues(alpha: 0.18);
+      borderColor = const Color(0xFF0097A7).withValues(alpha: 0.65);
+    } else if (t.contains("reports")) {
+      shadowColor = const Color(0xFF9334E6).withValues(alpha: 0.18);
+      borderColor = const Color(0xFF9334E6).withValues(alpha: 0.65);
+    }
     
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
       child: Container(
-        padding: EdgeInsets.all(width * 0.05),
         decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(25),
+          gradient: LinearGradient(
+            colors: bgGradient,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(22),
           boxShadow: [
-            BoxShadow(color: color.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6)),
+            BoxShadow(
+              color: shadowColor,
+              blurRadius: 20,
+              spreadRadius: 1,
+              offset: const Offset(0, 6),
+            ),
           ],
+          border: Border.all(
+            color: borderColor,
+            width: 2.2, // Bold 2.2px width for ultimate visual definition
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.white, size: width * 0.1),
-            const SizedBox(height: 12),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  fontSize: width * 0.04,
+            Expanded(
+              flex: 6,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 16.0, left: 12.0, right: 12.0, bottom: 4.0),
+                  child: Image.asset(
+                    imagePath,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 4),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                subtitle,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
-                  fontSize: width * 0.03,
-                  fontWeight: FontWeight.w500,
+            Expanded(
+              flex: 3,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF202124),
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -222,4 +406,3 @@ class _ActionCard extends StatelessWidget {
     );
   }
 }
-

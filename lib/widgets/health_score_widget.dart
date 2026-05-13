@@ -10,19 +10,29 @@ class HealthScoreWidget extends StatefulWidget {
 
 class _HealthScoreWidgetState extends State<HealthScoreWidget> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _animation;
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _heartScaleAnimation;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1200),
       vsync: this,
     )..repeat(reverse: true);
-    _animation = Tween<double>(begin: 0.8, end: 1.4).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+
+    // The dynamic border glowing opacity breath: from 35% up to 95% opacity
+    _pulseAnimation = Tween<double>(begin: 0.35, end: 0.95).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+
+    // The beating heart animation
+    _heartScaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.22), weight: 30),
+      TweenSequenceItem(tween: Tween<double>(begin: 1.22, end: 1.0), weight: 30),
+      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.1), weight: 20),
+      TweenSequenceItem(tween: Tween<double>(begin: 1.1, end: 1.0), weight: 20),
+    ]).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -33,58 +43,81 @@ class _HealthScoreWidgetState extends State<HealthScoreWidget> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
-    final double width = MediaQuery.of(context).size.width;
+    final int h = widget.health;
     
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.red.withOpacity(0.15),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ScaleTransition(
-            scale: _animation,
-            child: Icon(
-              Icons.favorite,
-              color: Colors.redAccent,
-              size: 28, 
+    // 🎨 Determine Semantic Theme Colors
+    final Color themeColor = (h >= 85)
+        ? const Color(0xFF1E8E3E) // Vibrant Green
+        : (h >= 60)
+            ? const Color(0xFFFF8F00) // Vibrant Amber
+            : const Color(0xFFD50000); // Cherry Red
+
+    // Lock physical heart color Strictly to Cherry Red (Color(0xFFD50000)) as requested by USER!
+    const Color heartColor = Color(0xFFD50000); 
+
+    return AnimatedBuilder(
+      animation: _pulseAnimation,
+      builder: (context, child) {
+        final double currentOpacity = _pulseAnimation.value;
+        
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: themeColor.withValues(alpha: currentOpacity),
+              width: 2.2, // Gorgeous high-definition border
             ),
-          ),
-          SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                "HEALTH",
-                style: TextStyle(
-                  fontSize: 8,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              Text(
-                "${widget.health}%",
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.black,
-                ),
+            boxShadow: [
+              BoxShadow(
+                color: themeColor.withValues(alpha: currentOpacity * 0.18),
+                blurRadius: 12,
+                spreadRadius: 1,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
-        ],
-      ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ScaleTransition(
+                scale: _heartScaleAnimation,
+                child: const Icon(
+                  Icons.favorite_rounded,
+                  color: heartColor, // 🔒 LOCKED to Pure Red
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "HEALTH",
+                    style: TextStyle(
+                      fontSize: 7.5,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.grey,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  Text(
+                    "${h}%",
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.grey[850],
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

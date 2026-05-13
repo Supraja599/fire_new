@@ -1,0 +1,440 @@
+import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:fire_new/widgets/equipment_list_page.dart';
+
+class GenericAnalyticsPage extends StatefulWidget {
+  final String title;
+  final String shortName;
+  final String assetLabel;
+  final dynamic apiService;
+  final String imagePath;
+  final IconData fallbackIcon;
+
+  const GenericAnalyticsPage({
+    super.key,
+    required this.title,
+    required this.shortName,
+    required this.assetLabel,
+    required this.apiService,
+    required this.imagePath,
+    required this.fallbackIcon,
+  });
+
+  @override
+  State<GenericAnalyticsPage> createState() => _GenericAnalyticsPageState();
+}
+
+class _GenericAnalyticsPageState extends State<GenericAnalyticsPage> {
+  List<Map<String, dynamic>> activeList = [];
+  List<Map<String, dynamic>> serviceList = [];
+  List<Map<String, dynamic>> inspectionList = [];
+  List<Map<String, dynamic>> expiredList = [];
+
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  Future<void> fetchData() async {
+    setState(() => isLoading = true);
+
+    try {
+      final res = await Future.wait([
+        widget.apiService.getActive() as Future,
+        widget.apiService.getNeedsService() as Future,
+        widget.apiService.getDueInspection() as Future,
+        widget.apiService.getExpired() as Future,
+      ]);
+
+      if (mounted) {
+        setState(() {
+          activeList = res[0];
+          serviceList = res[1];
+          inspectionList = res[2];
+          expiredList = res[3];
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  // ================= COLORS =================
+  final activeColor = const Color(0xFF1E8E3E); // Modern Safety Green
+  final serviceColor = const Color(0xFFFF8F00);
+  final inspectionColor = const Color(0xFF1565C0);
+  final expiredColor = const Color(0xFFD50000); // Modern True Red
+
+  // ================= PIE DATA =================
+  List<PieChartSectionData> getSections() {
+    final data = [
+      {"label": "Active", "value": activeList.length, "color": activeColor},
+      {"label": "Need Service", "value": serviceList.length, "color": serviceColor},
+      {"label": "Due Inspection", "value": inspectionList.length, "color": inspectionColor},
+      {"label": "Expired", "value": expiredList.length, "color": expiredColor},
+    ];
+
+    // If total is zero, show a subtle grey ring placeholder to prevent fl_chart rendering anomalies
+    int totalCount = activeList.length + serviceList.length + inspectionList.length + expiredList.length;
+    if (totalCount == 0) {
+      return [
+        PieChartSectionData(
+          value: 1.0,
+          color: Colors.grey.shade300,
+          radius: 85,
+          title: "No Data\nAvailable",
+          titleStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey[600]),
+        )
+      ];
+    }
+
+    return List.generate(data.length, (i) {
+      final value = data[i]["value"] as int;
+      final label = data[i]["label"] as String;
+
+      // Only render slices that actually contain items to avoid messy overlaps on 0% slices
+      if (value == 0) return PieChartSectionData(value: 0, showTitle: false);
+
+      return PieChartSectionData(
+        value: value.toDouble(),
+        color: data[i]["color"] as Color,
+        radius: 85, // Substantially enlarged
+        title: "$label\n$value",
+        titleStyle: const TextStyle(
+          fontSize: 11.5,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+        titlePositionPercentageOffset: 0.55,
+      );
+    }).where((element) => element.value > 0).toList();
+  }
+
+  // ================= ICONS =================
+  IconData getIcon(String type) {
+    switch (type) {
+      case "Active":
+        return Icons.check_circle;
+      case "Need Service":
+        return Icons.handyman;
+      case "Due Inspection":
+        return Icons.fact_check;
+      case "Expired":
+        return Icons.warning;
+      default:
+        return Icons.circle;
+    }
+  }
+
+  Color getColor(String type) {
+    switch (type) {
+      case "Active":
+        return activeColor;
+      case "Need Service":
+        return serviceColor;
+      case "Due Inspection":
+        return inspectionColor;
+      case "Expired":
+        return expiredColor;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // ================= TOTAL COUNT =================
+  Widget totalCard() {
+    int total = activeList.length +
+        serviceList.length +
+        inspectionList.length +
+        expiredList.length;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 22), // Increased padding
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24), // Larger premium rounding
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          )
+        ],
+        border: Border.all(
+          color: Colors.grey.withValues(alpha: 0.15),
+          width: 1.2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  widget.assetLabel,
+                  style: TextStyle(
+                    fontSize: 15.5, // Enlarged size
+                    fontWeight: FontWeight.w900, // Bold weight
+                    color: Colors.grey[900],
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                "$total",
+                style: const TextStyle(
+                  fontSize: 32, // Massively increased count size
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFFD50000),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Divider(
+            height: 1,
+            thickness: 1.2,
+            color: Colors.grey.withValues(alpha: 0.15),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Icon(Icons.analytics_outlined, size: 17, color: const Color(0xFFD50000).withValues(alpha: 0.7)),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  "Real-time health surveillance, compliance logging, and operational readiness telemetry for all deployed ${widget.shortName} systems.",
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[600],
+                    height: 1.45,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ================= LIST DRILL-DOWN =================
+  void openIdList(String label, List<Map<String, dynamic>> list) {
+    final color = getColor(label);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EquipmentListPage(
+          title: "$label ${widget.shortName}",
+          items: list,
+          color: color,
+          imagePath: widget.imagePath,
+          fallbackIcon: widget.fallbackIcon,
+        ),
+      ),
+    );
+  }
+
+  // ================= DRILL-DOWN GRID CARD =================
+  Widget buildCard(String label, int count, List<Map<String, dynamic>> list) {
+    final color = getColor(label);
+    final icon = getIcon(label);
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => openIdList(label, list),
+        child: Container(
+          margin: const EdgeInsets.all(8),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16), // Increased vertical padding
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22), // Enhanced rounding for larger size
+            gradient: LinearGradient(
+              colors: [
+                color.withValues(alpha: 0.95),
+                color.withValues(alpha: 0.75),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              )
+            ],
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: Colors.white, size: 38), // Increased from 32
+              const SizedBox(height: 10),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15, // Increased from 13
+                  letterSpacing: 0.2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "$count",
+                style: const TextStyle(
+                  fontSize: 28, // Increased from 22
+                  fontWeight: FontWeight.w900, // Extra bold
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ================= MAIN UI =================
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F6FA),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF4F6FA),
+        elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFFD50000), size: 16),
+            ),
+          ),
+        ),
+        title: Text(
+          widget.title.toUpperCase(),
+          style: const TextStyle(
+            color: Color(0xFFD50000),
+            fontWeight: FontWeight.w900,
+            fontSize: 16,
+            letterSpacing: 0.5,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 25),
+
+                    // ================= RING PIE CHART =================
+                    SizedBox(
+                      height: 285, // Increased from 240
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          PieChart(
+                            PieChartData(
+                              sections: getSections(),
+                              centerSpaceRadius: 78, // Increased from 62
+                              sectionsSpace: 3.5,
+                            ),
+                          ),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Dynamically load the 3D Asset thumbnail inside the Ring center!
+                              Image.asset(
+                                widget.imagePath,
+                                width: 56, // Increased from 45
+                                height: 56, // Increased from 45
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => Icon(
+                                  widget.fallbackIcon,
+                                  color: const Color(0xFFD50000),
+                                  size: 36,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                widget.shortName,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.grey[800],
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 35),
+
+                    // ================= TOTAL CONSOLE =================
+                    totalCard(),
+
+                    const SizedBox(height: 20),
+
+                    // ================= METRICS ACTION GRID =================
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              buildCard("Active", activeList.length, activeList),
+                              buildCard("Need Service", serviceList.length, serviceList),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              buildCard("Due Inspection", inspectionList.length, inspectionList),
+                              buildCard("Expired", expiredList.length, expiredList),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+}
