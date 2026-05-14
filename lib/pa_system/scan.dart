@@ -91,7 +91,10 @@ class _PASystemScanPageState extends State<PASystemScanPage> {
           ),
           icon: const Icon(Icons.list, color: Colors.white),
           label: const Text("OPEN CHECKLIST", style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PASystemChecklistPage())),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => PASystemChecklistPage(selectedEquipment: item)),
+          ),
         ),
       ),
     );

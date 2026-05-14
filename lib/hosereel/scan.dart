@@ -268,7 +268,7 @@ class _HoseReelScanPageState extends State<HoseReelScanPage> {
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade700, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
                 icon: const Icon(Icons.checklist_rtl, color: Colors.white),
                 label: const Text("CHECKLIST", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HoseReelChecklistPage())),
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => HoseReelChecklistPage(selectedEquipment: item))),
               ),
             ),
             if (item != null) ...[

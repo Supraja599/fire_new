@@ -65,7 +65,7 @@ class _InspectionPageState extends State<InspectionPage> {
   }
 
   void openChecklistPage() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => ChecklistPage(equipmentId: scannedId)));
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ChecklistPage(equipmentId: scannedId, selectedEquipment: item)));
   }
 
   Future<void> openNavigation() async {

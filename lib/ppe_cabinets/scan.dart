@@ -91,7 +91,7 @@ class _PPECabinetsScanPageState extends State<PPECabinetsScanPage> {
           ),
           icon: const Icon(Icons.list, color: Colors.white),
           label: const Text("OPEN CHECKLIST", style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PPECabinetsChecklistPage())),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PPECabinetsChecklistPage(selectedEquipment: item))),
         ),
       ),
     );

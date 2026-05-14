@@ -91,7 +91,7 @@ class _MusterPointsScanPageState extends State<MusterPointsScanPage> {
           ),
           icon: const Icon(Icons.list, color: Colors.white),
           label: const Text("OPEN CHECKLIST", style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MusterPointsChecklistPage())),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MusterPointsChecklistPage(selectedEquipment: item))),
         ),
       ),
     );

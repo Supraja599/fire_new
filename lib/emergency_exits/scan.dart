@@ -181,7 +181,7 @@ class _EmergencyExitsScanPageState extends State<EmergencyExitsScanPage> {
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
                   icon: const Icon(Icons.list_alt, color: Colors.white),
                   label: const Text("OPEN CHECKLIST", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyExitsChecklistPage())),
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EmergencyExitsChecklistPage(selectedEquipment: item))),
                 ),
               ),
             ]),

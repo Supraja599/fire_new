@@ -91,7 +91,7 @@ class _CO2SystemScanPageState extends State<CO2SystemScanPage> {
           ),
           icon: const Icon(Icons.list, color: Colors.white),
           label: const Text("OPEN CHECKLIST", style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CO2SystemChecklistPage())),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CO2SystemChecklistPage(selectedEquipment: item))),
         ),
       ),
     );

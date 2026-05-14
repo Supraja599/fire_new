@@ -91,7 +91,7 @@ class _EmergencyLightingScanPageState extends State<EmergencyLightingScanPage> {
           ),
           icon: const Icon(Icons.list, color: Colors.white),
           label: const Text("OPEN CHECKLIST", style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyLightingChecklistPage())),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EmergencyLightingChecklistPage(selectedEquipment: item))),
         ),
       ),
     );

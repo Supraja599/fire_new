@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../services/location_service.dart';
 import '../local_db.dart';
 import 'services/api_service.dart';
 
 class SpillKitsChecklistPage extends StatefulWidget {
-  const SpillKitsChecklistPage({super.key});
+  final Map<String, dynamic>? selectedEquipment;
+  const SpillKitsChecklistPage({super.key, this.selectedEquipment});
   @override
   State<SpillKitsChecklistPage> createState() => _SpillKitsChecklistPageState();
 }
@@ -17,7 +19,15 @@ class _SpillKitsChecklistPageState extends State<SpillKitsChecklistPage> {
   bool isLoading = true;
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() { 
+    super.initState(); 
+    _load(); 
+    if (widget.selectedEquipment != null) {
+      equipmentController.text = widget.selectedEquipment!["sos_code"]?.toString() ?? 
+                               widget.selectedEquipment!["equipment_id"]?.toString() ?? 
+                               widget.selectedEquipment!["id"]?.toString() ?? "";
+    }
+  }
 
   Future<void> _load() async {
     try {
@@ -41,6 +51,74 @@ class _SpillKitsChecklistPageState extends State<SpillKitsChecklistPage> {
   }
 
   void _save() async {
+    // --- GEOLOCATION PROXIMITY VERIFICATION BLOCK ---
+    if (widget.selectedEquipment != null &&
+        (widget.selectedEquipment!["latitude"] != null || widget.selectedEquipment!["lat"] != null) &&
+        (widget.selectedEquipment!["longitude"] != null || widget.selectedEquipment!["lng"] != null)) {
+      
+      double? lat = double.tryParse((widget.selectedEquipment!["latitude"] ?? widget.selectedEquipment!["lat"]).toString());
+      double? lng = double.tryParse((widget.selectedEquipment!["longitude"] ?? widget.selectedEquipment!["lng"]).toString());
+      
+      if (lat != null && lng != null) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (c) => const AlertDialog(
+            content: Row(
+              children: [
+                CircularProgressIndicator(color: Colors.red),
+                SizedBox(width: 20),
+                Text("Verifying physical presence..."),
+              ],
+            ),
+          ),
+        );
+
+        final result = await LocationService.verifyProximity(
+          targetLat: lat,
+          targetLng: lng,
+          maxAllowedDistanceMeters: 100.0,
+        );
+
+        if (mounted) Navigator.pop(context);
+
+        if (!result.success) {
+          if (mounted) {
+            showDialog(
+              context: context,
+              builder: (c) => AlertDialog(
+                title: const Text("Location Check Required"),
+                content: Text(result.errorMessage ?? "Unknown Location Error"),
+                actions: [TextButton(onPressed: () => Navigator.pop(c), child: const Text("OK"))],
+              ),
+            );
+          }
+          return;
+        }
+
+        if (!result.withinRange) {
+          if (mounted) {
+            showDialog(
+              context: context,
+              builder: (c) => AlertDialog(
+                title: const Row(
+                  children: [
+                    Icon(Icons.error_outline_rounded, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text("Action Restricted", style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+                content: Text("⚠️ Location Verification Failed!\n\nYou are ${result.distanceMeters?.toStringAsFixed(1)} meters away from the asset location.\n\nYou must stand within 100 meters of this equipment to perform inspection."),
+                actions: [TextButton(onPressed: () => Navigator.pop(c), child: const Text("OK"))],
+              ),
+            );
+          }
+          return;
+        }
+      }
+    }
+    // --- END OF VERIFICATION BLOCK ---
+
     final eq = equipmentController.text.trim();
     final ins = inspectorController.text.trim();
     if (eq.isEmpty || ins.isEmpty) {

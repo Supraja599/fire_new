@@ -91,7 +91,7 @@ class _SignageScanPageState extends State<SignageScanPage> {
           ),
           icon: const Icon(Icons.list, color: Colors.white),
           label: const Text("OPEN CHECKLIST", style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SignageChecklistPage())),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SignageChecklistPage(selectedEquipment: item))),
         ),
       ),
     );

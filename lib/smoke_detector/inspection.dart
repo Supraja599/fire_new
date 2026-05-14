@@ -61,7 +61,7 @@ class _SmokeDetectorInspectionPageState extends State<SmokeDetectorInspectionPag
   }
 
   void openChecklistPage() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const SmokeDetectorChecklistPage()));
+    Navigator.push(context, MaterialPageRoute(builder: (_) => SmokeDetectorChecklistPage(selectedEquipment: item)));
   }
 
   Future<void> _submitInspection() async {
