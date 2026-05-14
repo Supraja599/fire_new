@@ -185,9 +185,10 @@ class _SprinklerChecklistPageState extends State<SprinklerChecklistPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text("Checklist saved in SQLite and queued for sync."),
+        content: Text("SAVED ✅"),
       ),
     );
+    Navigator.pop(context);
   }
 
   @override
@@ -247,16 +248,7 @@ class _SprinklerChecklistPageState extends State<SprinklerChecklistPage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: remarksController,
-                  minLines: 2,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: "Remarks",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
+
               ],
             ),
           ),
@@ -328,6 +320,26 @@ class _SprinklerChecklistPageState extends State<SprinklerChecklistPage> {
             ),
           ),
           Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
+              ],
+            ),
+            child: TextField(
+              controller: remarksController,
+              minLines: 2,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: "Remarks (Optional)",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          Container(
             width: double.infinity,
             margin: const EdgeInsets.all(12),
             child: ElevatedButton(
@@ -349,7 +361,7 @@ class _SprinklerChecklistPageState extends State<SprinklerChecklistPage> {
                       ),
                     )
                   : const Text(
-                      "SAVE OFFLINE TO SQLITE",
+                      "SUBMIT",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.white,

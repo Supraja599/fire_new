@@ -125,7 +125,6 @@ flutter:
     - assets/emergency_shower.png
     - assets/eye_wash.png
     - assets/spill_kits.png
-    - assets/chemical_shower.png
     - assets/ppe_cabinets.png
     - assets/co2_system.png
     - assets/signage.png
@@ -136,6 +135,7 @@ flutter:
     - assets/co_detector.png
     - assets/fire_door.png
     - assets/dashboard_icons/
+    - assets/eltrive_logo.jpg
 
 
   # The following line ensures that the Material Icons font is

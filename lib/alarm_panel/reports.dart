@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+
 import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -51,9 +53,47 @@ class _AlarmPanelReportsPageState extends State<AlarmPanelReportsPage> {
       if (allData.isEmpty) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No data found"))); setState(() => loading = false); return; }
 
       final pdf = pw.Document();
-      pdf.addPage(pw.MultiPage(build: (context) => [
-        pw.Text("Alarm Panel Report", style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
-        pw.SizedBox(height: 10),
+      pw.MemoryImage? logoImage;
+      try {
+        final logoBytes = await rootBundle.load('assets/eltrive_logo.jpg');
+        logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
+      } catch (e) {
+        print("Logo load error: $e");
+      }
+      pdf.addPage(pw.MultiPage(
+          pageTheme: pw.PageTheme(
+            buildBackground: (context) {
+              return pw.FullPage(
+                ignoreMargins: true,
+                child: pw.Center(
+                  child: pw.Transform.rotate(
+                    angle: 0.6, // Professional upward-diagonal tilt
+                    child: pw.Opacity(
+                      opacity: 0.12, // Perfect balance of high visibility & readability
+                      child: pw.Text(
+                        "ELTRIVE",
+                        style: pw.TextStyle(
+                          fontSize: 130,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          build: (context) => [
+    
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text("ELTRIVE ALARM PANEL REPORT", style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                if (logoImage != null)
+                  pw.Image(logoImage, width: 75, height: 75),
+              ],
+            ),
+            pw.SizedBox(height: 10),
         pw.Text("Period: ${startController.text} to ${endController.text}"),
         pw.SizedBox(height: 20),
         pw.Table.fromTextArray(headers: ["SOS Code", "Location", "Status"], data: allData.map((e) => [ (e['sos_code'] ?? e['id'] ?? '').toString(), (e['location_name'] ?? '-').toString(), (e['status'] ?? '').toString() ]).toList()),

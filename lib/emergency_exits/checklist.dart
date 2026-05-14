@@ -10,9 +10,16 @@ class EmergencyExitsChecklistPage extends StatefulWidget {
 
 class _EmergencyExitsChecklistPageState extends State<EmergencyExitsChecklistPage> {
   final api = EmergencyExitsApiService();
+  final remarksController = TextEditingController();
   List<Map<String, dynamic>> questions = [];
   Map<int, String> answers = {};
   bool isLoading = true;
+
+  @override
+  void dispose() {
+    remarksController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -30,6 +37,7 @@ class _EmergencyExitsChecklistPageState extends State<EmergencyExitsChecklistPag
     
     final payload = {
       "answers": answers,
+      "remarks": remarksController.text.trim(),
       "timestamp": DateTime.now().toIso8601String(),
     };
 
@@ -43,11 +51,12 @@ class _EmergencyExitsChecklistPageState extends State<EmergencyExitsChecklistPag
 
     setState(() => isLoading = false);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Inspection saved locally (Offline Sync)"),
-        backgroundColor: Colors.green,
-      ));
-      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("SAVED ✅"),
+      ),
+    );
+    Navigator.pop(context);
     }
   }
 
@@ -74,11 +83,31 @@ class _EmergencyExitsChecklistPageState extends State<EmergencyExitsChecklistPag
         },
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(20),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.red, padding: const EdgeInsets.symmetric(vertical: 18)),
-          onPressed: _saveInspection,
-          child: const Text("SAVE INSPECTION", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: remarksController,
+              minLines: 2,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: "Remarks (Optional)",
+                border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 15),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red, padding: const EdgeInsets.symmetric(vertical: 18)),
+                onPressed: _saveInspection,
+                child: const Text("SUBMIT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
         ),
       ),
     );

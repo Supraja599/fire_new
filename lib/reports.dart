@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
 import 'services/apiservice.dart';
 
@@ -114,13 +115,49 @@ class _ReportsPageState extends State<ReportsPage> {
       }
 
       final pdf = pw.Document();
+      pw.MemoryImage? logoImage;
+      try {
+        final logoBytes = await rootBundle.load('assets/eltrive_logo.jpg');
+        logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
+      } catch (e) {
+        print("Logo load error: $e");
+      }
 
       pdf.addPage(
         pw.MultiPage(
+          pageTheme: pw.PageTheme(
+            buildBackground: (context) {
+              return pw.FullPage(
+                ignoreMargins: true,
+                child: pw.Center(
+                  child: pw.Transform.rotate(
+                    angle: 0.6, // Professional upward-diagonal tilt
+                    child: pw.Opacity(
+                      opacity: 0.12, // Perfect balance of high visibility & readability
+                      child: pw.Text(
+                        "ELTRIVE",
+                        style: pw.TextStyle(
+                          fontSize: 130,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
           build: (context) => [
-            pw.Text("PLANT REPORT",
-                style: pw.TextStyle(
-                    fontSize: 20, fontWeight: pw.FontWeight.bold)),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text("ELTRIVE PLANT REPORT",
+                    style: pw.TextStyle(
+                        fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                if (logoImage != null)
+                  pw.Image(logoImage, width: 75, height: 75),
+              ],
+            ),
 
             pw.SizedBox(height: 10),
 
@@ -134,9 +171,21 @@ class _ReportsPageState extends State<ReportsPage> {
             pw.Text("Summary",
                 style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
 
+            pw.SizedBox(height: 5),
             pw.Column(
               children: dataMap.entries.map((e) {
-                return pw.Text("${e.key}: ${e.value.length}");
+                return pw.Padding(
+                  padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                  child: pw.Row(
+                    children: [
+                      pw.SizedBox(
+                        width: 180,
+                        child: pw.Text("${e.key}:", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Text("${e.value.length}"),
+                    ],
+                  ),
+                );
               }).toList(),
             ),
 

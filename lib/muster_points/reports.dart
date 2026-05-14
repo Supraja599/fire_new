@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+
 import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
@@ -59,9 +61,47 @@ class _MusterPointsReportsPageState extends State<MusterPointsReportsPage> {
       }
 
       final pdf = pw.Document();
-      pdf.addPage(pw.MultiPage(build: (context) => [
-        pw.Header(level: 0, child: pw.Text("Muster Points SAFETY REPORT", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold))),
-        pw.SizedBox(height: 10),
+      pw.MemoryImage? logoImage;
+      try {
+        final logoBytes = await rootBundle.load('assets/eltrive_logo.jpg');
+        logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
+      } catch (e) {
+        print("Logo load error: $e");
+      }
+      pdf.addPage(pw.MultiPage(
+          pageTheme: pw.PageTheme(
+            buildBackground: (context) {
+              return pw.FullPage(
+                ignoreMargins: true,
+                child: pw.Center(
+                  child: pw.Transform.rotate(
+                    angle: 0.6, // Professional upward-diagonal tilt
+                    child: pw.Opacity(
+                      opacity: 0.12, // Perfect balance of high visibility & readability
+                      child: pw.Text(
+                        "ELTRIVE",
+                        style: pw.TextStyle(
+                          fontSize: 130,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          build: (context) => [
+    
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text("ELTRIVE MUSTER POINTS SAFETY REPORT", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                if (logoImage != null)
+                  pw.Image(logoImage, width: 75, height: 75),
+              ],
+            ),
+            pw.SizedBox(height: 10),
         pw.Text("Plant: $selectedPlant | Unit: $selectedUnit"),
         pw.Text("Period: ${startController.text} to ${endController.text}"),
         pw.SizedBox(height: 20),

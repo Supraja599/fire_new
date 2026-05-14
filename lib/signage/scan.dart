@@ -77,11 +77,23 @@ class _SignageScanPageState extends State<SignageScanPage> {
           Text(item!["sos_code"] ?? item!["equipment_id"] ?? item!["id"] ?? "-", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red)),
           const Divider(height: 30),
           ...item!.entries.map((e) => Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Row(children: [Expanded(flex: 4, child: Text(e.key.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey))), Expanded(flex: 6, child: Text(e.value?.toString() ?? "-"))]))).toList(),
-          const SizedBox(height: 20),
-          SizedBox(width: double.infinity, child: ElevatedButton.icon(style: ElevatedButton.styleFrom(backgroundColor: Colors.red, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))), icon: const Icon(Icons.list_alt, color: Colors.white), label: const Text("OPEN CHECKLIST", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SignageChecklistPage())))),
-        ])),
+          ])),
         const SizedBox(height: 50),
       ])),
+      bottomNavigationBar: Container(
+        color: Colors.white,
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        child: ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          ),
+          icon: const Icon(Icons.list, color: Colors.white),
+          label: const Text("OPEN CHECKLIST", style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SignageChecklistPage())),
+        ),
+      ),
     );
   }
 }

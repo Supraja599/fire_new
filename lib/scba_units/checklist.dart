@@ -61,7 +61,11 @@ class _SCBAUnitsChecklistPageState extends State<SCBAUnitsChecklistPage> {
       equipmentId: eq,
       payload: {"inspector_name": ins, "remarks": remarksController.text, "answers": answers}
     );
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Saved Offline")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("SAVED ✅"),
+      ),
+    );
     Navigator.pop(context);
   }
 
@@ -86,10 +90,30 @@ class _SCBAUnitsChecklistPageState extends State<SCBAUnitsChecklistPage> {
             Row(children: [_b(i, "YES", Colors.green), const SizedBox(width: 8), _b(i, "NO", Colors.red), const SizedBox(width: 8), _b(i, "NA", Colors.orange)]),
           ]),
         ))),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
+              ],
+            ),
+            child: TextField(
+              controller: remarksController,
+              minLines: 2,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: "Remarks (Optional)",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
         Container(width: double.infinity, padding: const EdgeInsets.all(12), child: ElevatedButton(
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
           onPressed: _save,
-          child: const Text("SAVE INSPECTION", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          child: const Text("SUBMIT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         )),
       ]),
     );

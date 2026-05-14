@@ -99,7 +99,11 @@ class _SmokeDetectorChecklistPageState extends State<SmokeDetectorChecklistPage>
     );
     if (!mounted) return;
     setState(() => isSaving = false);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Smoke Detector checklist saved locally.")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("SAVED ✅"),
+      ),
+    );
     Navigator.pop(context);
   }
 
@@ -125,8 +129,7 @@ class _SmokeDetectorChecklistPageState extends State<SmokeDetectorChecklistPage>
                 TextField(controller: equipmentIdController, decoration: const InputDecoration(labelText: "Detector SOS ID", border: OutlineInputBorder())),
                 const SizedBox(height: 10),
                 TextField(controller: inspectorController, decoration: const InputDecoration(labelText: "Inspector Name", border: OutlineInputBorder())),
-                const SizedBox(height: 10),
-                TextField(controller: remarksController, decoration: const InputDecoration(labelText: "Remarks", border: OutlineInputBorder())),
+
               ],
             ),
           ),
@@ -162,12 +165,32 @@ class _SmokeDetectorChecklistPageState extends State<SmokeDetectorChecklistPage>
             ),
           ),
           Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
+              ],
+            ),
+            child: TextField(
+              controller: remarksController,
+              minLines: 2,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: "Remarks (Optional)",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1976D2), padding: const EdgeInsets.symmetric(vertical: 15), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
               onPressed: isSaving ? null : _saveOffline,
-              child: isSaving ? const CircularProgressIndicator(color: Colors.white) : const Text("SAVE TO SYNC QUEUE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: isSaving ? const CircularProgressIndicator(color: Colors.white) : const Text("SUBMIT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ),
         ],

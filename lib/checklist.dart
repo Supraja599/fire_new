@@ -165,9 +165,10 @@ class _ChecklistPageState extends State<ChecklistPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text("Checklist saved in Hive and queued for sync ✅"),
+        content: Text("SAVED ✅"),
       ),
     );
+    Navigator.pop(context);
   }
 
   @override
@@ -224,16 +225,6 @@ class _ChecklistPageState extends State<ChecklistPage> {
                   controller: inspectorController,
                   decoration: const InputDecoration(
                     labelText: "Inspector Name",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: remarksController,
-                  minLines: 2,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: "Remarks",
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -308,6 +299,26 @@ class _ChecklistPageState extends State<ChecklistPage> {
             ),
           ),
           Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
+              ],
+            ),
+            child: TextField(
+              controller: remarksController,
+              minLines: 2,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: "Remarks (Optional)",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          Container(
             width: double.infinity,
             margin: const EdgeInsets.all(12),
             child: ElevatedButton(
@@ -329,7 +340,7 @@ class _ChecklistPageState extends State<ChecklistPage> {
                       ),
                     )
                   : const Text(
-                      "SAVE OFFLINE TO HIVE",
+                      "SUBMIT",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.white,

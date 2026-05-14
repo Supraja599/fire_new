@@ -2,7 +2,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'package:fire_new/alarm_panel/services/alarm_panel_api_service.dart';
 import 'package:fire_new/ambulance/services/api_service.dart';
-import 'package:fire_new/chemical_shower/services/api_service.dart';
 import 'package:fire_new/co2_system/services/api_service.dart';
 import 'package:fire_new/emergency_comm/services/api_service.dart';
 import 'package:fire_new/emergency_exits/services/api_service.dart';
@@ -32,7 +31,6 @@ class SyncRegistry {
     "fire_extinguisher": () => ApiService.syncModuleData(),
     "fire_alarm": () => AlarmPanelApiService().syncModuleData(),
     "ambulance": () => AmbulanceApiService().syncModuleData(),
-    "chemical_shower": () => ChemicalShowerApiService().syncModuleData(),
     "suppression_system": () => CO2SystemApiService().syncModuleData(),
     "emergency_comm": () => EmergencyCommApiService().syncModuleData(),
     "exit_sign": () => EmergencyExitsApiService().syncModuleData(),

@@ -20,7 +20,6 @@ import 'first_aid/dashboard.dart';
 import 'emergency_shower/dashboard.dart';
 import 'eye_wash/dashboard.dart';
 import 'spill_kits/dashboard.dart';
-import 'chemical_shower/dashboard.dart';
 import 'ppe_cabinets/dashboard.dart';
 import 'co2_system/dashboard.dart';
 import 'signage/dashboard.dart';
@@ -49,7 +48,6 @@ import 'first_aid/services/api_service.dart';
 import 'emergency_shower/services/api_service.dart';
 import 'eye_wash/services/api_service.dart';
 import 'spill_kits/services/api_service.dart';
-import 'chemical_shower/services/api_service.dart';
 import 'ppe_cabinets/services/api_service.dart';
 import 'co2_system/services/api_service.dart';
 import 'signage/services/api_service.dart';
@@ -272,14 +270,6 @@ class _IconsPageState extends State<IconsPage>
         moduleId: 48,
         page: const SpillKitsDashboard(),
         fetchSummary: () => SpillKitsApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Chem Shower',
-        image: 'assets/chemical_shower.png',
-        moduleCode: 'chemical_shower',
-        moduleId: 0, // Not in spec
-        page: const ChemicalShowerDashboard(),
-        fetchSummary: () => ChemicalShowerApiService().getSummary(),
       ),
       ModuleItem(
         name: 'PPE Cabs',
@@ -534,16 +524,30 @@ class _IconsPageState extends State<IconsPage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "SAFETY ECOSYSTEM",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
-                            color: isDark
-                                ? Colors.white
-                                : const Color(0xFF334155),
-                            letterSpacing: 0.5,
-                          ),
+                        Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: Image.asset(
+                                'assets/eltrive_logo.jpg',
+                                height: 24,
+                                width: 24,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              "ELTRIVE SAFETY",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF334155),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
                         ),
                         Text(
                           "Industrial Monitoring Active",
@@ -623,7 +627,20 @@ class _IconsPageState extends State<IconsPage>
 
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 5, 14, 15),
-              child: LayoutBuilder(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Center(
+                    child: Opacity(
+                      opacity: isDark ? 0.03 : 0.07,
+                      child: Image.asset(
+                        'assets/eltrive_logo.jpg',
+                        width: 260,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                  LayoutBuilder(
                 builder: (context, constraints) {
                   const int crossAxisCount = 4;
                   return GridView.builder(
@@ -744,7 +761,9 @@ class _IconsPageState extends State<IconsPage>
               );
             },
           ),
-        ),
+        ],
+      ),
+    ),
       ],
     ),
   ),

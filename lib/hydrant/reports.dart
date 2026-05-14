@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+
 import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -104,18 +106,69 @@ class _HydrantReportsPageState extends State<HydrantReportsPage> {
       }
 
       final pdf = pw.Document();
+      pw.MemoryImage? logoImage;
+      try {
+        final logoBytes = await rootBundle.load('assets/eltrive_logo.jpg');
+        logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
+      } catch (e) {
+        print("Logo load error: $e");
+      }
       pdf.addPage(
         pw.MultiPage(
+          pageTheme: pw.PageTheme(
+            buildBackground: (context) {
+              return pw.FullPage(
+                ignoreMargins: true,
+                child: pw.Center(
+                  child: pw.Transform.rotate(
+                    angle: 0.6, // Professional upward-diagonal tilt
+                    child: pw.Opacity(
+                      opacity: 0.12, // Perfect balance of high visibility & readability
+                      child: pw.Text(
+                        "ELTRIVE",
+                        style: pw.TextStyle(
+                          fontSize: 130,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
           build: (context) => [
-            pw.Text("PLANT REPORT", style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+    
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text("ELTRIVE PLANT REPORT", style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                if (logoImage != null)
+                  pw.Image(logoImage, width: 75, height: 75),
+              ],
+            ),
             pw.SizedBox(height: 10),
             pw.Text("Plant: $selectedPlant"),
             pw.Text("Unit: $selectedUnit"),
             pw.Text("Date: ${DateFormat("dd-MM-yyyy").format(startDate)} to ${DateFormat("dd-MM-yyyy").format(endDate)}"),
             pw.SizedBox(height: 20),
             pw.Text("Summary", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 5),
             pw.Column(
-              children: dataMap.entries.map((e) => pw.Text("${e.key}: ${e.value.length}")).toList(),
+              children: dataMap.entries.map((e) {
+                return pw.Padding(
+                  padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                  child: pw.Row(
+                    children: [
+                      pw.SizedBox(
+                        width: 180,
+                        child: pw.Text("${e.key}:", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Text("${e.value.length}"),
+                    ],
+                  ),
+                );
+              }).toList(),
             ),
             pw.SizedBox(height: 20),
             pw.Table.fromTextArray(
