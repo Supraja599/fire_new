@@ -243,9 +243,8 @@ class ApiService {
   static Future<void> syncAllExtinguishersToLocal() async {
     try {
       final list = await getAll();
-      for (var item in list) {
-        final id = normalize(item['id']?.toString() ?? '');
-        if (id.isNotEmpty) await LocalDB.insert(id, item);
+      if (list.isNotEmpty) {
+        await LocalDB.saveAllExtinguishers(list);
       }
     } catch (e) {
       print("❌ SYNC ERROR: $e");

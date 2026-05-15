@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:fire_new/local_db.dart';
 import 'main.dart';
 
+import 'responsive.dart';
 import 'dashboard.dart';
 import 'hydrant/dashboard.dart';
 import 'hosereel/dashboard.dart' as hose;
@@ -381,76 +382,82 @@ class _IconsPageState extends State<IconsPage>
 
     // 2. Map global data to modules if available
     final List<dynamic> globalModules = globalData["modules"] ?? [];
+    final List<ModuleItem> modulesNeedingFetch = [];
 
-    await Future.wait(
-      modules.map((mod) async {
-        try {
-          // Try to find module in global data first
-          final globalMod = globalModules.firstWhere(
-            (m) =>
-                m["module_code"] == mod.moduleCode ||
-                m["code"] == mod.moduleCode,
-            orElse: () => null,
-          );
+    // Step A: Resolve immediate local/global maps without network triggers
+    for (final mod in modules) {
+      try {
+        final globalMod = globalModules.firstWhere(
+          (m) =>
+              m["module_code"] == mod.moduleCode ||
+              m["code"] == mod.moduleCode,
+          orElse: () => null,
+        );
 
-          if (globalMod != null) {
-            mod.total =
-                globalMod["total"] ??
-                globalMod["total_units"] ??
-                globalMod["total_loops"] ??
-                globalMod["total_extinguishers"] ??
-                0;
-            mod.expired =
-                globalMod["expired"] ??
-                globalMod["expired_units"] ??
-                globalMod["expired_extinguishers"] ??
-                0;
+        if (globalMod != null) {
+          mod.total = globalMod["total"] ??
+              globalMod["total_units"] ??
+              globalMod["total_loops"] ??
+              globalMod["total_extinguishers"] ??
+              0;
+          mod.expired = globalMod["expired"] ??
+              globalMod["expired_units"] ??
+              globalMod["expired_extinguishers"] ??
+              0;
 
-            // Check if we have valid counts. If so, calculate health locally to ensure accuracy.
-            if (mod.total > 0) {
-              mod.health = ApiService.calculateHealth(globalMod);
-            } else {
-              final hs =
-                  globalMod["health_score"] ??
-                  globalMod["health"] ??
-                  globalMod["score"] ??
-                  100;
-              mod.health = hs.toInt();
-            }
+          if (mod.total > 0) {
+            mod.health = ApiService.calculateHealth(globalMod);
           } else {
-            // Fallback to individual API call
-            final summary = await mod.fetchSummary();
-            if (summary.isNotEmpty) {
-              mod.total =
-                  summary["total"] ??
-                  summary["total_units"] ??
-                  summary["total_loops"] ??
-                  summary["total_extinguishers"] ??
-                  0;
-              mod.expired =
-                  summary["expired"] ??
-                  summary["expired_units"] ??
-                  summary["expired_extinguishers"] ??
-                  0;
-
-              mod.health = ApiService.calculateHealth(summary);
-            } else {
-              mod.health = 100;
-            }
+            final hs = globalMod["health_score"] ??
+                globalMod["health"] ??
+                globalMod["score"] ??
+                100;
+            mod.health = hs.toInt();
           }
+          
+          _assignModuleStatus(mod);
+        } else {
+          modulesNeedingFetch.add(mod);
+        }
+      } catch (_) {
+        modulesNeedingFetch.add(mod);
+      }
+    }
 
-          // Set status colors based on the new logic
-          if (mod.health < 20)
-            mod.status = 'red';
-          else if (mod.health < 50)
-            mod.status = 'amber';
-          else
-            mod.status = 'green';
+    // Step B: Perform staggered fetches for any module NOT covered globally
+    // Running in safe concurrent batches of 4 to protect server connection limits
+    const int batchSize = 4;
+    for (int i = 0; i < modulesNeedingFetch.length; i += batchSize) {
+      final int end = (i + batchSize < modulesNeedingFetch.length) 
+          ? i + batchSize 
+          : modulesNeedingFetch.length;
+          
+      final batch = modulesNeedingFetch.sublist(i, end);
+      
+      await Future.wait(batch.map((mod) async {
+        try {
+          final summary = await mod.fetchSummary();
+          if (summary.isNotEmpty) {
+            mod.total = summary["total"] ??
+                summary["total_units"] ??
+                summary["total_loops"] ??
+                summary["total_extinguishers"] ??
+                0;
+            mod.expired = summary["expired"] ??
+                summary["expired_units"] ??
+                summary["expired_extinguishers"] ??
+                0;
+            mod.health = ApiService.calculateHealth(summary);
+          } else {
+            mod.health = 100;
+          }
         } catch (_) {
           if (mod.health == -1) mod.health = 100;
+        } finally {
+          _assignModuleStatus(mod);
         }
-      }),
-    );
+      }));
+    }
 
     // 3. Update overall readiness if provided by API
     if (globalData.containsKey("readiness_score")) {
@@ -461,6 +468,16 @@ class _IconsPageState extends State<IconsPage>
     }
 
     if (mounted) setState(() => isLoading = false);
+  }
+
+  void _assignModuleStatus(ModuleItem mod) {
+    if (mod.health < 20) {
+      mod.status = 'red';
+    } else if (mod.health < 50) {
+      mod.status = 'amber';
+    } else {
+      mod.status = 'green';
+    }
   }
 
   double get overallHealth {
@@ -642,7 +659,9 @@ class _IconsPageState extends State<IconsPage>
                   ),
                   LayoutBuilder(
                 builder: (context, constraints) {
-                  const int crossAxisCount = 4;
+                  final bool isTab = Responsive.isTablet(context);
+                  final bool isDesk = Responsive.isDesktop(context);
+                  final int crossAxisCount = isDesk ? 6 : 4;
                   return GridView.builder(
                     shrinkWrap: true,
 
@@ -651,7 +670,7 @@ class _IconsPageState extends State<IconsPage>
                       crossAxisCount: crossAxisCount,
                       crossAxisSpacing: 10,
                       mainAxisSpacing: 10,
-                      childAspectRatio: 0.85,
+                      childAspectRatio: isDesk ? 1.0 : (isTab ? 0.95 : 0.85),
                     ),
                     itemCount: modules.length,
                     itemBuilder: (context, index) {

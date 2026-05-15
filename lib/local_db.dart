@@ -118,6 +118,30 @@ class LocalDB {
     );
   }
 
+  static Future<void> saveAllExtinguishers(List<Map<String, dynamic>> items) async {
+    if (kIsWeb) return;
+    final db = await database;
+    final batch = db.batch();
+
+    for (var item in items) {
+      final id = item['id']?.toString() ?? '';
+      if (id.trim().isEmpty) continue;
+
+      final normalizedId = id.trim().replaceAll("\n", "").replaceAll(" ", "").replaceAll("-", "").toUpperCase();
+
+      batch.insert(
+        'extinguishers',
+        {
+          'id': normalizedId,
+          'data': jsonEncode(item),
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+
+    await batch.commit(noResult: true);
+  }
+
   static Future<Map<String, dynamic>?> get(String id) async {
     if (kIsWeb) return null;
     final db = await database;

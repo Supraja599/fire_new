@@ -94,10 +94,6 @@ class _ReportsPageState extends State<ReportsPage> {
     setState(() => loading = true);
 
     try {
-      if (!kIsWeb && Platform.isAndroid) {
-        await Permission.manageExternalStorage.request();
-      }
-
       final dataMap = await fetchData();
 
       List<Map<String, dynamic>> allData = [];
@@ -192,43 +188,46 @@ class _ReportsPageState extends State<ReportsPage> {
             pw.SizedBox(height: 20),
 
             pw.Table.fromTextArray(
-              headers: ["ID", "Equipment", "Status", "Unit"],
-              data: allData.map((e) {
-                return [
-                  (e['id'] ?? '').toString(),
-                  (e['equipment_code'] ?? '').toString(),
-                  (e['status'] ?? '').toString(),
-                  selectedUnit
-                ];
-              }).toList(),
-            ),
+          headers: ["SOS Code", "Location", "Status", "Previous Inspection", "Next Inspection"],
+          data: allData.map((e) {
+            final statusVal = (e['status_label'] ?? e['status'] ?? '-').toString();
+            final prevIns = (e['last_inspection_date'] ?? e['last_service_date'] ?? e['last_service'] ?? e['last_inspected'] ?? e['last_inspected_at'] ?? e['inspected_date'] ?? e['inspection_date'] ?? e['updated_at'] ?? e['previous_inspection'] ?? '-').toString();
+            final nextIns = (e['next_inspection_due'] ?? e['next_due_date'] ?? '-').toString();
+            return [
+              (e['sos_code'] ?? e['id'] ?? '-').toString(),
+              (e['location_name'] ?? e['building_name'] ?? '-').toString(),
+              statusVal,
+              prevIns,
+              nextIns,
+            ];
+          }).toList(),
+        ),
           ],
         ),
       );
 
-      final dir = kIsWeb 
-          ? null 
-          : (Platform.isAndroid ? Directory('/storage/emulated/0/Download') : await getDownloadsDirectory());
-      
       final fileName = "Report_${DateTime.now().millisecondsSinceEpoch}.pdf";
       
       if (kIsWeb) {
-        // Handle web download if needed, for now just show success if we can't save
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF generation not fully supported on web yet")));
         return;
       }
 
-      final saveDir = dir ?? await getApplicationDocumentsDirectory();
-      final file = File("${saveDir.path}/$fileName");
+      final directory = await getApplicationDocumentsDirectory();
+      final path = "${directory.path}/$fileName";
+      final file = File(path);
 
       await file.writeAsBytes(await pdf.save());
-      await OpenFilex.open(file.path);
+      await OpenFilex.open(path);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("PDF saved in Downloads")),
+        const SnackBar(content: Text("PDF generated and opened ✅")),
       );
     } catch (e) {
       print("PDF ERROR: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error generating PDF: $e")),
+      );
     }
 
     setState(() => loading = false);
@@ -239,33 +238,26 @@ class _ReportsPageState extends State<ReportsPage> {
     setState(() => loading = true);
 
     try {
-      if (!kIsWeb && Platform.isAndroid) {
-        await Permission.manageExternalStorage.request();
-      }
-
       final dataMap = await fetchData();
 
       var excel = Excel.createExcel();
 
       dataMap.forEach((status, list) {
         Sheet sheet = excel[status];
-
-        sheet.appendRow(["ID", "Equipment", "Status", "Unit"]);
-
+        sheet.appendRow(["SOS CODE", "LOCATION", "STATUS", "LAST INSPECTION", "NEXT INSPECTION"]);
         for (var item in list) {
+          final prevIns = (item['last_inspection_date'] ?? item['last_service_date'] ?? item['last_service'] ?? item['last_inspected'] ?? item['last_inspected_at'] ?? item['inspected_date'] ?? item['inspection_date'] ?? item['updated_at'] ?? item['previous_inspection'] ?? '-').toString();
+          final nextIns = (item['next_inspection_due'] ?? item['next_due_date'] ?? '-').toString();
           sheet.appendRow([
-            item['id'] ?? '',
-            item['equipment_code'] ?? '',
+            (item['sos_code'] ?? item['id'] ?? '-').toString(),
+            (item['location_name'] ?? item['building_name'] ?? '-').toString(),
             status,
-            selectedUnit
+            prevIns,
+            nextIns,
           ]);
         }
       });
 
-      final dir = kIsWeb 
-          ? null 
-          : (Platform.isAndroid ? Directory('/storage/emulated/0/Download') : await getDownloadsDirectory());
-      
       final fileName = "Report_${DateTime.now().millisecondsSinceEpoch}.xlsx";
 
       if (kIsWeb) {
@@ -273,18 +265,21 @@ class _ReportsPageState extends State<ReportsPage> {
         return;
       }
 
-      final saveDir = dir ?? await getApplicationDocumentsDirectory();
-      final path = "${saveDir.path}/$fileName";
+      final directory = await getApplicationDocumentsDirectory();
+      final path = "${directory.path}/$fileName";
       File file = File(path);
 
       await file.writeAsBytes(excel.encode()!);
       await OpenFilex.open(path);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Excel saved in Downloads")),
+        const SnackBar(content: Text("Excel generated and opened ✅")),
       );
     } catch (e) {
       print("EXCEL ERROR: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error generating Excel: $e")),
+      );
     }
 
     setState(() => loading = false);

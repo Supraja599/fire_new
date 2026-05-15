@@ -106,8 +106,19 @@ class _CODetectorReportsPageState extends State<CODetectorReportsPage> {
         pw.Text("Period: ${startController.text} to ${endController.text}"),
         pw.SizedBox(height: 20),
         pw.Table.fromTextArray(
-          headers: ["SOS Code", "Location", "Status", "Last Service"],
-          data: allData.map((e) => [ (e['sos_code'] ?? e['id'] ?? '-').toString(), (e['location_name'] ?? e['building_name'] ?? '-').toString(), (e['status_label'] ?? '-').toString(), (e['last_service_date'] ?? '-').toString() ]).toList(),
+          headers: ["SOS Code", "Location", "Status", "Previous Inspection", "Next Inspection"],
+          data: allData.map((e) {
+            final statusVal = (e['status_label'] ?? e['status'] ?? '-').toString();
+            final prevIns = (e['last_inspection_date'] ?? e['last_service_date'] ?? e['last_service'] ?? e['last_inspected'] ?? e['last_inspected_at'] ?? e['inspected_date'] ?? e['inspection_date'] ?? e['updated_at'] ?? e['previous_inspection'] ?? '-').toString();
+            final nextIns = (e['next_inspection_due'] ?? e['next_due_date'] ?? '-').toString();
+            return [
+              (e['sos_code'] ?? e['id'] ?? '-').toString(),
+              (e['location_name'] ?? e['building_name'] ?? '-').toString(),
+              statusVal,
+              prevIns,
+              nextIns,
+            ];
+          }).toList(),
         ),
       ]));
 
@@ -125,8 +136,18 @@ class _CODetectorReportsPageState extends State<CODetectorReportsPage> {
       var excel = Excel.createExcel();
       dataMap.forEach((status, list) {
         Sheet sheet = excel[status];
-        sheet.appendRow(["SOS CODE", "LOCATION", "STATUS", "LAST SERVICE"]);
-        for (var item in list) { sheet.appendRow([ item['sos_code'] ?? item['id'] ?? '-', item['location_name'] ?? item['building_name'] ?? '-', status, item['last_service_date'] ?? '-' ]); }
+        sheet.appendRow(["SOS CODE", "LOCATION", "STATUS", "LAST INSPECTION", "NEXT INSPECTION"]);
+        for (var item in list) {
+          final prevIns = (item['last_inspection_date'] ?? item['last_service_date'] ?? item['last_service'] ?? item['last_inspected'] ?? item['last_inspected_at'] ?? item['inspected_date'] ?? item['inspection_date'] ?? item['updated_at'] ?? item['previous_inspection'] ?? '-').toString();
+          final nextIns = (item['next_inspection_due'] ?? item['next_due_date'] ?? '-').toString();
+          sheet.appendRow([
+            (item['sos_code'] ?? item['id'] ?? '-').toString(),
+            (item['location_name'] ?? item['building_name'] ?? '-').toString(),
+            status,
+            prevIns,
+            nextIns,
+          ]);
+        }
       });
       final directory = await getApplicationDocumentsDirectory();
       final path = "${directory.path}/co_detector_Report_${DateTime.now().millisecondsSinceEpoch}.xlsx";

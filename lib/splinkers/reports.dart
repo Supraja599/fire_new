@@ -65,9 +65,7 @@ class _SprinklerReportsPageState extends State<SprinklerReportsPage> {
   Future<void> _generatePdf() async {
     setState(() => loading = true);
     try {
-      if (!kIsWeb && Platform.isAndroid) {
-        await Permission.manageExternalStorage.request();
-      }
+      
       final dataMap = await _fetchData();
       final allData = <Map<String, dynamic>>[];
       dataMap.forEach((status, list) => allData.addAll(list.map((item) => {...item, "status": status})));
@@ -122,12 +120,23 @@ class _SprinklerReportsPageState extends State<SprinklerReportsPage> {
         pw.Text("Period: ${startController.text} to ${endController.text}"),
         pw.SizedBox(height: 20),
         pw.Table.fromTextArray(
-          headers: ["SOS Code", "Location", "Status"],
-          data: allData.map((item) => [ (item["sos_code"] ?? item["id"] ?? "").toString(), (item["location_name"] ?? "-").toString(), (item["status"] ?? "").toString() ]).toList(),
+          headers: ["SOS Code", "Location", "Status", "Previous Inspection", "Next Inspection"],
+          data: allData.map((e) {
+            final statusVal = (e['status_label'] ?? e['status'] ?? '-').toString();
+            final prevIns = (e['last_inspection_date'] ?? e['last_service_date'] ?? e['last_service'] ?? e['last_inspected'] ?? e['last_inspected_at'] ?? e['inspected_date'] ?? e['inspection_date'] ?? e['updated_at'] ?? e['previous_inspection'] ?? '-').toString();
+            final nextIns = (e['next_inspection_due'] ?? e['next_due_date'] ?? '-').toString();
+            return [
+              (e['sos_code'] ?? e['id'] ?? '-').toString(),
+              (e['location_name'] ?? e['building_name'] ?? '-').toString(),
+              statusVal,
+              prevIns,
+              nextIns,
+            ];
+          }).toList(),
         ),
       ]));
 
-      final dir = kIsWeb ? null : (Platform.isAndroid ? Directory('/storage/emulated/0/Download') : await getDownloadsDirectory());
+      
       final fileName = "Sprinkler_Report_${DateTime.now().millisecondsSinceEpoch}.pdf";
 
       if (kIsWeb) {
@@ -135,7 +144,7 @@ class _SprinklerReportsPageState extends State<SprinklerReportsPage> {
         return;
       }
 
-      final saveDir = dir ?? await getApplicationDocumentsDirectory();
+      final saveDir = await getApplicationDocumentsDirectory();
       final file = File("${saveDir.path}/$fileName");
       await file.writeAsBytes(await pdf.save());
       await OpenFilex.open(file.path);
@@ -146,18 +155,26 @@ class _SprinklerReportsPageState extends State<SprinklerReportsPage> {
   Future<void> _downloadExcel() async {
     setState(() => loading = true);
     try {
-      if (!kIsWeb && Platform.isAndroid) {
-        await Permission.manageExternalStorage.request();
-      }
+      
       final dataMap = await _fetchData();
       final excel = Excel.createExcel();
       dataMap.forEach((status, list) {
-        final sheet = excel[status];
-        sheet.appendRow(["SOS Code", "Location", "Status"]);
-        for (final item in list) { sheet.appendRow([ item["sos_code"] ?? item["id"] ?? "", item["location_name"] ?? "-", status ]); }
+        Sheet sheet = excel[status];
+        sheet.appendRow(["SOS CODE", "LOCATION", "STATUS", "LAST INSPECTION", "NEXT INSPECTION"]);
+        for (var item in list) {
+          final prevIns = (item['last_inspection_date'] ?? item['last_service_date'] ?? item['last_service'] ?? item['last_inspected'] ?? item['last_inspected_at'] ?? item['inspected_date'] ?? item['inspection_date'] ?? item['updated_at'] ?? item['previous_inspection'] ?? '-').toString();
+          final nextIns = (item['next_inspection_due'] ?? item['next_due_date'] ?? '-').toString();
+          sheet.appendRow([
+            (item['sos_code'] ?? item['id'] ?? '-').toString(),
+            (item['location_name'] ?? item['building_name'] ?? '-').toString(),
+            status,
+            prevIns,
+            nextIns,
+          ]);
+        }
       });
 
-      final dir = kIsWeb ? null : (Platform.isAndroid ? Directory('/storage/emulated/0/Download') : await getDownloadsDirectory());
+      
       final fileName = "Sprinkler_Report_${DateTime.now().millisecondsSinceEpoch}.xlsx";
 
       if (kIsWeb) {
@@ -165,7 +182,7 @@ class _SprinklerReportsPageState extends State<SprinklerReportsPage> {
         return;
       }
 
-      final saveDir = dir ?? await getApplicationDocumentsDirectory();
+      final saveDir = await getApplicationDocumentsDirectory();
       final file = File("${saveDir.path}/$fileName");
       await file.writeAsBytes(excel.encode()!);
       await OpenFilex.open(file.path);

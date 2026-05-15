@@ -99,6 +99,8 @@ class _LoginPageState extends State<LoginPage>
 
   @override
   void dispose() {
+    emailController.dispose();
+    passController.dispose();
     _controller.dispose();
     super.dispose();
   }
