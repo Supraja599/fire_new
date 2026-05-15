@@ -1,4 +1,8 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+
+import 'package:fire_new/utils/web_download_helper.dart';
+
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -68,7 +72,7 @@ class _EmergencyShowerReportsPageState extends State<EmergencyShowerReportsPage>
       } catch (e) {
         print("Logo load error: $e");
       }
-      pdf.addPage(pw.MultiPage(
+      pdf.addPage(pw.MultiPage(maxPages: 1000, 
           pageTheme: pw.PageTheme(
             buildBackground: (context) {
               return pw.FullPage(
@@ -122,6 +126,11 @@ class _EmergencyShowerReportsPageState extends State<EmergencyShowerReportsPage>
         ),
       ]));
 
+      if (kIsWeb) {
+        WebDownloadHelper.downloadFile(await pdf.save(), "Report_${DateTime.now().millisecondsSinceEpoch}.pdf");
+        if (mounted) { setState(() => loading = false); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF Downloaded ✅"))); }
+        return;
+      }
       final directory = await getApplicationDocumentsDirectory();
       final path = "${directory.path}/emergency_shower_Report_${DateTime.now().millisecondsSinceEpoch}.pdf";
       final file = File(path); await file.writeAsBytes(await pdf.save());
@@ -183,5 +192,4 @@ class _EmergencyShowerReportsPageState extends State<EmergencyShowerReportsPage>
 
   Widget _actionBtn(String label, IconData icon, Color color, VoidCallback onTap) => SizedBox(width: double.infinity, child: ElevatedButton.icon(icon: Icon(icon, color: Colors.white), label: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)), style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 18), backgroundColor: color, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))), onPressed: loading ? null : onTap));
 }
-
 

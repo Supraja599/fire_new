@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:fire_new/utils/web_download_helper.dart';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 import 'package:excel/excel.dart';
@@ -60,7 +62,7 @@ class _AlarmPanelReportsPageState extends State<AlarmPanelReportsPage> {
       } catch (e) {
         print("Logo load error: $e");
       }
-      pdf.addPage(pw.MultiPage(
+      pdf.addPage(pw.MultiPage(maxPages: 1000, 
           pageTheme: pw.PageTheme(
             buildBackground: (context) {
               return pw.FullPage(
@@ -114,7 +116,11 @@ class _AlarmPanelReportsPageState extends State<AlarmPanelReportsPage> {
       ]));
 
       
-      if (kIsWeb) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF generation not supported on web"))); return; }
+      if (kIsWeb) {
+        WebDownloadHelper.downloadFile(await pdf.save(), "Report_${DateTime.now().millisecondsSinceEpoch}.pdf");
+        if (mounted) { setState(() => loading = false); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF Downloaded ✅"))); }
+        return;
+      }
       final saveDir = await getApplicationDocumentsDirectory();
       final file = File("${saveDir.path}/AlarmPanel_Report_${DateTime.now().millisecondsSinceEpoch}.pdf");
       await file.writeAsBytes(await pdf.save());
@@ -145,7 +151,11 @@ class _AlarmPanelReportsPageState extends State<AlarmPanelReportsPage> {
         }
       });
       
-      if (kIsWeb) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Excel generation not supported on web"))); return; }
+      if (kIsWeb) {
+        WebDownloadHelper.downloadFile(excel.encode()!, "Report_${DateTime.now().millisecondsSinceEpoch}.xlsx");
+        if (mounted) { setState(() => loading = false); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Excel Downloaded ✅"))); }
+        return;
+      }
       final saveDir = await getApplicationDocumentsDirectory();
       final path = "${saveDir.path}/AlarmPanel_Report_${DateTime.now().millisecondsSinceEpoch}.xlsx";
       File file = File(path); await file.writeAsBytes(excel.encode()!); await OpenFilex.open(path);

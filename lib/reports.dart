@@ -1,5 +1,7 @@
 
 import 'package:flutter/material.dart';
+import 'package:fire_new/utils/web_download_helper.dart';
+
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
 import 'services/apiservice.dart';
@@ -120,7 +122,7 @@ class _ReportsPageState extends State<ReportsPage> {
       }
 
       pdf.addPage(
-        pw.MultiPage(
+        pw.MultiPage(maxPages: 1000, 
           pageTheme: pw.PageTheme(
             buildBackground: (context) {
               return pw.FullPage(
@@ -209,7 +211,9 @@ class _ReportsPageState extends State<ReportsPage> {
       final fileName = "Report_${DateTime.now().millisecondsSinceEpoch}.pdf";
       
       if (kIsWeb) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF generation not fully supported on web yet")));
+        WebDownloadHelper.downloadFile(await pdf.save(), fileName);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF downloaded ✅")));
+        setState(() => loading = false);
         return;
       }
 
@@ -261,7 +265,9 @@ class _ReportsPageState extends State<ReportsPage> {
       final fileName = "Report_${DateTime.now().millisecondsSinceEpoch}.xlsx";
 
       if (kIsWeb) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Excel generation not fully supported on web yet")));
+        WebDownloadHelper.downloadFile(excel.encode()!, fileName);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Excel downloaded ✅")));
+        setState(() => loading = false);
         return;
       }
 

@@ -1,4 +1,8 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+
+import 'package:fire_new/utils/web_download_helper.dart';
+
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -87,7 +91,7 @@ class _SmokeDetectorReportsPageState extends State<SmokeDetectorReportsPage> {
       } catch (e) {
         print("Logo load error: $e");
       }
-      pdf.addPage(pw.MultiPage(
+      pdf.addPage(pw.MultiPage(maxPages: 1000, 
           pageTheme: pw.PageTheme(
             buildBackground: (context) {
               return pw.FullPage(
@@ -142,6 +146,11 @@ class _SmokeDetectorReportsPageState extends State<SmokeDetectorReportsPage> {
         ],
       ));
 
+      if (kIsWeb) {
+        WebDownloadHelper.downloadFile(await pdf.save(), "Report_${DateTime.now().millisecondsSinceEpoch}.pdf");
+        if (mounted) { setState(() => loading = false); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF Downloaded ✅"))); }
+        return;
+      }
       final directory = await getApplicationDocumentsDirectory();
       final path = "${directory.path}/SmokeDetector_Report_${DateTime.now().millisecondsSinceEpoch}.pdf";
       final file = File(path);

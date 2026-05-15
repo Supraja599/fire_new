@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:fire_new/utils/web_download_helper.dart';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 import 'package:excel/excel.dart';
@@ -83,7 +85,7 @@ class _SprinklerReportsPageState extends State<SprinklerReportsPage> {
       } catch (e) {
         print("Logo load error: $e");
       }
-      pdf.addPage(pw.MultiPage(
+      pdf.addPage(pw.MultiPage(maxPages: 1000, 
           pageTheme: pw.PageTheme(
             buildBackground: (context) {
               return pw.FullPage(
@@ -140,7 +142,8 @@ class _SprinklerReportsPageState extends State<SprinklerReportsPage> {
       final fileName = "Sprinkler_Report_${DateTime.now().millisecondsSinceEpoch}.pdf";
 
       if (kIsWeb) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF generation not fully supported on web yet")));
+        WebDownloadHelper.downloadFile(await pdf.save(), "Report_${DateTime.now().millisecondsSinceEpoch}.pdf");
+        if (mounted) { setState(() => loading = false); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF Downloaded ✅"))); }
         return;
       }
 
@@ -178,7 +181,8 @@ class _SprinklerReportsPageState extends State<SprinklerReportsPage> {
       final fileName = "Sprinkler_Report_${DateTime.now().millisecondsSinceEpoch}.xlsx";
 
       if (kIsWeb) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Excel generation not fully supported on web yet")));
+        WebDownloadHelper.downloadFile(excel.encode()!, "Report_${DateTime.now().millisecondsSinceEpoch}.xlsx");
+        if (mounted) { setState(() => loading = false); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Excel Downloaded ✅"))); }
         return;
       }
 
