@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fire_new/guided_capture_wizard.dart';
+
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'checklist.dart';
 import 'services/apiservice.dart';
@@ -268,7 +270,17 @@ class _HoseReelScanPageState extends State<HoseReelScanPage> {
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade700, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
                 icon: const Icon(Icons.checklist_rtl, color: Colors.white),
                 label: const Text("CHECKLIST", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => HoseReelChecklistPage(selectedEquipment: item))),
+                onPressed: () {
+            if (item != null) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => HoseReelChecklistPage(selectedEquipment: item)));
+            } else {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
+                selectedEquipment: item,
+                equipmentImage: 'assets/hosereel.png',
+                nextScreen: HoseReelChecklistPage(selectedEquipment: item),
+              )));
+            }
+          },
               ),
             ),
             if (item != null) ...[

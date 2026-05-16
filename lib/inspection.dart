@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'checklist.dart';
+import 'guided_capture_wizard.dart';
 import 'services/apiservice.dart';
 import 'local_db.dart';
 
@@ -65,7 +66,32 @@ class _InspectionPageState extends State<InspectionPage> {
   }
 
   void openChecklistPage() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => ChecklistPage(equipmentId: scannedId, selectedEquipment: item)));
+    if (item != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ChecklistPage(
+            equipmentId: scannedId,
+            selectedEquipment: item,
+          ),
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => GuidedCaptureWizardPage(
+            equipmentId: scannedId,
+            selectedEquipment: item,
+            equipmentImage: 'assets/extinguisher.png',
+            nextScreen: ChecklistPage(
+              equipmentId: scannedId,
+              selectedEquipment: item,
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> openNavigation() async {

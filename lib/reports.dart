@@ -1,5 +1,7 @@
 
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
+
 import 'package:fire_new/utils/web_download_helper.dart';
 
 import 'package:flutter/services.dart' show rootBundle;
@@ -190,6 +192,8 @@ class _ReportsPageState extends State<ReportsPage> {
             pw.SizedBox(height: 20),
 
             pw.Table.fromTextArray(
+          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
           headers: ["SOS Code", "Location", "Status", "Previous Inspection", "Next Inspection"],
           data: allData.map((e) {
             final statusVal = (e['status_label'] ?? e['status'] ?? '-').toString();

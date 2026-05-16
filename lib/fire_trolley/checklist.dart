@@ -179,23 +179,25 @@ class _FireTrolleyChecklistPageState extends State<FireTrolleyChecklistPage> {
         title: const Text("Fire Trolley Checklist", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Column(
-        children: [
-          Container(
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.all(15),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
-            child: Column(
-              children: [
-                TextField(controller: equipmentIdController, decoration: const InputDecoration(labelText: "Trolley SOS ID", border: OutlineInputBorder())),
-                const SizedBox(height: 10),
-                TextField(controller: inspectorController, decoration: const InputDecoration(labelText: "Inspector Name", border: OutlineInputBorder())),
-
-              ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+              child: Column(
+                children: [
+                  TextField(controller: equipmentIdController, decoration: const InputDecoration(labelText: "Trolley SOS ID", border: OutlineInputBorder())),
+                  const SizedBox(height: 10),
+                  TextField(controller: inspectorController, decoration: const InputDecoration(labelText: "Inspector Name", border: OutlineInputBorder())),
+  
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 12),
               itemCount: checklist.length,
               itemBuilder: (context, index) {
@@ -224,37 +226,37 @@ class _FireTrolleyChecklistPageState extends State<FireTrolleyChecklistPage> {
                 );
               },
             ),
-          ),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
-              ],
-            ),
-            child: TextField(
-              controller: remarksController,
-              minLines: 2,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                labelText: "Remarks (Optional)",
-                border: OutlineInputBorder(),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
+                ],
+              ),
+              child: TextField(
+                controller: remarksController,
+                minLines: 2,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: "Remarks (Optional)",
+                  border: OutlineInputBorder(),
+                ),
               ),
             ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100), padding: const EdgeInsets.symmetric(vertical: 15), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              onPressed: isSaving ? null : _saveOffline,
-              child: isSaving ? const CircularProgressIndicator(color: Colors.white) : const Text("SUBMIT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100), padding: const EdgeInsets.symmetric(vertical: 15), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                onPressed: isSaving ? null : _saveOffline,
+                child: isSaving ? const CircularProgressIndicator(color: Colors.white) : const Text("SUBMIT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

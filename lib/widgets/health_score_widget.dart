@@ -66,12 +66,12 @@ class _HealthScoreWidgetState extends State<HealthScoreWidget> with SingleTicker
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: themeColor.withValues(alpha: currentOpacity),
+              color: themeColor.withOpacity(currentOpacity),
               width: 2.2, // Gorgeous high-definition border
             ),
             boxShadow: [
               BoxShadow(
-                color: themeColor.withValues(alpha: currentOpacity * 0.18),
+                color: themeColor.withOpacity(currentOpacity * 0.18),
                 blurRadius: 12,
                 spreadRadius: 1,
                 offset: const Offset(0, 3),

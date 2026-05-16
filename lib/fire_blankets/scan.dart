@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fire_new/guided_capture_wizard.dart';
+
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../local_db.dart';
 import 'checklist.dart';
@@ -91,7 +93,17 @@ class _FireBlanketsScanPageState extends State<FireBlanketsScanPage> {
           ),
           icon: const Icon(Icons.list, color: Colors.white),
           label: const Text("OPEN CHECKLIST", style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FireBlanketsChecklistPage(selectedEquipment: item))),
+          onPressed: () {
+            if (item != null) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => FireBlanketsChecklistPage(selectedEquipment: item)));
+            } else {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
+                selectedEquipment: item,
+                equipmentImage: 'assets/fire_blankets.png',
+                nextScreen: FireBlanketsChecklistPage(selectedEquipment: item),
+              )));
+            }
+          },
         ),
       ),
     );

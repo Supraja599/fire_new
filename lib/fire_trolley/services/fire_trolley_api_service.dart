@@ -47,7 +47,7 @@ class FireTrolleyApiService {
     String recordType,
   ) async {
     try {
-      final response = await http.get(Uri.parse(url), headers: headers);
+      final response = await http.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 10));
       final items = _readList(_decodeBody(response));
       await LocalDB.saveModuleRecords(
         moduleCode: moduleCode,
@@ -68,7 +68,7 @@ class FireTrolleyApiService {
     String recordType,
   ) async {
     try {
-      final response = await http.get(Uri.parse(url), headers: headers);
+      final response = await http.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 10));
       final decoded = _decodeBody(response);
       final data = decoded is Map<String, dynamic>
           ? decoded

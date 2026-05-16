@@ -86,7 +86,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.08),
+                                        color: Colors.black.withOpacity(0.08),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -137,12 +137,12 @@ class _DashboardPageState extends State<DashboardPage> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: Colors.grey.withValues(alpha: 0.08),
+                          color: Colors.grey.withOpacity(0.08),
                           width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.03),
+                            color: Colors.black.withOpacity(0.03),
                             blurRadius: 22,
                             offset: const Offset(0, 8),
                           ),
@@ -178,7 +178,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
                                           strokeWidth: 9.5,
 
-                                          backgroundColor: Colors.grey.withValues(alpha: 0.08),
+                                          backgroundColor: Colors.grey.withOpacity(0.08),
 
                                           valueColor: AlwaysStoppedAnimation<Color>(
 
@@ -296,15 +296,15 @@ class _DashboardPageState extends State<DashboardPage> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFFD50000).withValues(alpha: 0.05),
-                    const Color(0xFFD50000).withValues(alpha: 0.01),
+                    const Color(0xFFD50000).withOpacity(0.05),
+                    const Color(0xFFD50000).withOpacity(0.01),
                   ],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(
-                  color: const Color(0xFFD50000).withValues(alpha: 0.1),
+                  color: const Color(0xFFD50000).withOpacity(0.1),
                   width: 1.2,
                 ),
               ),
@@ -313,7 +313,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFD50000).withValues(alpha: 0.08),
+                      color: const Color(0xFFD50000).withOpacity(0.08),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.insights_rounded, color: Color(0xFFD50000), size: 20),
@@ -408,31 +408,31 @@ class _ActionCardState extends State<_ActionCard> {
   Widget build(BuildContext context) {
     final String t = widget.title.toLowerCase();
     List<Color> bgGradient = [Colors.white, Colors.white];
-    Color shadowColor = Colors.grey.withValues(alpha: 0.1);
-    Color borderColor = Colors.grey.withValues(alpha: 0.3);
+    Color shadowColor = Colors.grey.withOpacity(0.1);
+    Color borderColor = Colors.grey.withOpacity(0.3);
     
     // Tailored accent borders and shadows for each card identity!
     if (t.contains("analytics")) {
-      shadowColor = const Color(0xFF1A73E8).withValues(alpha: 0.18);
-      borderColor = const Color(0xFF1A73E8).withValues(alpha: 0.65);
+      shadowColor = const Color(0xFF1A73E8).withOpacity(0.18);
+      borderColor = const Color(0xFF1A73E8).withOpacity(0.65);
     } else if (t.contains("inspection")) {
-      shadowColor = const Color(0xFF1E8E3E).withValues(alpha: 0.18);
-      borderColor = const Color(0xFF1E8E3E).withValues(alpha: 0.65);
+      shadowColor = const Color(0xFF1E8E3E).withOpacity(0.18);
+      borderColor = const Color(0xFF1E8E3E).withOpacity(0.65);
     } else if (t.contains("maintenance")) {
-      shadowColor = const Color(0xFFF9AB00).withValues(alpha: 0.18);
-      borderColor = const Color(0xFFF9AB00).withValues(alpha: 0.65);
+      shadowColor = const Color(0xFFF9AB00).withOpacity(0.18);
+      borderColor = const Color(0xFFF9AB00).withOpacity(0.65);
     } else if (t.contains("alerts")) {
-      shadowColor = const Color(0xFFD93025).withValues(alpha: 0.18);
-      borderColor = const Color(0xFFD93025).withValues(alpha: 0.65);
+      shadowColor = const Color(0xFFD93025).withOpacity(0.18);
+      borderColor = const Color(0xFFD93025).withOpacity(0.65);
     } else if (t.contains("plant health")) {
-      shadowColor = const Color(0xFF0097A7).withValues(alpha: 0.18);
-      borderColor = const Color(0xFF0097A7).withValues(alpha: 0.65);
+      shadowColor = const Color(0xFF0097A7).withOpacity(0.18);
+      borderColor = const Color(0xFF0097A7).withOpacity(0.65);
     } else if (t.contains("reports")) {
-      shadowColor = const Color(0xFF9334E6).withValues(alpha: 0.18);
-      borderColor = const Color(0xFF9334E6).withValues(alpha: 0.65);
+      shadowColor = const Color(0xFF9334E6).withOpacity(0.18);
+      borderColor = const Color(0xFF9334E6).withOpacity(0.65);
     } else if (t.contains("checklist") || t.contains("forms")) {
-      shadowColor = const Color(0xFF3F51B5).withValues(alpha: 0.18);
-      borderColor = const Color(0xFF3F51B5).withValues(alpha: 0.65);
+      shadowColor = const Color(0xFF3F51B5).withOpacity(0.18);
+      borderColor = const Color(0xFF3F51B5).withOpacity(0.65);
     }
     
     // Calculate staggered delay to create dynamic entrance pop!
@@ -504,7 +504,7 @@ class _ActionCardState extends State<_ActionCard> {
                               fit: BoxFit.contain,
                               child: Icon(
                                 widget.imagePath as IconData,
-                                color: borderColor.withValues(alpha: 1.0),
+                                color: borderColor.withOpacity(1.0),
                               ),
                             )
                           : Image.asset(

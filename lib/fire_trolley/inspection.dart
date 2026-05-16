@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fire_new/guided_capture_wizard.dart';
+
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'checklist.dart';
 import 'services/fire_trolley_api_service.dart';
@@ -268,7 +270,17 @@ class _FireTrolleyInspectionPageState extends State<FireTrolleyInspectionPage> {
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade700, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
                 icon: const Icon(Icons.checklist_rtl, color: Colors.white),
                 label: const Text("CHECKLIST", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FireTrolleyChecklistPage(selectedEquipment: item))),
+                onPressed: () {
+            if (item != null) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => FireTrolleyChecklistPage(selectedEquipment: item)));
+            } else {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
+                selectedEquipment: item,
+                equipmentImage: 'assets/fire_trolley.png',
+                nextScreen: FireTrolleyChecklistPage(selectedEquipment: item),
+              )));
+            }
+          },
               ),
             ),
             if (item != null) ...[

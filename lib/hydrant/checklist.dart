@@ -182,38 +182,40 @@ class _HydrantChecklistPageState extends State<HydrantChecklistPage> {
         backgroundColor: Colors.white,
         title: const Text("Hydrant Checklist"),
       ),
-      body: Column(
-        children: [
-          Container(
-            margin: const EdgeInsets.all(14),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Column(
-              children: [
-                TextField(
-                  controller: hydrantIdController,
-                  decoration: const InputDecoration(
-                    labelText: "Hydrant SOS ID",
-                    border: OutlineInputBorder(),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: hydrantIdController,
+                    decoration: const InputDecoration(
+                      labelText: "Hydrant SOS ID",
+                      border: OutlineInputBorder(),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: inspectorController,
-                  decoration: const InputDecoration(
-                    labelText: "Inspector Name",
-                    border: OutlineInputBorder(),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: inspectorController,
+                    decoration: const InputDecoration(
+                      labelText: "Inspector Name",
+                      border: OutlineInputBorder(),
+                    ),
                   ),
-                ),
-
-              ],
+  
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 14),
               itemCount: checklist.length,
               itemBuilder: (context, index) {
@@ -251,52 +253,52 @@ class _HydrantChecklistPageState extends State<HydrantChecklistPage> {
                 );
               },
             ),
-          ),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
-              ],
-            ),
-            child: TextField(
-              controller: remarksController,
-              minLines: 2,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                labelText: "Remarks (Optional)",
-                border: OutlineInputBorder(),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
+                ],
               ),
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFC62828),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+              child: TextField(
+                controller: remarksController,
+                minLines: 2,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: "Remarks (Optional)",
+                  border: OutlineInputBorder(),
                 ),
               ),
-              onPressed: isSaving ? null : _saveOffline,
-              child: isSaving
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text("SUBMIT", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
             ),
-          ),
-        ],
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFC62828),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                onPressed: isSaving ? null : _saveOffline,
+                child: isSaving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text("SUBMIT", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

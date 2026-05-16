@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:fire_new/local_db.dart';
+import 'package:fire_new/sync_service.dart';
+import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'main.dart';
 
 import 'responsive.dart';
@@ -92,12 +95,15 @@ class ModuleItem {
   });
 }
 
-class _IconsPageState extends State<IconsPage>
-    with SingleTickerProviderStateMixin {
+class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
   bool isDark = false;
   bool isLoading = true;
   double? apiReadinessScore;
   late AnimationController _blinkController;
+  late AnimationController _syncSpinController;
+  int pendingSyncCount = 0;
+  bool _isSyncSpinning = false;
+  Timer? _pendingRefreshTimer;
 
   late List<ModuleItem> modules;
 
@@ -109,10 +115,27 @@ class _IconsPageState extends State<IconsPage>
       duration: const Duration(milliseconds: 800),
     )..repeat(reverse: true);
 
+    _syncSpinController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+
+    _updatePendingCount();
+    _pendingRefreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _updatePendingCount();
+    });
+
     final box = Hive.box('inspectionBox');
-    final String role = box.get('role', defaultValue: 'user').toString().toLowerCase().trim();
-    final List<dynamic> assignedModulesData = box.get('modules', defaultValue: []);
-    
+    final String role = box
+        .get('role', defaultValue: 'user')
+        .toString()
+        .toLowerCase()
+        .trim();
+    final List<dynamic> assignedModulesData = box.get(
+      'modules',
+      defaultValue: [],
+    );
+
     print("🛠️ DEBUG: Current Role is '$role'");
     print("🛠️ DEBUG: Assigned Modules from API: $assignedModulesData");
 
@@ -185,8 +208,9 @@ class _IconsPageState extends State<IconsPage>
         name: 'Fire Trolley',
         image: 'assets/fire_trolley.png',
         moduleCode: 'fire_trolley',
-        moduleId: 42, // Suppression system is 42 in spec, but fire_trolley is not in standard list. Let's map it logically.
-        // Wait, the spec has 30 to 54. 
+        moduleId:
+            42, // Suppression system is 42 in spec, but fire_trolley is not in standard list. Let's map it logically.
+        // Wait, the spec has 30 to 54.
         // 42 suppression_system.
         // Let's use the codes from the spec.
         page: const FireTrolleyDashboard(),
@@ -354,12 +378,17 @@ class _IconsPageState extends State<IconsPage>
     } else {
       print("🔒 Restricted access: Filtering modules for $role");
       // Match by Code OR by ID
-      modules = allModules.where((m) => 
-        assignedCodes.contains(m.moduleCode) || 
-        assignedIds.contains(m.moduleId)
-      ).toList();
-      
-      print("🎯 Found ${modules.length} matching modules for your assignments.");
+      modules = allModules
+          .where(
+            (m) =>
+                assignedCodes.contains(m.moduleCode) ||
+                assignedIds.contains(m.moduleId),
+          )
+          .toList();
+
+      print(
+        "🎯 Found ${modules.length} matching modules for your assignments.",
+      );
     }
 
     _loadHealthData();
@@ -367,6 +396,8 @@ class _IconsPageState extends State<IconsPage>
 
   @override
   void dispose() {
+    _pendingRefreshTimer?.cancel();
+    _syncSpinController.dispose();
     _blinkController.dispose();
     super.dispose();
   }
@@ -389,18 +420,19 @@ class _IconsPageState extends State<IconsPage>
       try {
         final globalMod = globalModules.firstWhere(
           (m) =>
-              m["module_code"] == mod.moduleCode ||
-              m["code"] == mod.moduleCode,
+              m["module_code"] == mod.moduleCode || m["code"] == mod.moduleCode,
           orElse: () => null,
         );
 
         if (globalMod != null) {
-          mod.total = globalMod["total"] ??
+          mod.total =
+              globalMod["total"] ??
               globalMod["total_units"] ??
               globalMod["total_loops"] ??
               globalMod["total_extinguishers"] ??
               0;
-          mod.expired = globalMod["expired"] ??
+          mod.expired =
+              globalMod["expired"] ??
               globalMod["expired_units"] ??
               globalMod["expired_extinguishers"] ??
               0;
@@ -408,13 +440,14 @@ class _IconsPageState extends State<IconsPage>
           if (mod.total > 0) {
             mod.health = ApiService.calculateHealth(globalMod);
           } else {
-            final hs = globalMod["health_score"] ??
+            final hs =
+                globalMod["health_score"] ??
                 globalMod["health"] ??
                 globalMod["score"] ??
                 100;
             mod.health = hs.toInt();
           }
-          
+
           _assignModuleStatus(mod);
         } else {
           modulesNeedingFetch.add(mod);
@@ -428,35 +461,39 @@ class _IconsPageState extends State<IconsPage>
     // Running in safe concurrent batches of 4 to protect server connection limits
     const int batchSize = 4;
     for (int i = 0; i < modulesNeedingFetch.length; i += batchSize) {
-      final int end = (i + batchSize < modulesNeedingFetch.length) 
-          ? i + batchSize 
+      final int end = (i + batchSize < modulesNeedingFetch.length)
+          ? i + batchSize
           : modulesNeedingFetch.length;
-          
+
       final batch = modulesNeedingFetch.sublist(i, end);
-      
-      await Future.wait(batch.map((mod) async {
-        try {
-          final summary = await mod.fetchSummary();
-          if (summary.isNotEmpty) {
-            mod.total = summary["total"] ??
-                summary["total_units"] ??
-                summary["total_loops"] ??
-                summary["total_extinguishers"] ??
-                0;
-            mod.expired = summary["expired"] ??
-                summary["expired_units"] ??
-                summary["expired_extinguishers"] ??
-                0;
-            mod.health = ApiService.calculateHealth(summary);
-          } else {
-            mod.health = 100;
+
+      await Future.wait(
+        batch.map((mod) async {
+          try {
+            final summary = await mod.fetchSummary();
+            if (summary.isNotEmpty) {
+              mod.total =
+                  summary["total"] ??
+                  summary["total_units"] ??
+                  summary["total_loops"] ??
+                  summary["total_extinguishers"] ??
+                  0;
+              mod.expired =
+                  summary["expired"] ??
+                  summary["expired_units"] ??
+                  summary["expired_extinguishers"] ??
+                  0;
+              mod.health = ApiService.calculateHealth(summary);
+            } else {
+              mod.health = 100;
+            }
+          } catch (_) {
+            if (mod.health == -1) mod.health = 100;
+          } finally {
+            _assignModuleStatus(mod);
           }
-        } catch (_) {
-          if (mod.health == -1) mod.health = 100;
-        } finally {
-          _assignModuleStatus(mod);
-        }
-      }));
+        }),
+      );
     }
 
     // 3. Update overall readiness if provided by API
@@ -477,6 +514,55 @@ class _IconsPageState extends State<IconsPage>
       mod.status = 'amber';
     } else {
       mod.status = 'green';
+    }
+  }
+
+  Future<void> _updatePendingCount() async {
+    if (kIsWeb) return;
+    try {
+      final legacy = await LocalDB.getPending();
+      final modules = await LocalDB.getPendingModuleInspections();
+      final int total = legacy.length + modules.length;
+      if (mounted && pendingSyncCount != total) {
+        setState(() {
+          pendingSyncCount = total;
+        });
+      }
+    } catch (e) {
+      debugPrint("Sync count refresh error: $e");
+    }
+  }
+
+  Future<void> _triggerManualSync() async {
+    if (_isSyncSpinning) return;
+    setState(() => _isSyncSpinning = true);
+    _syncSpinController.repeat();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("🔄 Syncing pending records to Cloud...")),
+    );
+
+    try {
+      await SyncService.syncData();
+    } catch (e) {
+      debugPrint("Manual Sync failure: $e");
+    }
+
+    await _updatePendingCount();
+
+    if (mounted) {
+      _syncSpinController.stop();
+      setState(() => _isSyncSpinning = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: pendingSyncCount == 0 ? Colors.green : Colors.orange,
+          content: Text(
+            pendingSyncCount == 0
+                ? "✅ Sync Complete! All records online!"
+                : "⚠️ Partial Sync! $pendingSyncCount still secured offline.",
+          ),
+        ),
+      );
     }
   }
 
@@ -586,14 +672,21 @@ class _IconsPageState extends State<IconsPage>
                         opacity: 0.3 + (_blinkController.value * 0.7),
                         child: Row(
                           children: [
-                            const Icon(Icons.favorite, color: Colors.red, size: 24),
-                            const SizedBox(width: 6),
-                            Text(
-                              "${overallHealth.toInt()}%",
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                color: isDark ? Colors.white : Colors.black,
+                            const Icon(
+                              Icons.favorite,
+                              color: Colors.red,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 4),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                "${overallHealth.toInt()}%",
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w900,
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
                               ),
                             ),
                           ],
@@ -601,11 +694,58 @@ class _IconsPageState extends State<IconsPage>
                       );
                     },
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 4),
+                  if (!kIsWeb)
+                    GestureDetector(
+                      onTap: _triggerManualSync,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          RotationTransition(
+                            turns: _syncSpinController,
+                            child: const Padding(
+                              padding: EdgeInsets.all(4),
+                              child: Icon(
+                                Icons.sync,
+                                size: 20,
+                                color: Colors.blue,
+                              ),
+                            ),
+                          ),
+                          if (pendingSyncCount > 0)
+                            Positioned(
+                              right: 2,
+                              top: 2,
+                              child: Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 14,
+                                  minHeight: 14,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    "$pendingSyncCount",
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(width: 4),
                   GestureDetector(
                     onTap: () => setState(() => isDark = !isDark),
                     child: Padding(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(4),
                       child: Icon(
                         isDark
                             ? Icons.wb_sunny_outlined
@@ -615,7 +755,7 @@ class _IconsPageState extends State<IconsPage>
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 4),
                   GestureDetector(
                     onTap: () async {
                       final box = Hive.box('inspectionBox');
@@ -630,12 +770,8 @@ class _IconsPageState extends State<IconsPage>
                       }
                     },
                     child: const Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Icon(
-                        Icons.logout,
-                        size: 20,
-                        color: Colors.red,
-                      ),
+                      padding: EdgeInsets.all(4),
+                      child: Icon(Icons.logout, size: 20, color: Colors.red),
                     ),
                   ),
                 ],
@@ -658,134 +794,150 @@ class _IconsPageState extends State<IconsPage>
                     ),
                   ),
                   LayoutBuilder(
-                builder: (context, constraints) {
-                  final bool isTab = Responsive.isTablet(context);
-                  final bool isDesk = Responsive.isDesktop(context);
-                  final int crossAxisCount = isDesk ? 6 : 4;
-                  return GridView.builder(
-                    shrinkWrap: true,
+                    builder: (context, constraints) {
+                      final bool isTab = Responsive.isTablet(context);
+                      final bool isDesk = Responsive.isDesktop(context);
+                      final int crossAxisCount = isDesk ? 6 : (isTab ? 4 : 3);
 
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      childAspectRatio: isDesk ? 1.0 : (isTab ? 0.95 : 0.85),
-                    ),
-                    itemCount: modules.length,
-                    itemBuilder: (context, index) {
-                  final mod = modules[index];
-                  final color = getStatusColor(mod.status);
-                  final isCritical = mod.health != -1 && mod.health < 20;
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                          childAspectRatio: isDesk
+                              ? 1.0
+                              : (isTab ? 0.85 : 0.8),
+                        ),
+                        itemCount: modules.length,
+                        itemBuilder: (context, index) {
+                          final mod = modules[index];
+                          final color = getStatusColor(mod.status);
+                          final isCritical =
+                              mod.health != -1 && mod.health < 20;
 
-                  return GestureDetector(
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => mod.page),
-                      );
-                      _loadHealthData();
-                    },
-                    child: AnimatedBuilder(
-                      animation: _blinkController,
-                      builder: (context, child) {
-                        return Opacity(
-                          opacity: (isCritical)
-                              ? (0.4 + (_blinkController.value * 0.6))
-                              : 1.0,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: (isCritical && _blinkController.value > 0.5)
-                                  ? color.withOpacity(0.1)
-                                  : cardBg,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: (isCritical)
-                                      ? color.withOpacity(0.3)
-                                      : Colors.black.withOpacity(isDark ? 0.3 : 0.08),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                              border: Border.all(
-                                color: isCritical ? color : Colors.green.withOpacity(0.8),
-                                width: isCritical ? 2.5 : 1.5,
-                              ),
-                            ),
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            flex: 9,
-                            child: Padding(
-                              padding: const EdgeInsets.all(6),
-                              child: Container(
-                                padding: const EdgeInsets.all(1),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Hero(
-                                  tag: "hero_image_${mod.image}",
-                                  child: Image.asset(
-                                    mod.image,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (c, e, s) => Icon(
-                                      Icons.category,
-                                      color: color,
-                                      size: 32,
+                          return GestureDetector(
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => mod.page),
+                              );
+                              _updatePendingCount();
+                              _loadHealthData();
+                            },
+                            child: AnimatedBuilder(
+                              animation: _blinkController,
+                              builder: (context, child) {
+                                return Opacity(
+                                  opacity: (isCritical)
+                                      ? (0.4 + (_blinkController.value * 0.6))
+                                      : 1.0,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color:
+                                          (isCritical &&
+                                              _blinkController.value > 0.5)
+                                          ? color.withOpacity(0.1)
+                                          : cardBg,
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: (isCritical)
+                                              ? color.withOpacity(0.3)
+                                              : Colors.black.withOpacity(
+                                                  isDark ? 0.35 : 0.1,
+                                                ),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 5),
+                                        ),
+                                      ],
+                                      border: Border.all(
+                                        color: isCritical
+                                            ? color
+                                            : Colors.green.withOpacity(0.85),
+                                        width: isCritical ? 3.0 : 1.8,
+                                      ),
+                                    ),
+                                    child: child,
+                                  ),
+                                );
+                              },
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    flex: 9,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(6),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Hero(
+                                          tag: "hero_image_${mod.image}",
+                                          child: Image.asset(
+                                            mod.image,
+                                            fit: BoxFit.contain,
+                                            errorBuilder: (c, e, s) => Icon(
+                                              Icons.category,
+                                              color: color,
+                                              size: 40,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                    ),
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        mod.name.toUpperCase(),
+                                        textAlign: TextAlign.center,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 10.0,
+                                          fontWeight: FontWeight.w900,
+                                          color: isDark
+                                              ? Colors.white
+                                              : const Color(0xFF1E293B),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    mod.health == -1 ? "..." : "${mod.health}%",
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                      color: color,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                ],
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                mod.name.toUpperCase(),
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 7.5,
-                                  fontWeight: FontWeight.w900,
-                                  color: isDark ? Colors.white : const Color(0xFF1E293B),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            mod.health == -1 ? "..." : "${mod.health}%",
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              color: color,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-      ],
-    ),
-  ),
-);
+    );
   }
 }

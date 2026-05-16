@@ -97,6 +97,15 @@ flutter:
 
 
   assets:
+    - assets/instructions_front.png
+    - assets/instructions_scan.png
+    - assets/instructions_valve.png
+    - assets/instructions_surroundings.png
+    - assets/instructions_gauge_universal.png
+    - assets/instructions_surroundings_universal.png
+    - assets/scan.png
+    - assets/check-list.png
+    - assets/ehs.png
     - assets/123.png
     - assets/11.png
     - assets/extinguisher.png

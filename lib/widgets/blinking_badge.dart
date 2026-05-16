@@ -37,10 +37,10 @@ class _BlinkingActiveBadgeState extends State<BlinkingActiveBadge> with SingleTi
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFD50000).withValues(alpha: 0.08),
+            color: const Color(0xFFD50000).withOpacity(0.08),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: const Color(0xFFD50000).withValues(alpha: 0.15 * _opacityAnimation.value),
+              color: const Color(0xFFD50000).withOpacity(0.15 * _opacityAnimation.value),
               width: 1,
             ),
           ),
@@ -53,11 +53,11 @@ class _BlinkingActiveBadgeState extends State<BlinkingActiveBadge> with SingleTi
                 width: 7,
                 height: 7,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD50000).withValues(alpha: _opacityAnimation.value),
+                  color: const Color(0xFFD50000).withOpacity(_opacityAnimation.value),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFD50000).withValues(alpha: 0.4 * _opacityAnimation.value),
+                      color: const Color(0xFFD50000).withOpacity(0.4 * _opacityAnimation.value),
                       blurRadius: 6,
                       spreadRadius: 1,
                     ),

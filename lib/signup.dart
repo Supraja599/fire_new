@@ -36,36 +36,38 @@ class _SignUpPageState extends State<SignUpPage> {
         title: const Text("Sign Up"),
         backgroundColor: Colors.red,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
 
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: "Name"),
-            ),
-
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: "Email"),
-            ),
-
-            TextField(
-              controller: passController,
-              decoration: const InputDecoration(labelText: "Password"),
-            ),
-
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-              onPressed: register,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: "Name"),
               ),
-              child: const Text("Create Account"),
-            ),
-          ],
+
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(labelText: "Email"),
+              ),
+
+              TextField(
+                controller: passController,
+                decoration: const InputDecoration(labelText: "Password"),
+              ),
+
+              const SizedBox(height: 20),
+
+              ElevatedButton(
+                onPressed: register,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                ),
+                child: const Text("Create Account"),
+              ),
+            ],
+          ),
         ),
       ),
     );

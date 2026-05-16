@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:fire_new/guided_capture_wizard.dart';
+
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../local_db.dart';
 import 'checklist.dart';
@@ -181,7 +183,17 @@ class _EmergencyExitsScanPageState extends State<EmergencyExitsScanPage> {
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
                   icon: const Icon(Icons.list_alt, color: Colors.white),
                   label: const Text("OPEN CHECKLIST", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EmergencyExitsChecklistPage(selectedEquipment: item))),
+                  onPressed: () {
+            if (item != null) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => EmergencyExitsChecklistPage(selectedEquipment: item)));
+            } else {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
+                selectedEquipment: item,
+                equipmentImage: 'assets/emergency_exit.png',
+                nextScreen: EmergencyExitsChecklistPage(selectedEquipment: item),
+              )));
+            }
+          },
                 ),
               ),
             ]),

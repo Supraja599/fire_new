@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fire_new/guided_capture_wizard.dart';
+
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'checklist.dart';
 import 'services/smoke_detector_api_service.dart';
@@ -61,7 +63,15 @@ class _SmokeDetectorInspectionPageState extends State<SmokeDetectorInspectionPag
   }
 
   void openChecklistPage() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => SmokeDetectorChecklistPage(selectedEquipment: item)));
+    if (item != null) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => SmokeDetectorChecklistPage(selectedEquipment: item)));
+    } else {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
+        selectedEquipment: item,
+        equipmentImage: 'assets/smoke_detector.png',
+        nextScreen: SmokeDetectorChecklistPage(selectedEquipment: item),
+      )));
+    }
   }
 
   Future<void> _submitInspection() async {

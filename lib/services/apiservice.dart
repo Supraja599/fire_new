@@ -30,7 +30,7 @@ class ApiService {
           "username": username.trim(),
           "password": password.trim(),
         }),
-      ).timeout(const Duration(seconds: 3));
+      ).timeout(const Duration(seconds: 10)); // Increased to 10s for reliability
 
       if (res.statusCode == 200) {
         final decoded = jsonDecode(res.body);
@@ -38,10 +38,12 @@ class ApiService {
           token = decoded["token"];
           return decoded;
         }
+      } else {
+        print("LOGIN FAILED: ${res.statusCode} - ${res.body}");
       }
       return null;
     } catch (e) {
-      print("LOGIN ERROR: $e");
+      print("LOGIN NETWORK ERROR: $e");
       return null;
     }
   }
