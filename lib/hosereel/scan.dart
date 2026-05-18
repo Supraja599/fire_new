@@ -22,8 +22,8 @@ class _HoseReelScanPageState extends State<HoseReelScanPage> {
   Map<String, dynamic>? item;
   bool loading = false;
   String? error;
-  bool showScanner = false;
-  bool showSearch = true;
+  bool showScanner = true;
+  bool showSearch = false;
 
   @override
   void initState() {
@@ -47,14 +47,6 @@ class _HoseReelScanPageState extends State<HoseReelScanPage> {
     }).take(5).toList();
     
     setState(() => filteredEquipment = results);
-
-    final exactMatch = allEquipment.firstWhere(
-      (e) => (e["sos_code"] ?? e["serial_number"] ?? e["id"] ?? "").toString().toLowerCase() == val.toLowerCase(),
-      orElse: () => {},
-    );
-    if (exactMatch.isNotEmpty) {
-      fetchDetails(val);
-    }
   }
 
   Future<void> fetchDetails(String input) async {
@@ -185,25 +177,107 @@ class _HoseReelScanPageState extends State<HoseReelScanPage> {
           IconButton(icon: const Icon(Icons.refresh), onPressed: () => setState(() { item = null; idController.clear(); error = null; showSearch = true; filteredEquipment = []; })),
         ],
       ),
-      body: SafeArea(
-        child: ListView(
+      body: SingleChildScrollView(
+        child: Column(
           children: [
-            if (showSearch)
+            if (item == null && !loading) ...[
+              // 1. Camera Scanner
               Container(
-                margin: const EdgeInsets.all(12),
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(25), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)]),
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                height: 280,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(25),
+                  border: Border.all(color: Colors.red, width: 2.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.red.withOpacity(0.08),
+                      blurRadius: 15,
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(22),
+                  child: MobileScanner(
+                    onDetect: (c) {
+                      if (c.barcodes.isNotEmpty) {
+                        idController.text = c.barcodes.first.rawValue ?? "";
+                        fetchDetails(idController.text);
+                      }
+                    },
+                  ),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                child: Text(
+                  "📷 Align the barcode / QR code inside the frame to inspect automatically.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.blueGrey,
+                  ),
+                ),
+              ),
+
+              // 2. Separator
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Row(
+                  children: [
+                    Expanded(child: Divider(color: Colors.grey.shade300, indent: 30, endIndent: 10)),
+                    Text(
+                      "OR ENTER MANUALLY",
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    Expanded(child: Divider(color: Colors.grey.shade300, indent: 10, endIndent: 30)),
+                  ],
+                ),
+              ),
+
+              // 3. Manual Entry Search Box
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
                 child: Column(
                   children: [
                     TextField(
                       controller: idController,
                       onChanged: _onSearchChanged,
                       decoration: InputDecoration(
-                        hintText: "Enter SOS ID (e.g. SOS-HR-01)",
-                        prefixIcon: const Icon(Icons.search, color: Colors.red),
+                        hintText: "Enter SOS ID",
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                        prefixIcon: const Icon(Icons.search, color: Colors.red),
                         filled: true,
                         fillColor: Colors.grey.shade50,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () => fetchDetails(idController.text),
+                        child: const Text("FETCH DETAILS", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       ),
                     ),
                     if (filteredEquipment.isNotEmpty)
@@ -211,52 +285,52 @@ class _HoseReelScanPageState extends State<HoseReelScanPage> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: filteredEquipment.length,
-                        itemBuilder: (context, i) {
-                          final e = filteredEquipment[i];
-                          return ListTile(
-                            dense: true,
-                            title: Text((e["sos_code"] ?? e["serial_number"] ?? e["id"] ?? "-").toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text(e["location_name"]?.toString() ?? "General Area"),
-                            trailing: const Icon(Icons.arrow_forward_ios, size: 14),
-                            onTap: () {
-                              idController.text = (e["sos_code"] ?? e["serial_number"] ?? e["id"]).toString();
-                              fetchDetails(idController.text);
-                            },
-                          );
-                        },
+                        itemBuilder: (c, i) => ListTile(
+                          dense: true,
+                          title: Text(filteredEquipment[i]["sos_code"] ?? filteredEquipment[i]["equipment_id"] ?? filteredEquipment[i]["id"] ?? filteredEquipment[i]["serial_number"] ?? "-"),
+                          subtitle: Text(filteredEquipment[i]["location_name"] ?? "-", style: const TextStyle(fontSize: 10)),
+                          onTap: () {
+                            idController.text = filteredEquipment[i]["sos_code"] ?? filteredEquipment[i]["equipment_id"] ?? filteredEquipment[i]["id"] ?? filteredEquipment[i]["serial_number"] ?? "";
+                            fetchDetails(idController.text);
+                          },
+                        ),
                       ),
-                    const SizedBox(height: 15),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB71C1C), padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                            onPressed: () => fetchDetails(idController.text),
-                            child: const Text("FETCH DETAILS", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        IconButton(
-                          icon: Icon(Icons.qr_code_scanner, color: const Color(0xFFB71C1C), size: 36),
-                          onPressed: () => setState(() => showScanner = !showScanner),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
-            if (showScanner) 
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12),
-                height: 220,
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(25), border: Border.all(color: Colors.red, width: 2)),
-                child: ClipRRect(borderRadius: BorderRadius.circular(23), child: MobileScanner(onDetect: onDetect)),
-              ),
+            ],
             if (loading) const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(color: Colors.red))),
-            if (error != null) Center(child: Padding(padding: EdgeInsets.all(20), child: Text(error!, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)))),
-            if (item != null) buildDetails()
-            else if (!loading && error == null)
-              const Center(child: Padding(padding: EdgeInsets.all(40), child: Column(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.search, size: 80, color: Colors.grey), Text("Enter SOS ID to begin", style: TextStyle(color: Colors.grey))]))),
+            if (item != null)
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 15),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                child: Column(
+                  children: [
+                    Text(
+                      item!["sos_code"] ?? item!["equipment_id"] ?? item!["id"] ?? item!["serial_number"] ?? "-",
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red),
+                    ),
+                    const Divider(height: 30),
+                    ...item!.entries.map((e) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 4,
+                            child: Text(
+                              e.key.toUpperCase(),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey),
+                            ),
+                          ),
+                          Expanded(flex: 6, child: Text(e.value?.toString() ?? "-")),
+                        ],
+                      ),
+                    )).toList(),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 50),
           ],
         ),
       ),

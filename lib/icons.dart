@@ -860,21 +860,28 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            Text(
-                              "ELTRIVE SAFETY",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
-                                color: isDark
-                                    ? Colors.white
-                                    : const Color(0xFF334155),
-                                letterSpacing: 0.5,
+                            Flexible(
+                              child: Text(
+                                "ELTRIVE SAFETY",
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF334155),
+                                  letterSpacing: 0.5,
+                                ),
                               ),
                             ),
                           ],
                         ),
+                        const SizedBox(height: 2),
                         Text(
                           "Industrial Monitoring Active",
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                           style: TextStyle(
                             fontSize: 8,
                             color: isDark
@@ -886,114 +893,239 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                       ],
                     ),
                   ),
-                  AnimatedBuilder(
-                    animation: _blinkController,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: 0.3 + (_blinkController.value * 0.7),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.favorite,
-                              color: Colors.red,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 4),
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
+                  const SizedBox(width: 12),
+                  Flexible(
+                    flex: 0,
+                    child: AnimatedBuilder(
+                      animation: _blinkController,
+                      builder: (context, child) {
+                        return Opacity(
+                          opacity: 0.3 + (_blinkController.value * 0.7),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.favorite,
+                                color: Colors.red,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
                                 "${overallHealth.toInt()}%",
                                 style: TextStyle(
-                                  fontSize: 17,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.w900,
                                   color: isDark ? Colors.white : Colors.black,
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 4),
-                  if (!kIsWeb)
-                    GestureDetector(
-                      onTap: _triggerManualSync,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          RotationTransition(
-                            turns: _syncSpinController,
-                            child: const Padding(
-                              padding: EdgeInsets.all(4),
-                              child: Icon(
-                                Icons.sync,
-                                size: 20,
-                                color: Colors.blue,
-                              ),
-                            ),
+                            ],
                           ),
-                          if (pendingSyncCount > 0)
-                            Positioned(
-                              right: 2,
-                              top: 2,
-                              child: Container(
-                                padding: const EdgeInsets.all(3),
-                                decoration: const BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
-                                ),
-                                constraints: const BoxConstraints(
-                                  minWidth: 14,
-                                  minHeight: 14,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    "$pendingSyncCount",
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 8,
-                                      fontWeight: FontWeight.w900,
-                                    ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  PopupMenuButton<String>(
+                    icon: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(
+                          Icons.menu_rounded,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                          size: 28,
+                        ),
+                        if (pendingSyncCount > 0)
+                          Positioned(
+                            right: -2,
+                            top: -2,
+                            child: Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 14,
+                                minHeight: 14,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "$pendingSyncCount",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w900,
                                   ),
                                 ),
                               ),
                             ),
-                        ],
-                      ),
+                          ),
+                      ],
                     ),
-                  const SizedBox(width: 4),
-                  GestureDetector(
-                    onTap: () => setState(() => isDark = !isDark),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(
-                        isDark
-                            ? Icons.wb_sunny_outlined
-                            : Icons.nightlight_round,
-                        size: 20,
-                        color: Colors.amber.shade700,
-                      ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  GestureDetector(
-                    onTap: () async {
-                      final box = Hive.box('inspectionBox');
-                      await box.clear();
-                      ApiService.token = null;
-                      if (mounted) {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
-                          (route) => false,
+                    color: isDark ? const Color(0xFF334155) : Colors.white,
+                    onSelected: (value) async {
+                      if (value == 'light') {
+                        setState(() => isDark = false);
+                      } else if (value == 'dark') {
+                        setState(() => isDark = true);
+                      } else if (value == 'sync') {
+                        _triggerManualSync();
+                      } else if (value == 'logout') {
+                        final box = Hive.box('inspectionBox');
+                        await box.clear();
+                        ApiService.token = null;
+                        if (mounted) {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginPage()),
+                            (route) => false,
+                          );
+                        }
+                      } else if (value == 'about') {
+                        showDialog(
+                          context: context,
+                          builder: (c) => AlertDialog(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                            title: Text(
+                              "Eltrive Safety Active Matrix",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.asset('assets/eltrive_logo.jpg', height: 60),
+                                ),
+                                const SizedBox(height: 15),
+                                Text(
+                                  "Version 3.2.0 - Active Compliance Protocol",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark ? Colors.white70 : Colors.black54,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  "Designed to monitor, inspect, and synchronize the safety infrastructure of Eltrive plants.",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark ? Colors.white54 : Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(c),
+                                child: const Text("CLOSE", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
                         );
                       }
                     },
-                    child: const Padding(
-                      padding: EdgeInsets.all(4),
-                      child: Icon(Icons.logout, size: 20, color: Colors.red),
-                    ),
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'light',
+                        child: Row(
+                          children: [
+                            Icon(Icons.wb_sunny_rounded, color: Colors.amber.shade700, size: 20),
+                            const SizedBox(width: 12),
+                            Text(
+                              "Light Theme",
+                              style: TextStyle(
+                                color: isDark ? Colors.white70 : Colors.black87,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (!isDark) ...[
+                              const Spacer(),
+                              const Icon(Icons.check_circle_rounded, color: Colors.green, size: 16),
+                            ],
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'dark',
+                        child: Row(
+                          children: [
+                            Icon(Icons.nightlight_round, color: Colors.indigo.shade300, size: 20),
+                            const SizedBox(width: 12),
+                            Text(
+                              "Dark Theme",
+                              style: TextStyle(
+                                color: isDark ? Colors.white70 : Colors.black87,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (isDark) ...[
+                              const Spacer(),
+                              const Icon(Icons.check_circle_rounded, color: Colors.green, size: 16),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const PopupMenuDivider(),
+                      PopupMenuItem(
+                        value: 'sync',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.sync_rounded, color: Colors.blue, size: 20),
+                            const SizedBox(width: 12),
+                            Text(
+                              "Sync All Modules",
+                              style: TextStyle(
+                                color: isDark ? Colors.white70 : Colors.black87,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'about',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.info_outline_rounded, color: Colors.teal, size: 20),
+                            const SizedBox(width: 12),
+                            Text(
+                              "About App",
+                              style: TextStyle(
+                                color: isDark ? Colors.white70 : Colors.black87,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuDivider(),
+                      PopupMenuItem(
+                        value: 'logout',
+                        child: const Row(
+                          children: [
+                            Icon(Icons.logout_rounded, color: Colors.red, size: 20),
+                            const SizedBox(width: 12),
+                            Text(
+                              "Logout",
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -1176,12 +1308,15 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                                     ),
                                   ),
                                   const SizedBox(height: 2),
-                                  Text(
-                                    mod.health == -1 ? "..." : "${mod.health}%",
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w900,
-                                      color: color,
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      mod.health == -1 ? "..." : "${mod.health}%",
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                        color: color,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 6),

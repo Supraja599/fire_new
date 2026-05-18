@@ -193,13 +193,13 @@ class _LoginPageState extends State<LoginPage>
                     end: Alignment.bottomRight,
                   ),
                 ),
-                child: const Column(
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center, // Force center
                   children: [
-                    Icon(Icons.verified_user_rounded,
+                    const Icon(Icons.verified_user_rounded,
                         size: 90, color: Colors.white),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
                       "SOS EMERGENCY PLATFORM",
                       textAlign: TextAlign.center, // Center text
