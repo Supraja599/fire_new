@@ -45,7 +45,8 @@ class _EmergencyShowerDashboardState extends State<EmergencyShowerDashboard> {
           total = s["total_units"] ?? s["total"] ?? 0;
           active = s["active_units"] ?? s["active"] ?? 0;
           summaryData = s;
-          health = ApiService.calculateHealth(s);
+          final hs = s["health_score"] ?? s["health"] ?? s["score"];
+          health = hs != null ? hs.toInt() : ApiService.calculateHealth(s);
           isLoading = false;
         });
       } else if (mounted) {

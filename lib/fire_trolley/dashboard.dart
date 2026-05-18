@@ -44,7 +44,8 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
           activeCount = summary["active"] ?? summary["active_units"] ?? 0;
           alertCount = alertSum["active_alerts"] ?? (summary["needs_service"] ?? 0);
           total = summary["total"] ?? summary["total_units"] ?? (activeCount + alertCount);
-          health = ApiService.calculateHealth(summary);
+          final hs = summary["health_score"] ?? summary["health"] ?? summary["score"];
+          health = hs != null ? hs.toInt() : ApiService.calculateHealth(summary);
           isLoading = false;
         });
       } else if (mounted) {

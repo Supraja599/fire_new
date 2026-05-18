@@ -3,6 +3,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:fire_new/local_db.dart';
 import 'package:fire_new/sync_service.dart';
 import 'dart:async';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'main.dart';
 
@@ -93,6 +96,199 @@ class ModuleItem {
     this.total = 0,
     this.expired = 0,
   });
+}
+
+class TransparentImage extends StatefulWidget {
+  final String assetPath;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
+  final Widget Function(BuildContext, Object, StackTrace?)? errorBuilder;
+
+  const TransparentImage({
+    super.key,
+    required this.assetPath,
+    this.width,
+    this.height,
+    this.fit = BoxFit.contain,
+    this.errorBuilder,
+  });
+
+  @override
+  State<TransparentImage> createState() => _TransparentImageState();
+}
+
+class _TransparentImageState extends State<TransparentImage> {
+  ui.Image? _processedImage;
+  bool _isLoading = true;
+  bool _hasError = false;
+  Object? _error;
+  StackTrace? _stackTrace;
+
+  @override
+  void initState() {
+    super.initState();
+    _process();
+  }
+
+  @override
+  void didUpdateWidget(TransparentImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.assetPath != widget.assetPath) {
+      _process();
+    }
+  }
+
+  Future<void> _process() async {
+    if (!mounted) return;
+    try {
+      final img = await _removeBackgroundCached(widget.assetPath);
+      if (mounted) {
+        setState(() {
+          _processedImage = img;
+          _isLoading = false;
+          _hasError = false;
+        });
+      }
+    } catch (e, s) {
+      debugPrint("Error removing background for ${widget.assetPath}: $e");
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+          _error = e;
+          _stackTrace = s;
+        });
+      }
+    }
+  }
+
+  static final Map<String, ui.Image> _processedImageCache = {};
+
+  static Future<ui.Image> _removeBackgroundCached(String path) async {
+    if (_processedImageCache.containsKey(path)) {
+      return _processedImageCache[path]!;
+    }
+
+    final data = await rootBundle.load(path);
+    final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+    final frame = await codec.getNextFrame();
+    final image = frame.image;
+
+    final rgbaData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    if (rgbaData == null) {
+      _processedImageCache[path] = image;
+      return image;
+    }
+
+    final Uint8List pixels = rgbaData.buffer.asUint8List();
+    final int len = pixels.length;
+
+    for (int i = 0; i < len; i += 4) {
+      final int r = pixels[i];
+      final int g = pixels[i + 1];
+      final int b = pixels[i + 2];
+
+      // Green screen detection:
+      // A bright green pixel: green is high, and much higher than red and blue.
+      // Widen the green screen filter slightly to capture compressed edges.
+      final bool isGreen = g > 70 && g > r * 1.15 && g > b * 1.15;
+
+      // Advanced White / Off-White / Light-Grey background detection:
+      // Key out pixels that are very light (all channels > 195)
+      // AND very close to each other in color space (low saturation/variance signifies grey/white background).
+      final int maxChannel = r > g ? (r > b ? r : b) : (g > b ? g : b);
+      final int minChannel = r < g ? (r < b ? r : b) : (g < b ? g : b);
+      final int diff = maxChannel - minChannel;
+
+      final bool isWhite = (r > 195 && g > 195 && b > 195 && diff < 30) || 
+                           (r > 230 && g > 230 && b > 230 && diff < 40) ||
+                           (r > 240 && g > 240 && b > 240); // Absolute whites
+
+      if (isGreen || isWhite) {
+        pixels[i + 3] = 0; // Set Alpha to 0 (make transparent)
+      }
+    }
+
+    final Completer<ui.Image> completer = Completer();
+    ui.decodeImageFromPixels(
+      pixels,
+      image.width,
+      image.height,
+      ui.PixelFormat.rgba8888,
+      (ui.Image img) {
+        completer.complete(img);
+      },
+    );
+
+    final processedImage = await completer.future;
+    _processedImageCache[path] = processedImage;
+    return processedImage;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasError) {
+      if (widget.errorBuilder != null) {
+        return widget.errorBuilder!(context, _error ?? Exception("Unknown image error"), _stackTrace);
+      }
+      return Image.asset(
+        widget.assetPath,
+        width: widget.width,
+        height: widget.height,
+        fit: widget.fit,
+      );
+    }
+
+    if (_isLoading || _processedImage == null) {
+      return Image.asset(
+        widget.assetPath,
+        width: widget.width,
+        height: widget.height,
+        fit: widget.fit,
+        color: Colors.white.withOpacity(0.01),
+        colorBlendMode: BlendMode.dstIn,
+      );
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // 1. Soft Silhouette Glow Layer (Perfect High Contrast outline POP)
+        Positioned.fill(
+          child: FractionallySizedBox(
+            widthFactor: 0.95,
+            heightFactor: 0.95,
+            child: ImageFiltered(
+              imageFilter: ui.ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+              child: ColorFiltered(
+                colorFilter: ColorFilter.mode(
+                  isDark ? Colors.white.withOpacity(0.28) : Colors.black.withOpacity(0.32),
+                  BlendMode.srcIn,
+                ),
+                child: RawImage(
+                  image: _processedImage,
+                  fit: widget.fit,
+                ),
+              ),
+            ),
+          ),
+        ),
+        // 2. High-Contrast Plain Foreground Image (Slightly Scaled for Maximum Size & Impact!)
+        Transform.scale(
+          scale: 1.05,
+          child: RawImage(
+            image: _processedImage,
+            width: widget.width,
+            height: widget.height,
+            fit: widget.fit,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
@@ -418,39 +614,63 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
     // Step A: Resolve immediate local/global maps without network triggers
     for (final mod in modules) {
       try {
-        final globalMod = globalModules.firstWhere(
-          (m) =>
-              m["module_code"] == mod.moduleCode || m["code"] == mod.moduleCode,
-          orElse: () => null,
+        final localSummary = await LocalDB.getModuleMap(
+          moduleCode: mod.moduleCode,
+          recordType: "summary",
         );
 
-        if (globalMod != null) {
+        if (localSummary.isNotEmpty) {
           mod.total =
-              globalMod["total"] ??
-              globalMod["total_units"] ??
-              globalMod["total_loops"] ??
-              globalMod["total_extinguishers"] ??
+              localSummary["total"] ??
+              localSummary["total_units"] ??
+              localSummary["total_loops"] ??
+              localSummary["total_extinguishers"] ??
               0;
           mod.expired =
-              globalMod["expired"] ??
-              globalMod["expired_units"] ??
-              globalMod["expired_extinguishers"] ??
+              localSummary["expired"] ??
+              localSummary["expired_units"] ??
+              localSummary["expired_extinguishers"] ??
               0;
 
-          if (mod.total > 0) {
-            mod.health = ApiService.calculateHealth(globalMod);
-          } else {
-            final hs =
-                globalMod["health_score"] ??
-                globalMod["health"] ??
-                globalMod["score"] ??
-                100;
-            mod.health = hs.toInt();
-          }
-
+          final hs = localSummary["health_score"] ?? localSummary["health"] ?? localSummary["score"];
+          mod.health = hs != null ? hs.toInt() : ApiService.calculateHealth(localSummary);
           _assignModuleStatus(mod);
-        } else {
+          
+          // Add to background staggers to refresh and keep it synced
           modulesNeedingFetch.add(mod);
+        } else {
+          final globalMod = globalModules.firstWhere(
+            (m) =>
+                m["module_code"] == mod.moduleCode || m["code"] == mod.moduleCode,
+            orElse: () => null,
+          );
+
+          if (globalMod != null) {
+            mod.total =
+                globalMod["total"] ??
+                globalMod["total_units"] ??
+                globalMod["total_loops"] ??
+                globalMod["total_extinguishers"] ??
+                0;
+            mod.expired =
+                globalMod["expired"] ??
+                globalMod["expired_units"] ??
+                globalMod["expired_extinguishers"] ??
+                0;
+
+            final hs = globalMod["health_score"] ?? globalMod["health"] ?? globalMod["score"];
+            if (hs != null) {
+              mod.health = hs.toInt();
+            } else if (mod.total > 0) {
+              mod.health = ApiService.calculateHealth(globalMod);
+            } else {
+              mod.health = 100;
+            }
+
+            _assignModuleStatus(mod);
+          } else {
+            modulesNeedingFetch.add(mod);
+          }
         }
       } catch (_) {
         modulesNeedingFetch.add(mod);
@@ -483,7 +703,8 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                   summary["expired_units"] ??
                   summary["expired_extinguishers"] ??
                   0;
-              mod.health = ApiService.calculateHealth(summary);
+              final hs = summary["health_score"] ?? summary["health"] ?? summary["score"];
+              mod.health = hs != null ? hs.toInt() : ApiService.calculateHealth(summary);
             } else {
               mod.health = 100;
             }
@@ -592,13 +813,13 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
   Color getStatusColor(String status) {
     switch (status) {
       case 'green':
-        return Colors.green.shade700;
+        return const Color(0xFF10B981); // Vibrant Emerald Green
       case 'amber':
-        return Colors.orange.shade700;
+        return const Color(0xFFF59E0B); // Vibrant Warm Amber
       case 'red':
-        return Colors.red.shade700;
+        return const Color(0xFFEF4444); // Vibrant Hot Red
       default:
-        return Colors.blueGrey;
+        return const Color(0xFF64748B); // Slate Grey
     }
   }
 
@@ -814,8 +1035,6 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                         itemBuilder: (context, index) {
                           final mod = modules[index];
                           final color = getStatusColor(mod.status);
-                          final isCritical =
-                              mod.health != -1 && mod.health < 20;
 
                           return GestureDetector(
                             onTap: () async {
@@ -829,38 +1048,89 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                             child: AnimatedBuilder(
                               animation: _blinkController,
                               builder: (context, child) {
-                                return Opacity(
-                                  opacity: (isCritical)
-                                      ? (0.4 + (_blinkController.value * 0.6))
-                                      : 1.0,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color:
-                                          (isCritical &&
-                                              _blinkController.value > 0.5)
-                                          ? color.withOpacity(0.1)
-                                          : cardBg,
-                                      borderRadius: BorderRadius.circular(20),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: (isCritical)
-                                              ? color.withOpacity(0.3)
-                                              : Colors.black.withOpacity(
-                                                  isDark ? 0.35 : 0.1,
-                                                ),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, 5),
-                                        ),
-                                      ],
-                                      border: Border.all(
-                                        color: isCritical
-                                            ? color
-                                            : Colors.green.withOpacity(0.85),
-                                        width: isCritical ? 3.0 : 1.8,
-                                      ),
+                                // Define borders, colors, and shadows based on status for premium glowing blinking effects
+                                final double pulse = _blinkController.value;
+                                
+                                Color animatedBorderColor;
+                                double borderWidth;
+                                Color animatedBgColor;
+                                List<BoxShadow> animatedShadows;
+
+                                if (mod.health == -1) {
+                                  // Loading state
+                                  animatedBorderColor = isDark 
+                                      ? Colors.white.withOpacity(0.15) 
+                                      : Colors.black.withOpacity(0.08);
+                                  borderWidth = 1.5;
+                                  animatedBgColor = cardBg;
+                                  animatedShadows = [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(isDark ? 0.25 : 0.05),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    )
+                                  ];
+                                } else {
+                                  // Active states: Red, Amber, Green
+                                  animatedBorderColor = color.withOpacity(0.40 + (pulse * 0.60));
+                                  
+                                  if (mod.status == 'red') {
+                                    borderWidth = 2.2 + (pulse * 1.3);
+                                    animatedBgColor = Color.lerp(
+                                      cardBg,
+                                      color.withOpacity(isDark ? 0.35 : 0.22),
+                                      pulse,
+                                    )!;
+                                    animatedShadows = [
+                                      BoxShadow(
+                                        color: color.withOpacity(0.20 + (pulse * 0.30)),
+                                        blurRadius: 8.0 + (pulse * 8.0),
+                                        offset: const Offset(0, 4),
+                                      )
+                                    ];
+                                  } else if (mod.status == 'amber') {
+                                    borderWidth = 1.8 + (pulse * 0.8);
+                                    animatedBgColor = Color.lerp(
+                                      cardBg,
+                                      color.withOpacity(isDark ? 0.28 : 0.17),
+                                      pulse,
+                                    )!;
+                                    animatedShadows = [
+                                      BoxShadow(
+                                        color: color.withOpacity(0.15 + (pulse * 0.20)),
+                                        blurRadius: 6.0 + (pulse * 6.0),
+                                        offset: const Offset(0, 4),
+                                      )
+                                    ];
+                                  } else {
+                                    // Green (Healthy)
+                                    borderWidth = 1.5 + (pulse * 0.4);
+                                    animatedBgColor = Color.lerp(
+                                      cardBg,
+                                      color.withOpacity(isDark ? 0.22 : 0.13),
+                                      pulse,
+                                    )!;
+                                    animatedShadows = [
+                                      BoxShadow(
+                                        color: color.withOpacity(0.10 + (pulse * 0.12)),
+                                        blurRadius: 5.0 + (pulse * 4.0),
+                                        offset: const Offset(0, 4),
+                                      )
+                                    ];
+                                  }
+                                }
+
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: animatedBgColor,
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: animatedShadows,
+                                    border: Border.all(
+                                      color: animatedBorderColor,
+                                      width: borderWidth,
                                     ),
-                                    child: child,
                                   ),
+                                  child: child,
                                 );
                               },
                               child: Column(
@@ -870,24 +1140,15 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                                     flex: 9,
                                     child: Padding(
                                       padding: const EdgeInsets.all(6),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                        child: Hero(
-                                          tag: "hero_image_${mod.image}",
-                                          child: Image.asset(
-                                            mod.image,
-                                            fit: BoxFit.contain,
-                                            errorBuilder: (c, e, s) => Icon(
-                                              Icons.category,
-                                              color: color,
-                                              size: 40,
-                                            ),
+                                      child: Hero(
+                                        tag: "hero_image_${mod.image}",
+                                        child: TransparentImage(
+                                          assetPath: mod.image,
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (c, e, s) => Icon(
+                                            Icons.category,
+                                            color: color,
+                                            size: 40,
                                           ),
                                         ),
                                       ),

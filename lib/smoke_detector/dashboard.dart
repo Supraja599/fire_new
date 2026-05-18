@@ -47,7 +47,8 @@ class _SmokeDetectorDashboardState extends State<SmokeDetectorDashboard> {
           deviceCount = s["active"] ?? 0;
           total = s["total"] ?? (deviceCount + (s["needs_service"] ?? 0) + (s["expired"] ?? 0));
           summaryData = s;
-          health = ApiService.calculateHealth(s);
+          final hs = s["health_score"] ?? s["health"] ?? s["score"];
+          health = hs != null ? hs.toInt() : ApiService.calculateHealth(s);
           isLoading = false;
         });
       } else if (mounted) {

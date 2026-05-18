@@ -47,7 +47,8 @@ class _PPECabinetsDashboardState extends State<PPECabinetsDashboard> {
           total = s["total_units"] ?? s["total"] ?? 0;
           deviceCount = s["active_units"] ?? s["active"] ?? 0;
           summaryData = s;
-          health = ApiService.calculateHealth(s);
+          final hs = s["health_score"] ?? s["health"] ?? s["score"];
+          health = hs != null ? hs.toInt() : ApiService.calculateHealth(s);
           isLoading = false;
         });
       } else if (mounted) {

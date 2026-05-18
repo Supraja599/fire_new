@@ -42,7 +42,8 @@ class _FireExtinguisherDashboardState extends State<FireExtinguisherDashboard> {
           needsService = (s["needs_service"] ?? 0) + (s["expired"] ?? 0) + (s["needs-service"] ?? 0);
           total = s["total_units"] ?? s["total"] ?? (activeUnits + needsService);
           summaryData = s;
-          health = ApiService.calculateHealth(s);
+          final hs = s["health_score"] ?? s["health"] ?? s["score"];
+          health = hs != null ? hs.toInt() : ApiService.calculateHealth(s);
           isLoading = false;
         });
       }

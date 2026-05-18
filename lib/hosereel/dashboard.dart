@@ -47,7 +47,8 @@ class _DashboardState extends State<Dashboard> {
           total = s["total_units"] ?? s["total"] ?? (activeUnits + (s["needs_service"] ?? 0) + (s["expired"] ?? 0));
           expiredCount = s["expired"] ?? 0;
           summaryData = s;
-          health = ApiService.calculateHealth(s);
+          final hs = s["health_score"] ?? s["health"] ?? s["score"];
+          health = hs != null ? hs.toInt() : ApiService.calculateHealth(s);
           openFaults = (s["needs_service"] ?? 0) + expiredCount;
           isLoading = false;
         });

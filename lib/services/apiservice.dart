@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:hive/hive.dart';
 import '../local_db.dart';
 
 class ApiService {
@@ -10,10 +11,12 @@ class ApiService {
 
   // ================= COMMON HEADERS =================
   static Map<String, String> get headers {
+    final box = Hive.isBoxOpen('inspectionBox') ? Hive.box<dynamic>('inspectionBox') : null;
+    final activeToken = token ?? box?.get('token')?.toString();
     return {
       "Content-Type": "application/json",
       "Accept": "application/json",
-      if (token != null) "Authorization": "Bearer $token",
+      if (activeToken != null && activeToken.isNotEmpty) "Authorization": "Bearer $activeToken",
     };
   }
 
