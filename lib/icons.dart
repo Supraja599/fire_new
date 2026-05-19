@@ -668,6 +668,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
             }
 
             _assignModuleStatus(mod);
+            modulesNeedingFetch.add(mod);
           } else {
             modulesNeedingFetch.add(mod);
           }
@@ -850,13 +851,24 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                       children: [
                         Row(
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: Image.asset(
-                                'assets/eltrive_logo.jpg',
-                                height: 24,
-                                width: 24,
-                                fit: BoxFit.cover,
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: ClipOval(
+                                child: Image.asset(
+                                  'assets/eltrive_logo.jpg',
+                                  height: 32,
+                                  width: 32,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -1000,9 +1012,29 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                             content: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.asset('assets/eltrive_logo.jpg', height: 60),
+                                Container(
+                                  height: 80,
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: isDark ? Colors.white24 : Colors.black12,
+                                      width: 2.5,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.12),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipOval(
+                                    child: Image.asset(
+                                      'assets/eltrive_logo.jpg',
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
                                 ),
                                 const SizedBox(height: 15),
                                 Text(
