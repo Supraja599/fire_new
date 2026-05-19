@@ -351,6 +351,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
               targetLat: lat,
               targetLng: lng,
               maxAllowedDistanceMeters: 100.0,
+              context: context,
             );
           }
         }

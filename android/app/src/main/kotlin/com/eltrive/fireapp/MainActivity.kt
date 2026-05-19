@@ -1,4 +1,4 @@
-package com.example.fire_new
+package com.eltrive.fireapp
 
 import io.flutter.embedding.android.FlutterActivity
 

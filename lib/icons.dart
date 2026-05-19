@@ -832,15 +832,29 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: themeBg,
       body: SafeArea(
-        child: ListView(
-          physics: const BouncingScrollPhysics(),
+        child: Stack(
           children: [
-            if (isLoading)
-              const LinearProgressIndicator(
-                minHeight: 2,
-                backgroundColor: Colors.transparent,
-                color: Colors.blue,
+            IgnorePointer(
+              child: Center(
+                child: Opacity(
+                  opacity: isDark ? 0.03 : 0.07,
+                  child: Image.asset(
+                    'assets/eltrive_logo.jpg',
+                    width: 260,
+                    fit: BoxFit.contain,
+                  ),
+                ),
               ),
+            ),
+            ListView(
+              physics: const BouncingScrollPhysics(),
+              children: [
+                if (isLoading)
+                  const LinearProgressIndicator(
+                    minHeight: 2,
+                    backgroundColor: Colors.transparent,
+                    color: Colors.blue,
+                  ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
               child: Row(
@@ -1165,21 +1179,8 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
 
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 5, 14, 15),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Center(
-                    child: Opacity(
-                      opacity: isDark ? 0.03 : 0.07,
-                      child: Image.asset(
-                        'assets/eltrive_logo.jpg',
-                        width: 260,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                  LayoutBuilder(
-                    builder: (context, constraints) {
+              child: LayoutBuilder(
+                builder: (context, constraints) {
                       final bool isTab = Responsive.isTablet(context);
                       final bool isDesk = Responsive.isDesktop(context);
                       final int crossAxisCount = isDesk ? 6 : (isTab ? 4 : 3);
@@ -1360,8 +1361,8 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                       );
                     },
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),

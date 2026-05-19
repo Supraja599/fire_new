@@ -76,7 +76,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/ehs.png"
+  image_path: "assets/eltrive_logo.jpg"
 
 
   # The "flutter_lints" package below contains a set of recommended lints to

@@ -34,7 +34,14 @@ class _EmergencyLightingDashboardState extends State<EmergencyLightingDashboard>
       final s = await api.getSummary();
       if (mounted && s != null) {
         setState(() {
-          total = s["total_units"] ?? s["total"] ?? 0;
+          total = (((s["active_units"] ?? s["active"] ?? 0) +
+                   (s["needs_service"] ?? 0) +
+                   (s["expired"] ?? 0) +
+                   (s["upcoming"] ?? s["upcoming_units"] ?? 0) +
+                   (s["due_inspection"] ?? s["due_inspection_units"] ?? 0)) as num).toInt();
+          if (total == 0) {
+            total = s["total_units"] ?? s["total"] ?? 0;
+          }
           active = s["active_units"] ?? s["active"] ?? 0;
           summaryData = s;
           final hs = s["health_score"] ?? s["health"] ?? s["score"];

@@ -272,6 +272,7 @@ class _ChecklistPageState extends State<ChecklistPage> {
           targetLat: lat,
           targetLng: lng,
           maxAllowedDistanceMeters: 100.0,
+          context: context,
         );
 
         if (mounted) Navigator.pop(context); // Dismiss loader

@@ -25,7 +25,7 @@ class _PASystemPlantHealthPageState extends State<PASystemPlantHealthPage> {
       if (mounted) setState(() {
         active = s["active_units"] ?? s["active"] ?? 0;
         service = s["needs_service"] ?? 0;
-        inspect = s["due_inspection"] ?? 0;
+        inspect = (s["due_inspection"] ?? 0) + (s["upcoming"] ?? s["upcoming_units"] ?? 0);
         expired = s["expired_units"] ?? s["expired"] ?? 0;
         equipment = res[1] as List<Map<String, dynamic>>;
         isLoading = false;

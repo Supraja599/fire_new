@@ -44,7 +44,14 @@ class _FirstAidDashboardState extends State<FirstAidDashboard> {
       if (mounted && s != null) {
         setState(() {
           activeUnits = s["active_units"] ?? s["active"] ?? 0;
-          total = s["total_units"] ?? s["total"] ?? (activeUnits + (s["needs_service"] ?? 0) + (s["expired"] ?? 0));
+          total = ((activeUnits +
+                   (s["needs_service"] ?? 0) +
+                   (s["expired"] ?? 0) +
+                   (s["upcoming"] ?? s["upcoming_units"] ?? 0) +
+                   (s["due_inspection"] ?? s["due_inspection_units"] ?? 0)) as num).toInt();
+          if (total == 0) {
+            total = s["total_units"] ?? s["total"] ?? 0;
+          }
           summaryData = s;
           final hs = s["health_score"] ?? s["health"] ?? s["score"];
           health = hs != null ? hs.toInt() : ApiService.calculateHealth(s);

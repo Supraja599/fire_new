@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:fire_new/widgets/equipment_list_page.dart';
+import 'package:fire_new/widgets/generic_plant_health_page.dart';
 
 class GenericAnalyticsPage extends StatefulWidget {
   final String title;
@@ -348,6 +349,58 @@ class _GenericAnalyticsPageState extends State<GenericAnalyticsPage> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => GenericPlantHealthPage(
+                      title: "${widget.shortName} Health",
+                      shortName: widget.shortName,
+                      apiService: widget.apiService,
+                      imagePath: widget.imagePath,
+                      fallbackIcon: widget.fallbackIcon,
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E8E3E),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF1E8E3E).withValues(alpha: 0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.health_and_safety_rounded, color: Colors.white, size: 16),
+                    SizedBox(width: 6),
+                    Text(
+                      "HEALTH",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 11,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())

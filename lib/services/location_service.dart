@@ -1,4 +1,6 @@
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter/material.dart';
+import 'package:fire_new/widgets/permission_dialog.dart';
 
 class ProximityResult {
   final bool success;
@@ -21,6 +23,7 @@ class LocationService {
     required double targetLat,
     required double targetLng,
     double maxAllowedDistanceMeters = 100.0,
+    BuildContext? context,
   }) async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -38,6 +41,23 @@ class LocationService {
       // 2. Check and request runtime permission from the user
       permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
+        if (context != null) {
+          final proceed = await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            builder: (c) => const EltrivePermissionDialog(
+              title: "GPS Location Access Required",
+              description: "Eltrive Safety requires access to your high-precision device GPS coordinates during checklist submission. This ensures that safety inspections are physically performed on-site at the correct equipment location for safety compliance.",
+              icon: Icons.location_on_rounded,
+            ),
+          ) ?? false;
+          if (!proceed) {
+            return ProximityResult(
+              success: false,
+              errorMessage: "Location permission request was cancelled.",
+            );
+          }
+        }
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           return ProximityResult(

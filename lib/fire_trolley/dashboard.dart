@@ -43,7 +43,7 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
         setState(() {
           activeCount = summary["active"] ?? summary["active_units"] ?? 0;
           alertCount = alertSum["active_alerts"] ?? (summary["needs_service"] ?? 0);
-          total = summary["total"] ?? summary["total_units"] ?? (activeCount + alertCount);
+          total = summary["total"] ?? summary["total_units"] ?? (activeCount + alertCount + (summary["upcoming"] ?? summary["upcoming_units"] ?? 0) + (summary["due_inspection"] ?? 0));
           final hs = summary["health_score"] ?? summary["health"] ?? summary["score"];
           health = hs != null ? hs.toInt() : ApiService.calculateHealth(summary);
           isLoading = false;

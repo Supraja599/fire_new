@@ -32,7 +32,14 @@ class _DashboardPageState extends State<DashboardPage> {
       final s = await ApiService.getSummary();
       if (mounted) {
         setState(() {
-          total = s["total_units"] ?? s["total"] ?? 0;
+          total = (((s["active_units"] ?? s["active"] ?? 0) +
+                   (s["needs_service"] ?? 0) +
+                   (s["expired"] ?? 0) +
+                   (s["upcoming"] ?? s["upcoming_units"] ?? 0) +
+                   (s["due_inspection"] ?? s["due_inspection_units"] ?? 0)) as num).toInt();
+          if (total == 0) {
+            total = s["total_units"] ?? s["total"] ?? 0;
+          }
           active = s["active_units"] ?? s["active"] ?? 0;
           final hs = s["health_score"];
           if (hs != null && hs > 0) health = hs.toInt();

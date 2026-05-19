@@ -45,7 +45,7 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
         setState(() {
           active = s["active"] ?? 0;
           risk = (s["needs_service"] ?? 0) + (s["expired"] ?? 0);
-          total = s["total"] ?? (active + risk);
+          total = s["total"] ?? (active + risk + (s["upcoming"] ?? s["upcoming_units"] ?? 0) + (s["due_inspection"] ?? 0));
           summaryData = s;
           final hs = s["health_score"] ?? s["health"] ?? s["score"];
           health = hs != null ? hs.toInt() : ApiService.calculateHealth(s);

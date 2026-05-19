@@ -44,7 +44,7 @@ class _AlarmPanelDashboardState extends State<AlarmPanelDashboard> {
       if (mounted && s != null) {
         setState(() {
           activeLoops = s["active_loops"] ?? s["active"] ?? 0;
-          total = s["total_loops"] ?? s["total"] ?? (activeLoops + (s["needs_service"] ?? 0) + (s["expired"] ?? 0));
+          total = s["total_loops"] ?? s["total"] ?? (activeLoops + (s["needs_service"] ?? 0) + (s["expired"] ?? 0) + (s["upcoming"] ?? s["upcoming_units"] ?? 0) + (s["due_inspection"] ?? 0));
           expiredCount = s["expired"] ?? 0;
           summaryData = s;
           final hs = s["health_score"] ?? s["health"] ?? s["score"];

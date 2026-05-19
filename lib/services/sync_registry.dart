@@ -69,7 +69,7 @@ class SyncRegistry {
     final map = _syncMap;
 
     for (var entry in map.entries) {
-      if (role == 'superadmin' || assignedCodes.contains(entry.key)) {
+      if (role == 'superadmin' || role == 'admin' || assignedCodes.contains(entry.key)) {
         try {
           print("🔄 Syncing module: ${entry.key}");
           await entry.value();
