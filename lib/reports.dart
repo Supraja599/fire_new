@@ -1,20 +1,16 @@
-
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
-
 import 'package:fire_new/utils/web_download_helper.dart';
-
+import 'package:fire_new/common/report_utils.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
 import 'services/apiservice.dart';
-
+import 'local_db.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:excel/excel.dart';
-
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:open_filex/open_filex.dart';
 
 class ReportsPage extends StatefulWidget {
@@ -25,7 +21,7 @@ class ReportsPage extends StatefulWidget {
 }
 
 class _ReportsPageState extends State<ReportsPage> {
-  DateTime startDate = DateTime.now();
+  DateTime startDate = DateTime.now().subtract(const Duration(days: 30));
   DateTime endDate = DateTime.now();
 
   String selectedPlant = "Fire Extinguishers";
@@ -36,10 +32,14 @@ class _ReportsPageState extends State<ReportsPage> {
   final TextEditingController startController = TextEditingController();
   final TextEditingController endController = TextEditingController();
 
+  final TextEditingController sosController = TextEditingController();
+  final TextEditingController inspectorNameController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     updateDateFields();
+    _prefillLatestInspection();
   }
 
   void updateDateFields() {
@@ -47,8 +47,25 @@ class _ReportsPageState extends State<ReportsPage> {
     endController.text = DateFormat("dd/MM/yyyy").format(endDate);
   }
 
-  // ================= DATE PICKER =================
-  Future pickDate(bool isStart) async {
+  Future<void> _prefillLatestInspection() async {
+    try {
+      final pendingList = await LocalDB.getPendingModuleInspections(moduleCode: "fire_extinguisher");
+      if (pendingList.isNotEmpty) {
+        final last = pendingList.last;
+        final payload = last['payload'] as Map<String, dynamic>?;
+        if (mounted) {
+          setState(() {
+            sosController.text = last['equipment_id']?.toString() ?? '';
+            inspectorNameController.text = payload?['inspector_name']?.toString() ?? '';
+          });
+        }
+      }
+    } catch (e) {
+      print("Prefill error: $e");
+    }
+  }
+
+  Future<void> pickDate(bool isStart) async {
     DateTime? picked = await showDatePicker(
       context: context,
       initialDate: isStart ? startDate : endDate,
@@ -57,20 +74,6 @@ class _ReportsPageState extends State<ReportsPage> {
     );
 
     if (picked != null) {
-      if (isStart && picked.isAfter(endDate)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Start date cannot be after End date")),
-        );
-        return;
-      }
-
-      if (!isStart && picked.isBefore(startDate)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("End date cannot be before Start date")),
-        );
-        return;
-      }
-
       setState(() {
         isStart ? startDate = picked : endDate = picked;
         updateDateFields();
@@ -78,38 +81,33 @@ class _ReportsPageState extends State<ReportsPage> {
     }
   }
 
-  // ================= FETCH =================
   Future<Map<String, List<Map<String, dynamic>>>> fetchData() async {
     final active = await ApiService.getActive();
+    final upcoming = await ApiService.getUpcoming();
     final service = await ApiService.getNeedsService();
     final due = await ApiService.getDueInspection();
     final expired = await ApiService.getExpired();
 
     return {
-      "Active": active,
+      "Active": [...active, ...upcoming],
       "Needs Service": service,
       "Due Inspection": due,
       "Expired": expired,
     };
   }
 
-  // ================= PDF =================
   Future<void> generatePDF() async {
     setState(() => loading = true);
 
     try {
       final dataMap = await fetchData();
-
       List<Map<String, dynamic>> allData = [];
-
       dataMap.forEach((status, list) {
         allData.addAll(list.map((e) => {...e, "status": status}));
       });
 
       if (allData.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("No data to generate PDF")),
-        );
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No data to generate PDF")));
         setState(() => loading = false);
         return;
       }
@@ -119,29 +117,18 @@ class _ReportsPageState extends State<ReportsPage> {
       try {
         final logoBytes = await rootBundle.load('assets/eltrive_logo.jpg');
         logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
-      } catch (e) {
-        print("Logo load error: $e");
-      }
+      } catch (e) {}
 
       pdf.addPage(
-        pw.MultiPage(maxPages: 1000, 
+        pw.MultiPage(
           pageTheme: pw.PageTheme(
             buildBackground: (context) {
               return pw.FullPage(
                 ignoreMargins: true,
                 child: pw.Center(
                   child: pw.Transform.rotate(
-                    angle: 0.6, // Professional upward-diagonal tilt
-                    child: pw.Opacity(
-                      opacity: 0.12, // Perfect balance of high visibility & readability
-                      child: pw.Text(
-                        "ELTRIVE",
-                        style: pw.TextStyle(
-                          fontSize: 130,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    angle: 0.6,
+                    child: pw.Opacity(opacity: 0.12, child: pw.Text("ELTRIVE", style: pw.TextStyle(fontSize: 130, fontWeight: pw.FontWeight.bold))),
                   ),
                 ),
               );
@@ -151,277 +138,296 @@ class _ReportsPageState extends State<ReportsPage> {
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text("ELTRIVE PLANT REPORT",
-                    style: pw.TextStyle(
-                        fontSize: 20, fontWeight: pw.FontWeight.bold)),
-                if (logoImage != null)
-                  pw.Image(logoImage, width: 75, height: 75),
+                pw.Text("ELTRIVE PLANT REPORT", style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                if (logoImage != null) pw.Image(logoImage, width: 75, height: 75),
               ],
             ),
-
             pw.SizedBox(height: 10),
-
             pw.Text("Plant: $selectedPlant"),
             pw.Text("Unit: $selectedUnit"),
-            pw.Text(
-                "Date: ${DateFormat("dd-MM-yyyy").format(startDate)} to ${DateFormat("dd-MM-yyyy").format(endDate)}"),
-
+            pw.Text("Date: ${DateFormat("dd-MM-yyyy").format(startDate)} to ${DateFormat("dd-MM-yyyy").format(endDate)}"),
             pw.SizedBox(height: 20),
-
-            pw.Text("Summary",
-                style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-
-            pw.SizedBox(height: 5),
-            pw.Column(
-              children: dataMap.entries.map((e) {
-                return pw.Padding(
-                  padding: const pw.EdgeInsets.symmetric(vertical: 2),
-                  child: pw.Row(
-                    children: [
-                      pw.SizedBox(
-                        width: 180,
-                        child: pw.Text("${e.key}:", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Text("${e.value.length}"),
-                    ],
-                  ),
-                );
+            pw.Table.fromTextArray(
+              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+              headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
+              headers: ["SOS Code", "Location", "Status", "Previous Inspection", "Next Inspection"],
+              data: allData.map((e) {
+                final statusVal = reportStatus(e);
+                final prevIns = reportPreviousInspection(e);
+                final nextIns = reportNextInspection(e);
+                return [
+                  reportEquipmentId(e),
+                  reportLocation(e),
+                  statusVal,
+                  prevIns,
+                  nextIns,
+                ];
               }).toList(),
             ),
-
-            pw.SizedBox(height: 20),
-
-            pw.Table.fromTextArray(
-          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-          headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
-          headers: ["SOS Code", "Location", "Status", "Previous Inspection", "Next Inspection"],
-          data: allData.map((e) {
-            final statusVal = (e['status_label'] ?? e['status'] ?? '-').toString();
-            final prevIns = (e['last_inspection_date'] ?? e['last_service_date'] ?? e['last_service'] ?? e['last_inspected'] ?? e['last_inspected_at'] ?? e['inspected_date'] ?? e['inspection_date'] ?? e['updated_at'] ?? e['previous_inspection'] ?? '-').toString();
-            final nextIns = (e['next_inspection_due'] ?? e['next_due_date'] ?? '-').toString();
-            return [
-              (e['sos_code'] ?? e['id'] ?? '-').toString(),
-              (e['location_name'] ?? e['building_name'] ?? '-').toString(),
-              statusVal,
-              prevIns,
-              nextIns,
-            ];
-          }).toList(),
-        ),
           ],
         ),
       );
 
       final fileName = "Report_${DateTime.now().millisecondsSinceEpoch}.pdf";
-      
       if (kIsWeb) {
         WebDownloadHelper.downloadFile(await pdf.save(), fileName);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF downloaded ✅")));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF downloaded ✅")));
         setState(() => loading = false);
         return;
       }
-
       final directory = await getApplicationDocumentsDirectory();
       final path = "${directory.path}/$fileName";
       final file = File(path);
-
       await file.writeAsBytes(await pdf.save());
-      await OpenFilex.open(path);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("PDF generated and opened ✅")),
-      );
+      if (mounted) await OpenFilex.open(path);
     } catch (e) {
-      print("PDF ERROR: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error generating PDF: $e")),
-      );
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error generating PDF: $e")));
     }
-
     setState(() => loading = false);
   }
 
-  // ================= EXCEL =================
   Future<void> downloadExcel() async {
     setState(() => loading = true);
-
     try {
       final dataMap = await fetchData();
-
       var excel = Excel.createExcel();
-
       dataMap.forEach((status, list) {
         Sheet sheet = excel[status];
         sheet.appendRow(["SOS CODE", "LOCATION", "STATUS", "LAST INSPECTION", "NEXT INSPECTION"]);
         for (var item in list) {
-          final prevIns = (item['last_inspection_date'] ?? item['last_service_date'] ?? item['last_service'] ?? item['last_inspected'] ?? item['last_inspected_at'] ?? item['inspected_date'] ?? item['inspection_date'] ?? item['updated_at'] ?? item['previous_inspection'] ?? '-').toString();
-          final nextIns = (item['next_inspection_due'] ?? item['next_due_date'] ?? '-').toString();
+          final prevIns = reportPreviousInspection(item);
+          final nextIns = reportNextInspection(item);
           sheet.appendRow([
-            (item['sos_code'] ?? item['id'] ?? '-').toString(),
-            (item['location_name'] ?? item['building_name'] ?? '-').toString(),
+            reportEquipmentId(item),
+            reportLocation(item),
             status,
             prevIns,
             nextIns,
           ]);
         }
       });
-
       final fileName = "Report_${DateTime.now().millisecondsSinceEpoch}.xlsx";
-
       if (kIsWeb) {
         WebDownloadHelper.downloadFile(excel.encode()!, fileName);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Excel downloaded ✅")));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Excel downloaded ✅")));
         setState(() => loading = false);
         return;
       }
-
       final directory = await getApplicationDocumentsDirectory();
       final path = "${directory.path}/$fileName";
       File file = File(path);
-
       await file.writeAsBytes(excel.encode()!);
-      await OpenFilex.open(path);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Excel generated and opened ✅")),
-      );
+      if (mounted) await OpenFilex.open(path);
     } catch (e) {
-      print("EXCEL ERROR: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error generating Excel: $e")),
-      );
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error generating Excel: $e")));
     }
-
     setState(() => loading = false);
   }
 
-  // ================= UI =================
+  Future<void> generateSinglePDF() async {
+    final sosCode = sosController.text.trim();
+    if (sosCode.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter SOS Number")));
+      return;
+    }
+    setState(() => loading = true);
+    try {
+      final eqData = await ApiService.searchAny(sosCode);
+      if (eqData == null || eqData.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Equipment $sosCode not found")));
+        setState(() => loading = false);
+        return;
+      }
+      final pendingList = await LocalDB.getPendingModuleInspections(moduleCode: "fire_extinguisher");
+      final latestInspection = pendingList.where((e) => e['equipment_id'].toString().toLowerCase() == sosCode.toLowerCase()).toList();
+      Map<String, dynamic> payload = {};
+      if (latestInspection.isNotEmpty) {
+        payload = latestInspection.last['payload'] as Map<String, dynamic>;
+      }
+      String inspectorName = inspectorNameController.text.trim();
+      if (inspectorName.isEmpty) {
+        inspectorName = payload['inspector_name'] ?? 'N/A';
+      }
+      List<dynamic> answers = payload['answers'] ?? [];
+      final pdf = pw.Document();
+      pw.MemoryImage? logoImage;
+      try {
+        final logoBytes = await rootBundle.load('assets/eltrive_logo.jpg');
+        logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
+      } catch (e) {}
+      pdf.addPage(
+        pw.MultiPage(
+          pageTheme: pw.PageTheme(
+            buildBackground: (context) {
+              return pw.FullPage(
+                ignoreMargins: true,
+                child: pw.Center(
+                  child: pw.Transform.rotate(
+                    angle: 0.6,
+                    child: pw.Opacity(opacity: 0.12, child: pw.Text("ELTRIVE", style: pw.TextStyle(fontSize: 130, fontWeight: pw.FontWeight.bold))),
+                  ),
+                ),
+              );
+            },
+          ),
+          build: (context) => [
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text("INSPECTION REPORT", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                if (logoImage != null) pw.Image(logoImage, width: 75, height: 75),
+              ],
+            ),
+            pw.SizedBox(height: 20),
+            pw.Text("Equipment Details", style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.Divider(),
+            pw.Row(children: [pw.SizedBox(width: 120, child: pw.Text("Equipment ID")), pw.Text(": ${reportEquipmentId(eqData, fallback: sosCode)}")]),
+            pw.Row(children: [pw.SizedBox(width: 120, child: pw.Text("Location")), pw.Text(": ${reportLocation(eqData, fallback: 'N/A')}")]),
+            pw.SizedBox(height: 20),
+            pw.Text("Inspector Details", style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.Divider(),
+            pw.Row(children: [pw.SizedBox(width: 120, child: pw.Text("Inspector Name")), pw.Text(": $inspectorName")]),
+            pw.Row(children: [pw.SizedBox(width: 120, child: pw.Text("SOS Number")), pw.Text(": $sosCode")]),
+            pw.Row(children: [pw.SizedBox(width: 120, child: pw.Text("Inspection Date")), pw.Text(": ${DateFormat("dd-MM-yyyy").format(DateTime.now())}")]),
+            if (payload['remarks'] != null && payload['remarks'].toString().trim().isNotEmpty)
+              pw.Padding(padding: const pw.EdgeInsets.only(top: 4), child: pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [pw.SizedBox(width: 120, child: pw.Text("Remarks")), pw.Expanded(child: pw.Text(": ${payload['remarks']}"))])),
+            pw.SizedBox(height: 20),
+            pw.Text("Checklist Results", style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.Divider(),
+            if (answers.isEmpty) pw.Text("No offline checklist found for this equipment.") else ...answers.map((ans) {
+              final val = ans['answer'].toString().toLowerCase();
+              final isOk = val == 'true' || val == 'yes';
+              final isNa = val == 'na';
+              final icon = isOk ? '✓ ' : (isNa ? '- ' : '✗ ');
+              return pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(vertical: 4),
+                child: pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(icon, style: pw.TextStyle(color: isOk ? PdfColors.green : (isNa ? PdfColors.orange : PdfColors.red))),
+                    pw.Expanded(child: pw.Text("${ans['checklist_item_id']}. ${ans['item_text'] ?? 'Item'} : ${ans['answer'] == 'true' || ans['answer'] == true || ans['answer'] == 'YES' ? 'YES' : ans['answer'] == 'false' || ans['answer'] == false || ans['answer'] == 'NO' ? 'NO' : 'N/A'} ${ans['remarks'] != null && ans['remarks'].toString().isNotEmpty ? '(${ans['remarks']})' : ''}")),
+                  ]
+                )
+              );
+            }).toList(),
+          ],
+        ),
+      );
+      final fileName = "Single_Report_${sosCode}_${DateTime.now().millisecondsSinceEpoch}.pdf";
+      if (kIsWeb) {
+        WebDownloadHelper.downloadFile(await pdf.save(), fileName);
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF downloaded ✅")));
+        setState(() => loading = false);
+        return;
+      }
+      final directory = await getApplicationDocumentsDirectory();
+      final path = "${directory.path}/$fileName";
+      final file = File(path);
+      await file.writeAsBytes(await pdf.save());
+      if (mounted) await OpenFilex.open(path);
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+    setState(() => loading = false);
+  }
+
+  Widget _actionBtn(String label, IconData icon, Color color, VoidCallback onTap) => SizedBox(width: double.infinity, child: ElevatedButton.icon(icon: Icon(icon, color: Colors.white), label: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)), style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 18), backgroundColor: color, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))), onPressed: loading ? null : onTap));
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Reports"),
-        backgroundColor: Colors.blue,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: const Text("Reports"),
+          backgroundColor: Colors.blue,
+          elevation: 0,
+          bottom: const TabBar(
+            indicatorColor: Colors.white,
+            tabs: [
+              Tab(text: "Single Report", icon: Icon(Icons.assignment)),
+              Tab(text: "Plant Report", icon: Icon(Icons.domain)),
+            ],
+          ),
+        ),
+        body: TabBarView(
           children: [
-
-            Card(
-              elevation: 5,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-
-                    // ✅ FIXED DROPDOWN UI (NO OVERFLOW)
-                    DropdownButtonFormField<String>(
-                      value: selectedPlant,
-                      isExpanded: true,
-                      items: [
-                        "Fire Extinguishers",
-                        "Hose Reel",
-                        "Drum Hose Reel"
-                      ]
-                          .map((e) => DropdownMenuItem(
-                          value: e, child: Text(e)))
-                          .toList(),
-                      onChanged: (val) =>
-                          setState(() => selectedPlant = val!),
-                      decoration: const InputDecoration(
-                        labelText: "Plant",
-                        border: OutlineInputBorder(),
+            // TAB 1: SINGLE REPORT
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Card(
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          const Text("Single Equipment Report", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 15),
+                          TextField(
+                            controller: sosController,
+                            decoration: const InputDecoration(labelText: "SOS Number", border: OutlineInputBorder(), prefixIcon: Icon(Icons.qr_code)),
+                          ),
+                          const SizedBox(height: 15),
+                          TextField(
+                            controller: inspectorNameController,
+                            decoration: const InputDecoration(labelText: "Inspector Name (Optional)", border: OutlineInputBorder(), prefixIcon: Icon(Icons.person)),
+                          ),
+                          const SizedBox(height: 25),
+                          _actionBtn("Generate Single PDF", Icons.picture_as_pdf, Colors.red, generateSinglePDF),
+                        ],
                       ),
                     ),
-
-                    const SizedBox(height: 12),
-
-                    DropdownButtonFormField<String>(
-                      value: selectedUnit,
-                      isExpanded: true,
-                      items: ["UNIT-1", "UNIT-2", "UNIT-3"]
-                          .map((e) => DropdownMenuItem(
-                          value: e, child: Text(e)))
-                          .toList(),
-                      onChanged: (val) =>
-                          setState(() => selectedUnit = val!),
-                      decoration: const InputDecoration(
-                        labelText: "Unit",
-                        border: OutlineInputBorder(),
+                  ),
+                ],
+              ),
+            ),
+            
+            // TAB 2: PLANT REPORT
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Card(
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          DropdownButtonFormField<String>(
+                            value: selectedPlant,
+                            isExpanded: true,
+                            items: [selectedPlant, "Fire Extinguishers", "Hose Reel", "Drum Hose Reel"].toSet().toList().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                            onChanged: (val) => setState(() => selectedPlant = val!),
+                            decoration: const InputDecoration(labelText: "Plant", border: OutlineInputBorder())
+                          ),
+                          const SizedBox(height: 15),
+                          DropdownButtonFormField<String>(
+                            value: selectedUnit,
+                            isExpanded: true,
+                            items: ["UNIT-1", "UNIT-2", "UNIT-3"].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                            onChanged: (val) => setState(() => selectedUnit = val!),
+                            decoration: const InputDecoration(labelText: "Unit", border: OutlineInputBorder())
+                          ),
+                          const SizedBox(height: 15),
+                          Row(children: [
+                            Expanded(child: TextField(controller: startController, readOnly: true, onTap: () => pickDate(true), decoration: const InputDecoration(labelText: "From Date", border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today)))),
+                            const SizedBox(width: 10),
+                            Expanded(child: TextField(controller: endController, readOnly: true, onTap: () => pickDate(false), decoration: const InputDecoration(labelText: "To Date", border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today)))),
+                          ]),
+                        ],
                       ),
                     ),
-
-                    const SizedBox(height: 15),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: startController,
-                            readOnly: true,
-                            onTap: () => pickDate(true),
-                            decoration: const InputDecoration(
-                              labelText: "From Date",
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.calendar_today),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: TextField(
-                            controller: endController,
-                            readOnly: true,
-                            onTap: () => pickDate(false),
-                            decoration: const InputDecoration(
-                              labelText: "To Date",
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.calendar_today),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // ✅ MODERN BUTTONS
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.picture_as_pdf),
-                label: const Text("Generate PDF"),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.red,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: loading ? null : generatePDF,
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.table_chart),
-                label: const Text("Download Excel"),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.green,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: loading ? null : downloadExcel,
+                  ),
+                  const SizedBox(height: 40),
+                  _actionBtn("Generate PDF Report", Icons.picture_as_pdf, Colors.red, generatePDF),
+                  const SizedBox(height: 15),
+                  _actionBtn("Download Excel Sheet", Icons.table_chart, Colors.green, downloadExcel),
+                ],
               ),
             ),
           ],
@@ -430,4 +436,3 @@ class _ReportsPageState extends State<ReportsPage> {
     );
   }
 }
-

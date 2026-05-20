@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:fire_new/widgets/generic_analytics_page.dart';
+import 'services/smoke_detector_api_service.dart';
 
 class AnalyticsPage extends StatelessWidget {
   const AnalyticsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(backgroundColor: const Color(0xFF1565C0), title: const Text("Smoke Detector Analytics", style: TextStyle(color: Colors.white)), iconTheme: const IconThemeData(color: Colors.white)),
-      body: const Padding(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Text("Network Coverage: 100%", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            Text("Average Sensor Sensitivity: 95%", style: TextStyle(fontSize: 16)),
-          ],
-        ),
-      ),
+    return GenericAnalyticsPage(
+      title: "Smoke Detector Analytics",
+      shortName: "Smoke Detector",
+      assetLabel: "TOTAL SMOKE DETECTOR",
+      apiService: SmokeDetectorApiService(),
+      imagePath: "assets/smoke_detector.png",
+      fallbackIcon: Icons.analytics_rounded,
     );
   }
 }

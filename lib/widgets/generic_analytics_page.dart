@@ -31,6 +31,12 @@ class _GenericAnalyticsPageState extends State<GenericAnalyticsPage> {
   List<Map<String, dynamic>> inspectionList = [];
   List<Map<String, dynamic>> expiredList = [];
 
+  int countActive = 0;
+  int countService = 0;
+  int countInspection = 0;
+  int countExpired = 0;
+  int countTotal = 0;
+
   bool isLoading = true;
 
   @override
@@ -45,17 +51,52 @@ class _GenericAnalyticsPageState extends State<GenericAnalyticsPage> {
     try {
       final res = await Future.wait([
         widget.apiService.getActive() as Future,
+        widget.apiService.getUpcoming() as Future,
         widget.apiService.getNeedsService() as Future,
         widget.apiService.getDueInspection() as Future,
         widget.apiService.getExpired() as Future,
+        widget.apiService.getSummary() as Future,
       ]);
 
       if (mounted) {
         setState(() {
-          activeList = res[0];
-          serviceList = res[1];
-          inspectionList = res[2];
-          expiredList = res[3];
+          activeList = List<Map<String, dynamic>>.from(res[0] as Iterable? ?? []);
+          final upcomingList = List<Map<String, dynamic>>.from(res[1] as Iterable? ?? []);
+          activeList = [...activeList, ...upcomingList];
+          serviceList = List<Map<String, dynamic>>.from(res[2] as Iterable? ?? []);
+          inspectionList = List<Map<String, dynamic>>.from(res[3] as Iterable? ?? []);
+          expiredList = List<Map<String, dynamic>>.from(res[4] as Iterable? ?? []);
+
+          final s = res[5] as Map<String, dynamic>? ?? {};
+          int upcoming = (s["upcoming"] ?? s["upcoming_units"] ?? 0) as int;
+          int active = (s["active_units"] ?? s["active"] ?? s["active_loops"] ?? 0) as int;
+          int service = (s["needs_service"] ?? s["needs_service_units"] ?? 0) as int;
+          int inspection = (s["due_inspection"] ?? s["due_inspection_units"] ?? s["due_inspection_loops"] ?? 0) as int;
+          int expired = (s["expired"] ?? s["expired_units"] ?? s["expired_loops"] ?? 0) as int;
+          int total = (s["total"] ?? s["total_units"] ?? s["total_loops"] ?? s["total_extinguishers"] ?? 0) as int;
+
+          // Dynamic suffix pattern matching for all 24 modules
+          s.forEach((key, val) {
+            if (val is num) {
+              final intValue = val.toInt();
+              final lowerKey = key.toLowerCase();
+              if (lowerKey.contains("active") && lowerKey != "active") active = intValue;
+              if (lowerKey.contains("total") && lowerKey != "total") total = intValue;
+              if (lowerKey.contains("expired") && lowerKey != "expired") expired = intValue;
+              if (lowerKey.contains("service") && lowerKey != "needs_service") service = intValue;
+              if (lowerKey.contains("inspection") && lowerKey != "due_inspection") inspection = intValue;
+              if (lowerKey.contains("upcoming") && lowerKey != "upcoming") upcoming = intValue;
+            }
+          });
+
+          active = active + upcoming;
+          total = active + service + inspection + expired;
+
+          countActive = active;
+          countService = service;
+          countInspection = inspection;
+          countExpired = expired;
+          countTotal = total;
           isLoading = false;
         });
       }
@@ -75,14 +116,14 @@ class _GenericAnalyticsPageState extends State<GenericAnalyticsPage> {
   // ================= PIE DATA =================
   List<PieChartSectionData> getSections() {
     final data = [
-      {"label": "Active", "value": activeList.length, "color": activeColor},
-      {"label": "Need Service", "value": serviceList.length, "color": serviceColor},
-      {"label": "Due Inspection", "value": inspectionList.length, "color": inspectionColor},
-      {"label": "Expired", "value": expiredList.length, "color": expiredColor},
+      {"label": "Active", "value": countActive, "color": activeColor},
+      {"label": "Need Service", "value": countService, "color": serviceColor},
+      {"label": "Due Inspection", "value": countInspection, "color": inspectionColor},
+      {"label": "Expired", "value": countExpired, "color": expiredColor},
     ];
 
     // If total is zero, show a subtle grey ring placeholder to prevent fl_chart rendering anomalies
-    int totalCount = activeList.length + serviceList.length + inspectionList.length + expiredList.length;
+    int totalCount = countTotal;
     if (totalCount == 0) {
       return [
         PieChartSectionData(
@@ -150,10 +191,7 @@ class _GenericAnalyticsPageState extends State<GenericAnalyticsPage> {
 
   // ================= TOTAL COUNT =================
   Widget totalCard() {
-    int total = activeList.length +
-        serviceList.length +
-        inspectionList.length +
-        expiredList.length;
+    int total = countTotal;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -543,14 +581,14 @@ class _GenericAnalyticsPageState extends State<GenericAnalyticsPage> {
                         children: [
                           Row(
                             children: [
-                              buildCard("Active", activeList.length, activeList),
-                              buildCard("Need Service", serviceList.length, serviceList),
+                              buildCard("Active", countActive, activeList),
+                              buildCard("Need Service", countService, serviceList),
                             ],
                           ),
                           Row(
                             children: [
-                              buildCard("Due Inspection", inspectionList.length, inspectionList),
-                              buildCard("Expired", expiredList.length, expiredList),
+                              buildCard("Due Inspection", countInspection, inspectionList),
+                              buildCard("Expired", countExpired, expiredList),
                             ],
                           ),
                         ],

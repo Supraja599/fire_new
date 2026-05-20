@@ -31,6 +31,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     try {
       final res = await Future.wait([
         ApiService.getActive(),
+        ApiService.getUpcoming(),
         ApiService.getNeedsService(),
         ApiService.getDueInspection(),
         ApiService.getExpired(),
@@ -38,10 +39,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
       if (mounted) {
         setState(() {
-          activeList = res[0];
-          serviceList = res[1];
-          inspectionList = res[2];
-          expiredList = res[3];
+          activeList = [...res[0], ...res[1]];
+          serviceList = res[2];
+          inspectionList = res[3];
+          expiredList = res[4];
           isLoading = false;
         });
       }

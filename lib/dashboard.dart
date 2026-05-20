@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:fire_new/widgets/health_score_widget.dart';
+import 'package:fire_new/widgets/status_count_strip.dart';
 import 'inspection.dart';
 import 'analytics.dart';
 import 'maintenance.dart';
@@ -19,7 +20,9 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   static const Color primaryRed = Color(0xFFD50000); // ✅ TRUE RED
   int total = 0, active = 0, health = 0;
+  int needsService = 0, dueInspection = 0, expired = 0;
   bool isLoading = true;
+  Map<String, dynamic>? summaryData;
 
   @override
   void initState() {
@@ -32,25 +35,71 @@ class _DashboardPageState extends State<DashboardPage> {
       final s = await ApiService.getSummary();
       if (mounted) {
         setState(() {
-          total = (((s["active_units"] ?? s["active"] ?? 0) +
-                   (s["needs_service"] ?? 0) +
-                   (s["expired"] ?? 0) +
-                   (s["upcoming"] ?? s["upcoming_units"] ?? 0) +
-                   (s["due_inspection"] ?? s["due_inspection_units"] ?? 0)) as num).toInt();
-          if (total == 0) {
-            total = s["total_units"] ?? s["total"] ?? 0;
+          int upcoming = (s["upcoming"] ?? s["upcoming_units"] ?? 0) as int;
+          active = (s["active_units"] ?? s["active"] ?? 0) as int;
+          needsService = (s["needs_service"] ?? s["needs_service_units"] ?? 0) as int;
+          dueInspection = (s["due_inspection"] ?? s["due_inspection_units"] ?? 0) as int;
+          expired = (s["expired"] ?? s["expired_units"] ?? 0) as int;
+          total = (s["total"] ?? s["total_units"] ?? s["total_extinguishers"] ?? 0) as int;
+
+          // Dynamic suffix pattern matching fallback for custom suffixes like _extinguishers
+          s.forEach((key, val) {
+            if (val is num) {
+              final intValue = val.toInt();
+              final lowerKey = key.toLowerCase();
+              if (lowerKey.contains("active") && lowerKey != "active") active = intValue;
+              if (lowerKey.contains("total") && lowerKey != "total") total = intValue;
+              if (lowerKey.contains("expired") && lowerKey != "expired") expired = intValue;
+              if (lowerKey.contains("service") && lowerKey != "needs_service") needsService = intValue;
+              if (lowerKey.contains("inspection") && lowerKey != "due_inspection") dueInspection = intValue;
+              if (lowerKey.contains("upcoming") && lowerKey != "upcoming") upcoming = intValue;
+            }
+          });
+
+          active = active + upcoming;
+          total = active + needsService + dueInspection + expired;
+          summaryData = s;
+          
+          if (total > 0) {
+            health = ((active / total) * 100).toInt();
+          } else {
+            health = 100;
           }
-          active = s["active_units"] ?? s["active"] ?? 0;
-          final hs = s["health_score"];
-          if (hs != null && hs > 0) health = hs.toInt();
-          else if (total > 0) health = ((active / total) * 100).toInt();
-          else health = 0;
           isLoading = false;
         });
       }
     } catch (_) {
       if (mounted) setState(() => isLoading = false);
     }
+  }
+
+  Widget _statChip(String label, int count, Color color, IconData icon, bool loading) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withOpacity(0.25), width: 1.2),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(height: 4),
+            Text(
+              loading ? "--" : "$count",
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: color),
+            ),
+            Text(
+              label,
+              style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: color.withOpacity(0.8)),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -295,6 +344,9 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                     ),
                     
+                    // ── STATUS COUNT STRIP ──
+                    StatusCountStrip(summary: summaryData, isLoading: isLoading),
+
             // New: Gorgeous Executive Insight Banner to fill empty space elegantly!
             Container(
               width: double.infinity,

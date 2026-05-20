@@ -3,6 +3,7 @@ import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:fire_new/widgets/health_score_widget.dart';
+import 'package:fire_new/widgets/status_count_strip.dart';
 import 'maintaince.dart';
 import 'alerts.dart';
 import 'planthealth.dart';
@@ -43,8 +44,9 @@ class _AlarmPanelDashboardState extends State<AlarmPanelDashboard> {
       final s = await api.getSummary();
       if (mounted && s != null) {
         setState(() {
-          activeLoops = s["active_loops"] ?? s["active"] ?? 0;
-          total = s["total_loops"] ?? s["total"] ?? (activeLoops + (s["needs_service"] ?? 0) + (s["expired"] ?? 0) + (s["upcoming"] ?? s["upcoming_units"] ?? 0) + (s["due_inspection"] ?? 0));
+          final upcomingCount = (s["upcoming"] ?? s["upcoming_units"] ?? 0) as int;
+          activeLoops = ((s["active_loops"] ?? s["active"] ?? 0) as int) + upcomingCount;
+          total = s["total_loops"] ?? s["total"] ?? (activeLoops + (s["needs_service"] ?? 0) + (s["expired"] ?? 0) + (s["due_inspection"] ?? 0));
           expiredCount = s["expired"] ?? 0;
           summaryData = s;
           final hs = s["health_score"] ?? s["health"] ?? s["score"];
@@ -286,7 +288,8 @@ class _AlarmPanelDashboardState extends State<AlarmPanelDashboard> {
                 ],
               ),
             ),
-            
+            StatusCountStrip(summary: summaryData, isLoading: isLoading),
+
             // New: Gorgeous Executive Insight Banner to fill empty space elegantly!
             Container(
               width: double.infinity,

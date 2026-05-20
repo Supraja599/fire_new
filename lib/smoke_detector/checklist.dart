@@ -149,8 +149,10 @@ class _SmokeDetectorChecklistPageState extends State<SmokeDetectorChecklistPage>
       final answer = answers[i];
       final itemId = checklist[i]["id"];
       if (answer == null || itemId == null) continue;
+      final itemText = checklist[i]["item_text"] ?? checklist[i]["item"] ?? checklist[i]["question"] ?? checklist[i]["question_text"] ?? checklist[i]["name"] ?? checklist[i]["title"] ?? checklist[i]["description"] ?? checklist[i]["text"] ?? checklist[i]["checklist_item"] ?? checklist[i]["content"] ?? "Unknown Question";
       payloadAnswers.add({
         "checklist_item_id": itemId,
+        "item_text": itemText,
         "answer": answer == "YES" ? "true" : answer == "NO" ? "false" : "na",
         "remarks": "",
       });

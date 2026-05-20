@@ -38,12 +38,10 @@ class _FireExtinguisherDashboardState extends State<FireExtinguisherDashboard> {
       final s = await api.getSummary();
       if (mounted) {
         setState(() {
-          activeUnits = s["active_units"] ?? s["active"] ?? 0;
+          final upcomingCount = (s["upcoming"] ?? s["upcoming_units"] ?? 0) as int;
+          activeUnits = ((s["active_units"] ?? s["active"] ?? 0) as int) + upcomingCount;
           needsService = (s["needs_service"] ?? 0) + (s["expired"] ?? 0) + (s["needs-service"] ?? 0);
-          total = ((activeUnits +
-                   needsService +
-                   (s["upcoming"] ?? s["upcoming_units"] ?? 0) +
-                   (s["due_inspection"] ?? s["due_inspection_units"] ?? 0)) as num).toInt();
+          total = activeUnits + needsService + ((s["due_inspection"] ?? s["due_inspection_units"] ?? 0) as int);
           if (total == 0) {
             total = s["total_units"] ?? s["total"] ?? 0;
           }

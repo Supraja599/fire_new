@@ -2,6 +2,7 @@ import 'package:fire_new/widgets/generic_plant_health_page.dart';
 import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:flutter/material.dart';
+import 'package:fire_new/widgets/status_count_strip.dart';
 import 'package:fire_new/widgets/health_score_widget.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'maintaince.dart';
@@ -43,11 +44,11 @@ class _FireBlanketsDashboardState extends State<FireBlanketsDashboard> {
       final s = await api.getSummary();
       if (mounted && s != null) {
         setState(() {
-          activeUnits = s["active_units"] ?? s["active"] ?? 0;
+          final upcomingCount = (s["upcoming"] ?? s["upcoming_units"] ?? 0) as int;
+          activeUnits = ((s["active_units"] ?? s["active"] ?? 0) as int) + upcomingCount;
           total = ((activeUnits +
                    (s["needs_service"] ?? 0) +
                    (s["expired"] ?? 0) +
-                   (s["upcoming"] ?? s["upcoming_units"] ?? 0) +
                    (s["due_inspection"] ?? s["due_inspection_units"] ?? 0)) as num).toInt();
           if (total == 0) {
             total = s["total_units"] ?? s["total"] ?? 0;
@@ -292,6 +293,7 @@ class _FireBlanketsDashboardState extends State<FireBlanketsDashboard> {
                 ],
               ),
             ),
+            StatusCountStrip(summary: summaryData, isLoading: isLoading),
             
             // New: Gorgeous Executive Insight Banner to fill empty space elegantly!
             Container(

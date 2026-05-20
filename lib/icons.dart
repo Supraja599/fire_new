@@ -8,6 +8,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'main.dart';
+import 'package:fire_new/widgets/health_score_widget.dart';
 
 import 'responsive.dart';
 import 'dashboard.dart';
@@ -620,20 +621,32 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
         );
 
         if (localSummary.isNotEmpty) {
-          mod.total =
-              localSummary["total"] ??
-              localSummary["total_units"] ??
-              localSummary["total_loops"] ??
-              localSummary["total_extinguishers"] ??
-              0;
-          mod.expired =
-              localSummary["expired"] ??
-              localSummary["expired_units"] ??
-              localSummary["expired_extinguishers"] ??
-              0;
+          int upcoming = (localSummary["upcoming"] ?? localSummary["upcoming_units"] ?? 0) as int;
+          int active = (localSummary["active_units"] ?? localSummary["active"] ?? localSummary["active_loops"] ?? 0) as int;
+          int service = (localSummary["needs_service"] ?? localSummary["needs_service_units"] ?? 0) as int;
+          int inspection = (localSummary["due_inspection"] ?? localSummary["due_inspection_units"] ?? localSummary["due_inspection_loops"] ?? 0) as int;
+          int expired = (localSummary["expired"] ?? localSummary["expired_units"] ?? localSummary["expired_loops"] ?? 0) as int;
+          int total = (localSummary["total"] ?? localSummary["total_units"] ?? localSummary["total_loops"] ?? localSummary["total_extinguishers"] ?? 0) as int;
 
-          final hs = localSummary["health_score"] ?? localSummary["health"] ?? localSummary["score"];
-          mod.health = hs != null ? hs.toInt() : ApiService.calculateHealth(localSummary);
+          localSummary.forEach((key, val) {
+            if (val is num) {
+              final intValue = val.toInt();
+              final lowerKey = key.toLowerCase();
+              if (lowerKey.contains("active") && lowerKey != "active") active = intValue;
+              if (lowerKey.contains("total") && lowerKey != "total") total = intValue;
+              if (lowerKey.contains("expired") && lowerKey != "expired") expired = intValue;
+              if (lowerKey.contains("service") && lowerKey != "needs_service") service = intValue;
+              if (lowerKey.contains("inspection") && lowerKey != "due_inspection") inspection = intValue;
+              if (lowerKey.contains("upcoming") && lowerKey != "upcoming") upcoming = intValue;
+            }
+          });
+
+          active = active + upcoming;
+          total = active + service + inspection + expired;
+
+          mod.total = total;
+          mod.expired = expired;
+          mod.health = total > 0 ? ((active / total) * 100).toInt() : 100;
           _assignModuleStatus(mod);
           
           // Add to background staggers to refresh and keep it synced
@@ -646,26 +659,32 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
           );
 
           if (globalMod != null) {
-            mod.total =
-                globalMod["total"] ??
-                globalMod["total_units"] ??
-                globalMod["total_loops"] ??
-                globalMod["total_extinguishers"] ??
-                0;
-            mod.expired =
-                globalMod["expired"] ??
-                globalMod["expired_units"] ??
-                globalMod["expired_extinguishers"] ??
-                0;
+            int upcoming = (globalMod["upcoming"] ?? globalMod["upcoming_units"] ?? 0) as int;
+            int active = (globalMod["active_units"] ?? globalMod["active"] ?? globalMod["active_loops"] ?? 0) as int;
+            int service = (globalMod["needs_service"] ?? globalMod["needs_service_units"] ?? 0) as int;
+            int inspection = (globalMod["due_inspection"] ?? globalMod["due_inspection_units"] ?? globalMod["due_inspection_loops"] ?? 0) as int;
+            int expired = (globalMod["expired"] ?? globalMod["expired_units"] ?? globalMod["expired_loops"] ?? 0) as int;
+            int total = (globalMod["total"] ?? globalMod["total_units"] ?? globalMod["total_loops"] ?? globalMod["total_extinguishers"] ?? 0) as int;
 
-            final hs = globalMod["health_score"] ?? globalMod["health"] ?? globalMod["score"];
-            if (hs != null) {
-              mod.health = hs.toInt();
-            } else if (mod.total > 0) {
-              mod.health = ApiService.calculateHealth(globalMod);
-            } else {
-              mod.health = 100;
-            }
+            globalMod.forEach((key, val) {
+              if (val is num) {
+                final intValue = val.toInt();
+                final lowerKey = key.toLowerCase();
+                if (lowerKey.contains("active") && lowerKey != "active") active = intValue;
+                if (lowerKey.contains("total") && lowerKey != "total") total = intValue;
+                if (lowerKey.contains("expired") && lowerKey != "expired") expired = intValue;
+                if (lowerKey.contains("service") && lowerKey != "needs_service") service = intValue;
+                if (lowerKey.contains("inspection") && lowerKey != "due_inspection") inspection = intValue;
+                if (lowerKey.contains("upcoming") && lowerKey != "upcoming") upcoming = intValue;
+              }
+            });
+
+            active = active + upcoming;
+            total = active + service + inspection + expired;
+
+            mod.total = total;
+            mod.expired = expired;
+            mod.health = total > 0 ? ((active / total) * 100).toInt() : 100;
 
             _assignModuleStatus(mod);
             modulesNeedingFetch.add(mod);
@@ -693,19 +712,32 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
           try {
             final summary = await mod.fetchSummary();
             if (summary.isNotEmpty) {
-              mod.total =
-                  summary["total"] ??
-                  summary["total_units"] ??
-                  summary["total_loops"] ??
-                  summary["total_extinguishers"] ??
-                  0;
-              mod.expired =
-                  summary["expired"] ??
-                  summary["expired_units"] ??
-                  summary["expired_extinguishers"] ??
-                  0;
-              final hs = summary["health_score"] ?? summary["health"] ?? summary["score"];
-              mod.health = hs != null ? hs.toInt() : ApiService.calculateHealth(summary);
+              int upcoming = (summary["upcoming"] ?? summary["upcoming_units"] ?? 0) as int;
+              int active = (summary["active_units"] ?? summary["active"] ?? summary["active_loops"] ?? 0) as int;
+              int service = (summary["needs_service"] ?? summary["needs_service_units"] ?? 0) as int;
+              int inspection = (summary["due_inspection"] ?? summary["due_inspection_units"] ?? summary["due_inspection_loops"] ?? 0) as int;
+              int expired = (summary["expired"] ?? summary["expired_units"] ?? summary["expired_loops"] ?? 0) as int;
+              int total = (summary["total"] ?? summary["total_units"] ?? summary["total_loops"] ?? summary["total_extinguishers"] ?? 0) as int;
+
+              summary.forEach((key, val) {
+                if (val is num) {
+                  final intValue = val.toInt();
+                  final lowerKey = key.toLowerCase();
+                  if (lowerKey.contains("active") && lowerKey != "active") active = intValue;
+                  if (lowerKey.contains("total") && lowerKey != "total") total = intValue;
+                  if (lowerKey.contains("expired") && lowerKey != "expired") expired = intValue;
+                  if (lowerKey.contains("service") && lowerKey != "needs_service") service = intValue;
+                  if (lowerKey.contains("inspection") && lowerKey != "due_inspection") inspection = intValue;
+                  if (lowerKey.contains("upcoming") && lowerKey != "upcoming") upcoming = intValue;
+                }
+              });
+
+              active = active + upcoming;
+              total = active + service + inspection + expired;
+
+              mod.total = total;
+              mod.expired = expired;
+              mod.health = total > 0 ? ((active / total) * 100).toInt() : 100;
             } else {
               mod.health = 100;
             }
@@ -730,9 +762,9 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
   }
 
   void _assignModuleStatus(ModuleItem mod) {
-    if (mod.health < 20) {
+    if (mod.health < 60) {
       mod.status = 'red';
-    } else if (mod.health < 50) {
+    } else if (mod.health < 85) {
       mod.status = 'amber';
     } else {
       mod.status = 'green';
@@ -789,24 +821,10 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
   }
 
   double get overallHealth {
-    if (apiReadinessScore != null) return apiReadinessScore!;
-
     final activeModules = modules.where((m) => m.health != -1).toList();
     if (activeModules.isEmpty) return 0;
 
-    int totalUnits = 0;
-    int expiredUnits = 0;
-
-    for (var m in activeModules) {
-      totalUnits += m.total;
-      expiredUnits += m.expired;
-    }
-
-    if (totalUnits > 0) {
-      return ((totalUnits - expiredUnits) / totalUnits) * 100;
-    }
-
-    // Fallback to simple average if totals are missing
+    // Compute overallHealth as a simple average of active modules' health scores
     final sum = activeModules.fold<double>(0, (s, m) => s + m.health);
     return sum / activeModules.length;
   }
@@ -814,11 +832,11 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
   Color getStatusColor(String status) {
     switch (status) {
       case 'green':
-        return const Color(0xFF10B981); // Vibrant Emerald Green
+        return const Color(0xFF1E8E3E); // Vibrant Emerald Green (Aligned with Dashboard)
       case 'amber':
-        return const Color(0xFFF59E0B); // Vibrant Warm Amber
+        return const Color(0xFFFF8F00); // Vibrant Warm Amber (Aligned with Dashboard)
       case 'red':
-        return const Color(0xFFEF4444); // Vibrant Hot Red
+        return const Color(0xFFD50000); // Vibrant Hot Red (Aligned with Dashboard)
       default:
         return const Color(0xFF64748B); // Slate Grey
     }
@@ -922,33 +940,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                   const SizedBox(width: 12),
                   Flexible(
                     flex: 0,
-                    child: AnimatedBuilder(
-                      animation: _blinkController,
-                      builder: (context, child) {
-                        return Opacity(
-                          opacity: 0.3 + (_blinkController.value * 0.7),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.favorite,
-                                color: Colors.red,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                "${overallHealth.toInt()}%",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w900,
-                                  color: isDark ? Colors.white : Colors.black,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+                    child: HealthScoreWidget(health: overallHealth.toInt()),
                   ),
                   const SizedBox(width: 12),
                   PopupMenuButton<String>(
@@ -1349,6 +1341,18 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                                         fontSize: 10,
                                         fontWeight: FontWeight.w900,
                                         color: color,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      mod.total == 0 ? "" : "${mod.total} units",
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w600,
+                                        color: isDark ? Colors.white38 : Colors.grey.shade500,
                                       ),
                                     ),
                                   ),

@@ -37,7 +37,7 @@ class _HydrantPlantHealthPageState extends State<HydrantPlantHealthPage> {
 
     final summary = results[0] as Map<String, dynamic>;
     setState(() {
-      active = summary["active"] ?? 0;
+      active = (summary["active"] ?? 0) + (summary["upcoming"] ?? summary["upcoming_units"] ?? 0);
       service = summary["needs_service"] ?? 0;
       inspect = summary["due_inspection"] ?? 0;
       expired = summary["expired"] ?? 0;
@@ -185,7 +185,11 @@ class _HydrantPlantHealthPageState extends State<HydrantPlantHealthPage> {
                 title: _statusLabel(status),
                 color: color,
                 items: equipment
-                    .where((item) => (item["status_bucket"]?.toString() ?? item["status"]?.toString() ?? "").toLowerCase().contains(status.toLowerCase()))
+                    .where((item) {
+                      final bucket = (item["status_bucket"]?.toString() ?? item["status"]?.toString() ?? "").toLowerCase();
+                      if (status == "active") return bucket == "active" || bucket == "upcoming";
+                      return bucket.contains(status.toLowerCase());
+                    })
                     .toList(),
                 imagePath: 'assets/firehydrant.png',
                 fallbackIcon: Icons.fire_hydrant_alt,

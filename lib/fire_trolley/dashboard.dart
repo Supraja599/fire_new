@@ -3,6 +3,7 @@ import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:fire_new/widgets/health_score_widget.dart';
+import 'package:fire_new/widgets/status_count_strip.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'maintaince.dart';
 import 'alerts.dart';
@@ -41,9 +42,10 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
       final alertSum = await api.getAlertSummary();
       if (mounted && summary != null) {
         setState(() {
-          activeCount = summary["active"] ?? summary["active_units"] ?? 0;
+          final upcomingCount = (summary["upcoming"] ?? summary["upcoming_units"] ?? 0) as int;
+          activeCount = ((summary["active"] ?? summary["active_units"] ?? 0) as int) + upcomingCount;
           alertCount = alertSum["active_alerts"] ?? (summary["needs_service"] ?? 0);
-          total = summary["total"] ?? summary["total_units"] ?? (activeCount + alertCount + (summary["upcoming"] ?? summary["upcoming_units"] ?? 0) + (summary["due_inspection"] ?? 0));
+          total = summary["total"] ?? summary["total_units"] ?? (activeCount + alertCount + (summary["due_inspection"] ?? 0));
           final hs = summary["health_score"] ?? summary["health"] ?? summary["score"];
           health = hs != null ? hs.toInt() : ApiService.calculateHealth(summary);
           isLoading = false;
@@ -284,7 +286,8 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
                 ],
               ),
             ),
-            
+            StatusCountStrip(summary: summaryData, isLoading: isLoading),
+
             // New: Gorgeous Executive Insight Banner to fill empty space elegantly!
             Container(
               width: double.infinity,

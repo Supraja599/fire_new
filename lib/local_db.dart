@@ -425,13 +425,15 @@ class LocalDB {
     );
   }
 
-  static Future<List<Map<String, dynamic>>> getPendingModuleInspections() async {
+  static Future<List<Map<String, dynamic>>> getPendingModuleInspections({
+    String? moduleCode,
+  }) async {
     if (kIsWeb) return [];
     final db = await database;
     final result = await db.query(
       'pending_module_sync',
-      where: 'isSynced = ?',
-      whereArgs: [0],
+      where: moduleCode == null ? 'isSynced = ?' : 'isSynced = ? AND module_code = ?',
+      whereArgs: moduleCode == null ? [0] : [0, moduleCode],
     );
 
     return result
@@ -444,6 +446,23 @@ class LocalDB {
           },
         )
         .toList();
+  }
+
+  static Future<Map<String, dynamic>?> getLatestPendingModuleInspection({
+    required String equipmentId,
+    String? moduleCode,
+  }) async {
+    final items = await getPendingModuleInspections(moduleCode: moduleCode);
+    final target = equipmentId.trim().toLowerCase();
+
+    for (final item in items.reversed) {
+      final currentId = item['equipment_id']?.toString().trim().toLowerCase() ?? '';
+      if (currentId == target) {
+        return item;
+      }
+    }
+
+    return null;
   }
 
   static Future<void> markModuleInspectionSynced(String eventId) async {

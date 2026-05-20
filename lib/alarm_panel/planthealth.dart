@@ -32,7 +32,7 @@ class _AlarmPanelPlantHealthPageState extends State<AlarmPanelPlantHealthPage> {
       setState(() {
         summary = summaryData;
         equipment = list;
-        active = summaryData["active"] ?? 0;
+        active = (summaryData["active"] ?? 0) + (summaryData["upcoming"] ?? summaryData["upcoming_units"] ?? 0);
         faults = summaryData["needs_service"] ?? 0;
         inspect = summaryData["due_inspection"] ?? 0;
         expired = summaryData["expired"] ?? 0;
@@ -47,6 +47,7 @@ class _AlarmPanelPlantHealthPageState extends State<AlarmPanelPlantHealthPage> {
     final list = equipment.where((item) {
       final status = (item["status_bucket"]?.toString() ?? item["status"]?.toString() ?? "").toLowerCase().replaceAll("-", " ").trim();
       final target = type.toLowerCase().replaceAll("-", " ").trim();
+      if (target == "active") return status == "active" || status == "upcoming";
       return status.contains(target) || target.contains(status);
     }).toList();
     Navigator.push(

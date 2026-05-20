@@ -3,6 +3,7 @@ import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'dart:async';
 import 'package:fire_new/widgets/health_score_widget.dart';
+import 'package:fire_new/widgets/status_count_strip.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'package:flutter/material.dart';
 
@@ -43,9 +44,10 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
       final s = await api.getSummary();
       if (mounted && s != null) {
         setState(() {
-          active = s["active"] ?? 0;
+          final upcomingCount = (s["upcoming"] ?? s["upcoming_units"] ?? 0) as int;
+          active = (s["active"] ?? 0) + upcomingCount;
           risk = (s["needs_service"] ?? 0) + (s["expired"] ?? 0);
-          total = s["total"] ?? (active + risk + (s["upcoming"] ?? s["upcoming_units"] ?? 0) + (s["due_inspection"] ?? 0));
+          total = s["total"] ?? (active + risk + (s["due_inspection"] ?? 0));
           summaryData = s;
           final hs = s["health_score"] ?? s["health"] ?? s["score"];
           health = hs != null ? hs.toInt() : ApiService.calculateHealth(s);
@@ -285,7 +287,8 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
                 ],
               ),
             ),
-            
+            StatusCountStrip(summary: summaryData, isLoading: isLoading),
+
             // New: Gorgeous Executive Insight Banner to fill empty space elegantly!
             Container(
               width: double.infinity,

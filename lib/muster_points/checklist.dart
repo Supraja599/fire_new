@@ -127,6 +127,7 @@ class _MusterPointsChecklistPageState extends State<MusterPointsChecklistPage> {
     }
     final answers = questions.where((q) => q["yes"] || q["no"] || q["na"]).map((q) => {
       "checklist_item_id": q["id"],
+      "item_text": q["item_text"] ?? q["item"] ?? q["question"] ?? q["question_text"] ?? q["name"] ?? q["title"] ?? q["description"] ?? q["text"] ?? q["checklist_item"] ?? q["content"] ?? "Unknown Question",
       "answer": q["yes"] ? "true" : q["no"] ? "false" : "na"
     }).toList();
     if (answers.isEmpty) {

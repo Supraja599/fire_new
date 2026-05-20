@@ -2,6 +2,7 @@ import 'package:fire_new/widgets/generic_plant_health_page.dart';
 import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:flutter/material.dart';
+import 'package:fire_new/widgets/status_count_strip.dart';
 import 'package:fire_new/widgets/health_score_widget.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'maintaince.dart';
@@ -36,6 +37,8 @@ class _AmbulanceDashboardState extends State<AmbulanceDashboard> {
       final s = await api.getSummary();
       if (mounted && s != null) {
         setState(() {
+          final upcomingCount = (s["upcoming"] ?? s["upcoming_units"] ?? 0) as int;
+          active = ((s["active_units"] ?? s["active"] ?? 0) as int) + upcomingCount;
           total = (((s["active_units"] ?? s["active"] ?? 0) +
                    (s["needs_service"] ?? 0) +
                    (s["expired"] ?? 0) +
@@ -44,7 +47,6 @@ class _AmbulanceDashboardState extends State<AmbulanceDashboard> {
           if (total == 0) {
             total = s["total_units"] ?? s["total"] ?? 0;
           }
-          active = s["active_units"] ?? s["active"] ?? 0;
           summaryData = s;
           final hs = s["health_score"] ?? s["health"] ?? s["score"];
           health = hs != null ? hs.toInt() : ApiService.calculateHealth(s);
@@ -286,6 +288,7 @@ class _AmbulanceDashboardState extends State<AmbulanceDashboard> {
                 ],
               ),
             ),
+            StatusCountStrip(summary: summaryData, isLoading: isLoading),
             
             // New: Gorgeous Executive Insight Banner to fill empty space elegantly!
             Container(

@@ -15,6 +15,13 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
   List<Map<String, dynamic>> serviceList = [];
   List<Map<String, dynamic>> inspectionList = [];
   List<Map<String, dynamic>> expiredList = [];
+  
+  int countActive = 0;
+  int countService = 0;
+  int countInspection = 0;
+  int countExpired = 0;
+  int countTotal = 0;
+  int health = 0;
 
   bool isLoading = true;
 
@@ -28,17 +35,58 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
     try {
       final responses = await Future.wait([
         ApiService.getActive(),
+        ApiService.getUpcoming(),
         ApiService.getNeedsService(),
         ApiService.getDueInspection(),
         ApiService.getExpired(),
+        ApiService.getSummary(),
       ]);
 
       if (mounted) {
         setState(() {
-          activeList = responses[0];
-          serviceList = responses[1];
-          inspectionList = responses[2];
-          expiredList = responses[3];
+          final List<Map<String, dynamic>> rawActive = List<Map<String, dynamic>>.from(responses[0] as Iterable? ?? []);
+          final List<Map<String, dynamic>> rawUpcoming = List<Map<String, dynamic>>.from(responses[1] as Iterable? ?? []);
+          activeList = [...rawActive, ...rawUpcoming];
+          serviceList = List<Map<String, dynamic>>.from(responses[2] as Iterable? ?? []);
+          inspectionList = List<Map<String, dynamic>>.from(responses[3] as Iterable? ?? []);
+          expiredList = List<Map<String, dynamic>>.from(responses[4] as Iterable? ?? []);
+          
+          final summary = responses[5] as Map<String, dynamic>? ?? {};
+          int upcoming = (summary["upcoming"] ?? summary["upcoming_units"] ?? 0) as int;
+          int active = (summary["active_units"] ?? summary["active"] ?? summary["active_loops"] ?? 0) as int;
+          int service = (summary["needs_service"] ?? summary["needs_service_units"] ?? 0) as int;
+          int inspection = (summary["due_inspection"] ?? summary["due_inspection_units"] ?? summary["due_inspection_loops"] ?? 0) as int;
+          int expired = (summary["expired"] ?? summary["expired_units"] ?? summary["expired_loops"] ?? 0) as int;
+          int total = (summary["total"] ?? summary["total_units"] ?? summary["total_loops"] ?? summary["total_extinguishers"] ?? 0) as int;
+
+          // Dynamic suffix pattern matching for all 24 modules
+          summary.forEach((key, val) {
+            if (val is num) {
+              final intValue = val.toInt();
+              final lowerKey = key.toLowerCase();
+              if (lowerKey.contains("active") && lowerKey != "active") active = intValue;
+              if (lowerKey.contains("total") && lowerKey != "total") total = intValue;
+              if (lowerKey.contains("expired") && lowerKey != "expired") expired = intValue;
+              if (lowerKey.contains("service") && lowerKey != "needs_service") service = intValue;
+              if (lowerKey.contains("inspection") && lowerKey != "due_inspection") inspection = intValue;
+              if (lowerKey.contains("upcoming") && lowerKey != "upcoming") upcoming = intValue;
+            }
+          });
+
+          active = active + upcoming;
+          total = active + service + inspection + expired;
+
+          countActive = active;
+          countService = service;
+          countInspection = inspection;
+          countExpired = expired;
+          countTotal = total;
+
+          if (countTotal > 0) {
+            health = ((countActive / countTotal) * 100).toInt();
+          } else {
+            health = 100;
+          }
           isLoading = false;
         });
       }
@@ -48,8 +96,8 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
     }
   }
 
-  int get total => activeList.length + serviceList.length + inspectionList.length + expiredList.length;
-  int get active => activeList.length;
+  int get total => countTotal;
+  int get active => countActive;
 
   double percent(int value) => total == 0 ? 0 : value / total;
 
@@ -86,21 +134,46 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.only(top: 55, bottom: 30),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xFF2E7D32), Color(0xFF66BB6A)],
+                    colors: [
+                      health >= 85
+                          ? const Color(0xFF1E8E3E)
+                          : health >= 60
+                              ? const Color(0xFFFF8F00)
+                              : const Color(0xFFD50000),
+                      health >= 85
+                          ? const Color(0xFF52B76D)
+                          : health >= 60
+                              ? const Color(0xFFFFB300)
+                              : const Color(0xFFFF5252),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(30),
                     bottomRight: Radius.circular(30),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (health >= 85
+                              ? const Color(0xFF1E8E3E)
+                              : health >= 60
+                                  ? const Color(0xFFFF8F00)
+                                  : const Color(0xFFD50000))
+                          .withOpacity(0.2),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    )
+                  ],
                 ),
                 child: Column(
                   children: [
                     const Text("Plant Health Dashboard", style: TextStyle(color: Colors.white70)),
                     const SizedBox(height: 10),
                     Text(
-                      "${(percent(active) * 100).toStringAsFixed(1)}%",
+                      "$health%",
                       style: const TextStyle(fontSize: 42, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                     Text("$active Active • $total Total Units", style: const TextStyle(color: Colors.white70)),
@@ -151,10 +224,10 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
                       topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     ),
                     barGroups: [
-                      makeBar(0, activeList.length, Colors.green),
-                      makeBar(1, serviceList.length, Colors.orange),
-                      makeBar(2, inspectionList.length, Colors.blue),
-                      makeBar(3, expiredList.length, Colors.red),
+                      makeBar(0, countActive, const Color(0xFF1E8E3E)),
+                      makeBar(1, countService, const Color(0xFFFF8F00)),
+                      makeBar(2, countInspection, const Color(0xFF1565C0)),
+                      makeBar(3, countExpired, const Color(0xFFD50000)),
                     ],
                   ),
                 ),
@@ -165,10 +238,10 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               children: [
-                buildRow("Active", activeList, Colors.green),
-                buildRow("Needs Service", serviceList, Colors.orange),
-                buildRow("Due Inspection", inspectionList, Colors.blue),
-                buildRow("Expired", expiredList, Colors.red),
+                buildRow("Active", countActive, activeList, const Color(0xFF1E8E3E)),
+                buildRow("Needs Service", countService, serviceList, const Color(0xFFFF8F00)),
+                buildRow("Due Inspection", countInspection, inspectionList, const Color(0xFF1565C0)),
+                buildRow("Expired", countExpired, expiredList, const Color(0xFFD50000)),
               ],
             ),
           ),
@@ -187,7 +260,7 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
     );
   }
 
-  Widget buildRow(String title, List<Map<String, dynamic>> list, Color color) {
+  Widget buildRow(String title, int count, List<Map<String, dynamic>> list, Color color) {
     return GestureDetector(
       onTap: () => openIdList(title, list, color),
       child: Container(
@@ -202,7 +275,7 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
               Text(title),
             ])),
             Text(
-              "${list.length} (${(percent(list.length) * 100).toStringAsFixed(1)}%)",
+              "$count (${(percent(count) * 100).toStringAsFixed(1)}%)",
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(width: 8),

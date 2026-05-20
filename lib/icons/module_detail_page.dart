@@ -72,8 +72,10 @@ class _ModuleDetailPageState extends State<ModuleDetailPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Active: ${summary!["active"] ?? summary!["active_units"] ?? "-"}'),
+        Text('Total: ${summary!["total"] ?? summary!["total_units"] ?? "-"}'),
+        Text('Active: ${((summary!["active"] ?? summary!["active_units"] ?? 0) as int) + ((summary!["upcoming"] ?? summary!["upcoming_units"] ?? 0) as int)}'),
         Text('Needs Service: ${summary!["needs_service"] ?? "-"}'),
+        Text('Due Inspection: ${summary!["due_inspection"] ?? "-"}'),
         Text('Expired: ${summary!["expired"] ?? "-"}'),
         const SizedBox(height: 16),
         TextField(

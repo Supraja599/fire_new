@@ -163,29 +163,31 @@ class ApiService {
   static int calculateHealth(Map<String, dynamic> s) {
     if (s.isEmpty) return 100;
     
-    // 1. Direct fields
-    int total = s["total"] ?? s["total_units"] ?? s["total_loops"] ?? s["total_extinguishers"] ?? 0;
-    int expired = s["expired"] ?? s["expired_units"] ?? s["expired_loops"] ?? s["expired_extinguishers"] ?? 0;
-    int active = s["active"] ?? s["active_units"] ?? s["active_loops"] ?? s["active_extinguishers"] ?? 0;
-    int service = s["needs_service"] ?? s["needs_service_units"] ?? s["needs_service_extinguishers"] ?? 0;
-    
-    // 2. Dynamic pattern matching for all 24 modules
-    s.forEach((key, value) {
-      if (value is int) {
+    int upcoming = (s["upcoming"] ?? s["upcoming_units"] ?? 0) as int;
+    int active = (s["active_units"] ?? s["active"] ?? s["active_loops"] ?? 0) as int;
+    int service = (s["needs_service"] ?? s["needs_service_units"] ?? 0) as int;
+    int inspection = (s["due_inspection"] ?? s["due_inspection_units"] ?? s["due_inspection_loops"] ?? 0) as int;
+    int expired = (s["expired"] ?? s["expired_units"] ?? s["expired_loops"] ?? 0) as int;
+    int total = (s["total"] ?? s["total_units"] ?? s["total_loops"] ?? s["total_extinguishers"] ?? 0) as int;
+
+    s.forEach((key, val) {
+      if (val is num) {
+        final intValue = val.toInt();
         final lowerKey = key.toLowerCase();
-        if (lowerKey.startsWith("total_") && total == 0) total = value;
-        if (lowerKey.startsWith("expired_") && expired == 0) expired = value;
-        if (lowerKey.startsWith("active_") && active == 0) active = value;
-        if (lowerKey.contains("needs_service") && service == 0) service = value;
+        if (lowerKey.contains("active") && lowerKey != "active") active = intValue;
+        if (lowerKey.contains("total") && lowerKey != "total") total = intValue;
+        if (lowerKey.contains("expired") && lowerKey != "expired") expired = intValue;
+        if (lowerKey.contains("service") && lowerKey != "needs_service") service = intValue;
+        if (lowerKey.contains("inspection") && lowerKey != "due_inspection") inspection = intValue;
+        if (lowerKey.contains("upcoming") && lowerKey != "upcoming") upcoming = intValue;
       }
     });
-    
-    // 3. Component sum fallback
-    if (total == 0) total = active + service + expired;
-    
-    // 4. Final Calculation: (Total - Expired) / Total
+
+    active = active + upcoming;
+    total = active + service + inspection + expired;
+
     if (total > 0) {
-      return (((total - expired) / total) * 100).toInt();
+      return ((active / total) * 100).toInt();
     }
     
     return 100; // Default to 100 if no data

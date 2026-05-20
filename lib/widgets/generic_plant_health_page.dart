@@ -27,6 +27,13 @@ class _GenericPlantHealthPageState extends State<GenericPlantHealthPage> {
   List<Map<String, dynamic>> serviceList = [];
   List<Map<String, dynamic>> inspectionList = [];
   List<Map<String, dynamic>> expiredList = [];
+  
+  int countActive = 0;
+  int countService = 0;
+  int countInspection = 0;
+  int countExpired = 0;
+  int countTotal = 0;
+  int health = 0;
 
   bool isLoading = true;
 
@@ -44,14 +51,55 @@ class _GenericPlantHealthPageState extends State<GenericPlantHealthPage> {
         widget.apiService.getNeedsService() as Future,
         widget.apiService.getDueInspection() as Future,
         widget.apiService.getExpired() as Future,
+        widget.apiService.getUpcoming() as Future,
+        widget.apiService.getSummary() as Future,
       ]);
 
       if (mounted) {
         setState(() {
-          activeList = responses[0];
-          serviceList = responses[1];
-          inspectionList = responses[2];
-          expiredList = responses[3];
+          final List<Map<String, dynamic>> rawActive = List<Map<String, dynamic>>.from(responses[0] as Iterable? ?? []);
+          final List<Map<String, dynamic>> rawUpcoming = List<Map<String, dynamic>>.from(responses[4] as Iterable? ?? []);
+          activeList = [...rawActive, ...rawUpcoming];
+          serviceList = List<Map<String, dynamic>>.from(responses[1] as Iterable? ?? []);
+          inspectionList = List<Map<String, dynamic>>.from(responses[2] as Iterable? ?? []);
+          expiredList = List<Map<String, dynamic>>.from(responses[3] as Iterable? ?? []);
+          
+          final summary = responses[5] as Map<String, dynamic>? ?? {};
+          int upcoming = (summary["upcoming"] ?? summary["upcoming_units"] ?? 0) as int;
+          int active = (summary["active_units"] ?? summary["active"] ?? summary["active_loops"] ?? 0) as int;
+          int service = (summary["needs_service"] ?? summary["needs_service_units"] ?? 0) as int;
+          int inspection = (summary["due_inspection"] ?? summary["due_inspection_units"] ?? summary["due_inspection_loops"] ?? 0) as int;
+          int expired = (summary["expired"] ?? summary["expired_units"] ?? summary["expired_loops"] ?? 0) as int;
+          int total = (summary["total"] ?? summary["total_units"] ?? summary["total_loops"] ?? summary["total_extinguishers"] ?? 0) as int;
+
+          // Dynamic suffix pattern matching for all 24 modules
+          summary.forEach((key, val) {
+            if (val is num) {
+              final intValue = val.toInt();
+              final lowerKey = key.toLowerCase();
+              if (lowerKey.contains("active") && lowerKey != "active") active = intValue;
+              if (lowerKey.contains("total") && lowerKey != "total") total = intValue;
+              if (lowerKey.contains("expired") && lowerKey != "expired") expired = intValue;
+              if (lowerKey.contains("service") && lowerKey != "needs_service") service = intValue;
+              if (lowerKey.contains("inspection") && lowerKey != "due_inspection") inspection = intValue;
+              if (lowerKey.contains("upcoming") && lowerKey != "upcoming") upcoming = intValue;
+            }
+          });
+
+          active = active + upcoming;
+          total = active + service + inspection + expired;
+
+          countActive = active;
+          countService = service;
+          countInspection = inspection;
+          countExpired = expired;
+          countTotal = total;
+
+          if (countTotal > 0) {
+            health = ((countActive / countTotal) * 100).toInt();
+          } else {
+            health = 100;
+          }
           isLoading = false;
         });
       }
@@ -61,14 +109,14 @@ class _GenericPlantHealthPageState extends State<GenericPlantHealthPage> {
     }
   }
 
-  int get total => activeList.length + serviceList.length + inspectionList.length + expiredList.length;
-  int get active => activeList.length;
+  int get total => countTotal;
+  int get active => countActive;
 
   double percent(int value) => total == 0 ? 0 : value / total;
 
   // Smart, adaptive headroom generator for maximum bar presence
   double get maxY {
-    int maxVal = [activeList.length, serviceList.length, inspectionList.length, expiredList.length].reduce((a, b) => a > b ? a : b);
+    int maxVal = [countActive, countService, countInspection, countExpired].reduce((a, b) => a > b ? a : b);
     if (maxVal == 0) return 10;
     return (maxVal * 1.25).ceilToDouble();
   }
@@ -90,10 +138,19 @@ class _GenericPlantHealthPageState extends State<GenericPlantHealthPage> {
 
   @override
   Widget build(BuildContext context) {
-    final healthPercentage = percent(active) * 100;
-    
-    // Lock Health color to the beautiful, premium brand Green!
-    const Color healthColor = Color(0xFF2E7D32); 
+    // Dynamic brand semantic gradient colors
+    Color startColor;
+    Color endColor;
+    if (health >= 85) {
+      startColor = const Color(0xFF1E8E3E);
+      endColor = const Color(0xFF52B76D);
+    } else if (health >= 60) {
+      startColor = const Color(0xFFFF8F00);
+      endColor = const Color(0xFFFFB300);
+    } else {
+      startColor = const Color(0xFFD50000);
+      endColor = const Color(0xFFFF5252);
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FA),
@@ -110,10 +167,10 @@ class _GenericPlantHealthPageState extends State<GenericPlantHealthPage> {
                         width: double.infinity,
                         padding: const EdgeInsets.only(top: 65, bottom: 35),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
+                          gradient: LinearGradient(
                             colors: [
-                              Color(0xFF2E7D32), // Dark Forest Brand Green
-                              Color(0xFF66BB6A), // Light Grass Brand Green
+                              startColor,
+                              endColor,
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -124,7 +181,7 @@ class _GenericPlantHealthPageState extends State<GenericPlantHealthPage> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: healthColor.withValues(alpha: 0.2),
+                              color: startColor.withOpacity(0.2),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             )
@@ -143,7 +200,7 @@ class _GenericPlantHealthPageState extends State<GenericPlantHealthPage> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              "${healthPercentage.toStringAsFixed(1)}%",
+                              "$health%",
                               style: const TextStyle(
                                 fontSize: 52,
                                 fontWeight: FontWeight.w900,
@@ -155,7 +212,7 @@ class _GenericPlantHealthPageState extends State<GenericPlantHealthPage> {
                             Text(
                               "$active Active • $total Total Units Deployed",
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.85),
+                                color: Colors.white.withOpacity(0.85),
                                 fontWeight: FontWeight.w600,
                                 fontSize: 13,
                               ),
@@ -264,10 +321,10 @@ class _GenericPlantHealthPageState extends State<GenericPlantHealthPage> {
                             topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                           ),
                           barGroups: [
-                            makeBar(0, activeList.length, const Color(0xFF1E8E3E)),
-                            makeBar(1, serviceList.length, const Color(0xFFFF8F00)),
-                            makeBar(2, inspectionList.length, const Color(0xFF1565C0)),
-                            makeBar(3, expiredList.length, const Color(0xFFD50000)),
+                            makeBar(0, countActive, const Color(0xFF1E8E3E)),
+                            makeBar(1, countService, const Color(0xFFFF8F00)),
+                            makeBar(2, countInspection, const Color(0xFF1565C0)),
+                            makeBar(3, countExpired, const Color(0xFFD50000)),
                           ],
                         ),
                       ),
@@ -279,10 +336,10 @@ class _GenericPlantHealthPageState extends State<GenericPlantHealthPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
                       children: [
-                        buildRow("Active", activeList, const Color(0xFF1E8E3E)),
-                        buildRow("Needs Service", serviceList, const Color(0xFFFF8F00)),
-                        buildRow("Due Inspection", inspectionList, const Color(0xFF1565C0)),
-                        buildRow("Expired", expiredList, const Color(0xFFD50000)),
+                        buildRow("Active", countActive, activeList, const Color(0xFF1E8E3E)),
+                        buildRow("Needs Service", countService, serviceList, const Color(0xFFFF8F00)),
+                        buildRow("Due Inspection", countInspection, inspectionList, const Color(0xFF1565C0)),
+                        buildRow("Expired", countExpired, expiredList, const Color(0xFFD50000)),
                       ],
                     ),
                   ),
@@ -315,7 +372,7 @@ class _GenericPlantHealthPageState extends State<GenericPlantHealthPage> {
     );
   }
 
-  Widget buildRow(String label, List<Map<String, dynamic>> list, Color color) {
+  Widget buildRow(String label, int count, List<Map<String, dynamic>> list, Color color) {
     return GestureDetector(
       onTap: () => openIdList(label, list, color),
       child: Container(
@@ -365,7 +422,7 @@ class _GenericPlantHealthPageState extends State<GenericPlantHealthPage> {
               ),
             ),
             Text(
-              "${list.length} (${(percent(list.length) * 100).toStringAsFixed(1)}%)",
+              "$count (${(percent(count) * 100).toStringAsFixed(1)}%)",
               style: TextStyle(
                 fontWeight: FontWeight.w900,
                 color: color,

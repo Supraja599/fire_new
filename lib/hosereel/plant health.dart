@@ -41,7 +41,7 @@ class _HoseReelPlantHealthPageState extends State<HoseReelPlantHealthPage> {
       if (!mounted) return;
 
       setState(() {
-        active = summary["active"] ?? 0;
+        active = (summary["active"] ?? 0) + (summary["upcoming"] ?? summary["upcoming_units"] ?? 0);
         service = summary["needs_service"] ?? 0;
         inspection = summary["due_inspection"] ?? 0;
         expired = summary["expired"] ?? 0;
@@ -70,7 +70,11 @@ class _HoseReelPlantHealthPageState extends State<HoseReelPlantHealthPage> {
 
   void _openStatusList(String status, String title, Color color) {
     final list = equipment
-        .where((item) => item["status_bucket"]?.toString() == status)
+        .where((item) {
+          final bucket = item["status_bucket"]?.toString() ?? "";
+          if (status == "active") return bucket == "active" || bucket == "upcoming";
+          return bucket == status;
+        })
         .toList();
 
     Navigator.push(

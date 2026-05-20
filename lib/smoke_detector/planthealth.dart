@@ -28,7 +28,7 @@ class _SmokeDetectorPlantHealthPageState extends State<SmokeDetectorPlantHealthP
       final summary = results[0] as Map<String, dynamic>;
       if (!mounted) return;
       setState(() {
-        active = summary["active"] ?? 0;
+        active = (summary["active"] ?? 0) + (summary["upcoming"] ?? summary["upcoming_units"] ?? 0);
         service = summary["needs_service"] ?? 0;
         inspect = summary["due_inspection"] ?? 0;
         expired = summary["expired"] ?? 0;
@@ -44,6 +44,7 @@ class _SmokeDetectorPlantHealthPageState extends State<SmokeDetectorPlantHealthP
     final list = equipment.where((item) {
       final status = (item["status_bucket"]?.toString() ?? item["status"]?.toString() ?? "").toLowerCase().replaceAll("-", " ").trim();
       final target = type.toLowerCase().replaceAll("-", " ").trim();
+      if (target == "active") return status == "active" || status == "upcoming";
       return status.contains(target) || target.contains(status);
     }).toList();
     Navigator.push(

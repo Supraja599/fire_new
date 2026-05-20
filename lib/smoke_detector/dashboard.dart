@@ -3,6 +3,7 @@ import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:fire_new/widgets/health_score_widget.dart';
+import 'package:fire_new/widgets/status_count_strip.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'maintaince.dart';
 import 'alerts.dart';
@@ -44,8 +45,9 @@ class _SmokeDetectorDashboardState extends State<SmokeDetectorDashboard> {
       final s = await api.getSummary();
       if (mounted && s != null) {
         setState(() {
-          deviceCount = s["active"] ?? 0;
-          total = s["total"] ?? (deviceCount + (s["needs_service"] ?? 0) + (s["expired"] ?? 0) + (s["upcoming"] ?? s["upcoming_units"] ?? 0) + (s["due_inspection"] ?? 0));
+          final upcomingCount = (s["upcoming"] ?? s["upcoming_units"] ?? 0) as int;
+          deviceCount = (s["active"] ?? 0) + upcomingCount;
+          total = s["total"] ?? (deviceCount + (s["needs_service"] ?? 0) + (s["expired"] ?? 0) + (s["due_inspection"] ?? 0));
           summaryData = s;
           final hs = s["health_score"] ?? s["health"] ?? s["score"];
           health = hs != null ? hs.toInt() : ApiService.calculateHealth(s);
@@ -285,7 +287,8 @@ class _SmokeDetectorDashboardState extends State<SmokeDetectorDashboard> {
                 ],
               ),
             ),
-            
+            StatusCountStrip(summary: summaryData, isLoading: isLoading),
+
             // New: Gorgeous Executive Insight Banner to fill empty space elegantly!
             Container(
               width: double.infinity,

@@ -186,6 +186,7 @@ class _HoseReelChecklistPageState extends State<HoseReelChecklistPage> {
         .map(
           (item) => {
             "checklist_item_id": item["id"],
+              "item_text": item["item_text"] ?? item["item"] ?? item["question"] ?? item["question_text"] ?? item["name"] ?? item["title"] ?? item["description"] ?? item["text"] ?? item["checklist_item"] ?? item["content"] ?? "Unknown Question",
             "answer": _answerFor(item),
             "remarks": "",
           },
