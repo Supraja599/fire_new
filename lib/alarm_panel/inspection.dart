@@ -7,7 +7,8 @@ import 'services/alarm_panel_api_service.dart';
 import 'package:fire_new/local_db.dart';
 
 class AlarmPanelInspectionPage extends StatefulWidget {
-  const AlarmPanelInspectionPage({super.key});
+  final String? preScannedId;
+  const AlarmPanelInspectionPage({super.key, this.preScannedId});
 
   @override
   State<AlarmPanelInspectionPage> createState() => _AlarmPanelInspectionPageState();
@@ -28,7 +29,12 @@ class _AlarmPanelInspectionPageState extends State<AlarmPanelInspectionPage> {
   @override
   void initState() {
     super.initState();
-    _loadAllEquipment();
+    _loadAllEquipment().then((_) {
+      if (widget.preScannedId != null && widget.preScannedId!.isNotEmpty) {
+        idController.text = widget.preScannedId!;
+        fetchDetails(widget.preScannedId!);
+      }
+    });
   }
 
   Future<void> _loadAllEquipment() async {

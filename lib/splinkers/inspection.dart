@@ -7,7 +7,8 @@ import 'services/sprinkler_api_service.dart';
 import 'package:fire_new/local_db.dart';
 
 class SprinklerInspectionPage extends StatefulWidget {
-  const SprinklerInspectionPage({super.key});
+  final String? preScannedId;
+  const SprinklerInspectionPage({super.key, this.preScannedId});
 
   @override
   State<SprinklerInspectionPage> createState() => _SprinklerInspectionPageState();
@@ -28,7 +29,12 @@ class _SprinklerInspectionPageState extends State<SprinklerInspectionPage> {
   @override
   void initState() {
     super.initState();
-    _loadAllEquipment();
+    _loadAllEquipment().then((_) {
+      if (widget.preScannedId != null && widget.preScannedId!.isNotEmpty) {
+        idController.text = widget.preScannedId!;
+        fetchDetails(widget.preScannedId!);
+      }
+    });
   }
 
   Future<void> _loadAllEquipment() async {

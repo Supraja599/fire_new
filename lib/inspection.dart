@@ -7,7 +7,8 @@ import 'services/apiservice.dart';
 import 'local_db.dart';
 
 class InspectionPage extends StatefulWidget {
-  const InspectionPage({super.key});
+  final String? preScannedId;
+  const InspectionPage({super.key, this.preScannedId});
 
   @override
   State<InspectionPage> createState() => _InspectionPageState();
@@ -29,7 +30,12 @@ class _InspectionPageState extends State<InspectionPage> {
   @override
   void initState() {
     super.initState();
-    _loadAllEquipment();
+    _loadAllEquipment().then((_) {
+      if (widget.preScannedId != null && widget.preScannedId!.isNotEmpty) {
+        idController.text = widget.preScannedId!;
+        fetchDetails(widget.preScannedId!);
+      }
+    });
   }
 
   Future<void> _loadAllEquipment() async {

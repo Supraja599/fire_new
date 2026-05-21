@@ -7,7 +7,8 @@ import 'services/api_service.dart';
 import 'package:fire_new/local_db.dart';
 
 class CODetectorInspectionPage extends StatefulWidget {
-  const CODetectorInspectionPage({super.key});
+  final String? preScannedId;
+  const CODetectorInspectionPage({super.key, this.preScannedId});
 
   @override
   State<CODetectorInspectionPage> createState() => _CODetectorInspectionPageState();
@@ -28,7 +29,12 @@ class _CODetectorInspectionPageState extends State<CODetectorInspectionPage> {
   @override
   void initState() {
     super.initState();
-    _loadAllEquipment();
+    _loadAllEquipment().then((_) {
+      if (widget.preScannedId != null && widget.preScannedId!.isNotEmpty) {
+        idController.text = widget.preScannedId!;
+        fetchDetails(widget.preScannedId!);
+      }
+    });
   }
 
   Future<void> _loadAllEquipment() async {

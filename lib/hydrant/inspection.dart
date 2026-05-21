@@ -7,7 +7,8 @@ import 'services/hydrant_api_service.dart';
 import 'package:fire_new/local_db.dart';
 
 class HydrantInspectionPage extends StatefulWidget {
-  const HydrantInspectionPage({super.key});
+  final String? preScannedId;
+  const HydrantInspectionPage({super.key, this.preScannedId});
 
   @override
   State<HydrantInspectionPage> createState() => _HydrantInspectionPageState();
@@ -28,7 +29,12 @@ class _HydrantInspectionPageState extends State<HydrantInspectionPage> {
   @override
   void initState() {
     super.initState();
-    _loadAllEquipment();
+    _loadAllEquipment().then((_) {
+      if (widget.preScannedId != null && widget.preScannedId!.isNotEmpty) {
+        idController.text = widget.preScannedId!;
+        fetchDetails(widget.preScannedId!);
+      }
+    });
   }
 
   Future<void> _loadAllEquipment() async {

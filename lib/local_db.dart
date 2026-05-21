@@ -572,4 +572,52 @@ class LocalDB {
       };
     }).toList();
   }
+
+  static Future<Map<String, dynamic>?> findEquipmentModuleAndData(String id) async {
+    if (kIsWeb) return null;
+    final db = await database;
+    final trimmed = id.trim().toLowerCase();
+    
+    // Normalize ID for extinguisher compatibility (remove spaces, hyphens, etc.)
+    final normalized = trimmed.replaceAll("\n", "").replaceAll(" ", "").replaceAll("-", "").toUpperCase();
+
+    // 1. Try extinguishers table first
+    final result = await db.query(
+      'extinguishers',
+      where: 'id = ?',
+      whereArgs: [normalized],
+    );
+
+    if (result.isNotEmpty) {
+      return {
+        'module_code': 'fire_extinguisher',
+        'data': jsonDecode(result.first['data'] as String),
+      };
+    }
+
+    // 2. Try module_records table (all other modules)
+    final moduleResult = await db.query(
+      'module_records',
+      where: "record_type = 'equipment'",
+    );
+
+    for (final row in moduleResult) {
+      final data = jsonDecode(row['data'] as String) as Map<String, dynamic>;
+      final values = [
+        data['sos_code'],
+        data['serial_number'],
+        data['id'],
+        data['equipment_id'],
+      ].map((v) => v?.toString().toLowerCase() ?? '');
+
+      if (values.contains(trimmed)) {
+        return {
+          'module_code': row['module_code'],
+          'data': data,
+        };
+      }
+    }
+
+    return null;
+  }
 }

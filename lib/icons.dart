@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'main.dart';
 import 'package:fire_new/widgets/health_score_widget.dart';
+import 'package:fire_new/global_scanner.dart';
 
 import 'responsive.dart';
 import 'dashboard.dart';
@@ -898,6 +899,22 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                   Flexible(
                     flex: 0,
                     child: HealthScoreWidget(health: overallHealth.toInt()),
+                  ),
+                  const SizedBox(width: 12),
+                  IconButton(
+                    icon: Icon(
+                      Icons.qr_code_scanner_rounded,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                      size: 28,
+                    ),
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const GlobalScannerPage()),
+                      );
+                      _updatePendingCount();
+                      _loadHealthData();
+                    },
                   ),
                   const SizedBox(width: 12),
                   PopupMenuButton<String>(
