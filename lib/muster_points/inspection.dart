@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'package:fire_new/services/apiservice.dart';
+import 'package:flutter/material.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
 
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -62,6 +63,29 @@ class _MusterPointsInspectionPageState extends State<MusterPointsInspectionPage>
       showSearch = false;
       filteredEquipment = [];
     });
+
+    // Validate module code
+    try {
+      String? foundModule;
+      final localM = await LocalDB.findEquipmentModuleAndData(input);
+      if (localM != null) {
+        foundModule = localM['module_code']?.toString();
+      }
+      if (foundModule == null) {
+        final apiM = await ApiService.searchAny(input);
+        if (apiM != null) {
+          foundModule = apiM['module_code']?.toString() ?? 'fire_extinguisher';
+        }
+      }
+      if (foundModule != null && foundModule != "muster_point") {
+        setState(() {
+          loading = false;
+          error = "This is not Muster Point equipment";
+          showSearch = true;
+        });
+        return;
+      }
+    } catch (_) {}
 
     try {
       Map<String, dynamic>? data;

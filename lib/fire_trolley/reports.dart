@@ -318,69 +318,17 @@ class _FireTrolleyReportsPageState extends State<FireTrolleyReportsPage> {
         inspectorName = payload['inspector_name'] ?? 'N/A';
       }
       List<dynamic> answers = payload['answers'] ?? [];
-      final pdf = pw.Document();
-      pw.MemoryImage? logoImage;
+            pw.MemoryImage? logoImage;
       try {
         final logoBytes = await rootBundle.load('assets/eltrive_logo.jpg');
         logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
       } catch (e) {}
-      pdf.addPage(
-        pw.MultiPage(
-          pageTheme: pw.PageTheme(
-            buildBackground: (context) {
-              return pw.FullPage(
-                ignoreMargins: true,
-                child: pw.Center(
-                  child: pw.Transform.rotate(
-                    angle: 0.6,
-                    child: pw.Opacity(opacity: 0.12, child: pw.Text("ELTRIVE", style: pw.TextStyle(fontSize: 130, fontWeight: pw.FontWeight.bold))),
-                  ),
-                ),
-              );
-            },
-          ),
-          build: (context) => [
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text("INSPECTION REPORT", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                if (logoImage != null) pw.Image(logoImage, width: 75, height: 75),
-              ],
-            ),
-            pw.SizedBox(height: 20),
-            pw.Text("Equipment Details", style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-            pw.Divider(),
-            pw.Row(children: [pw.SizedBox(width: 120, child: pw.Text("Equipment ID")), pw.Text(": ${reportEquipmentId(eqData, fallback: sosCode)}")]),
-            pw.Row(children: [pw.SizedBox(width: 120, child: pw.Text("Location")), pw.Text(": ${reportLocation(eqData, fallback: 'N/A')}")]),
-            pw.SizedBox(height: 20),
-            pw.Text("Inspector Details", style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-            pw.Divider(),
-            pw.Row(children: [pw.SizedBox(width: 120, child: pw.Text("Inspector Name")), pw.Text(": $inspectorName")]),
-            pw.Row(children: [pw.SizedBox(width: 120, child: pw.Text("SOS Number")), pw.Text(": $sosCode")]),
-            pw.Row(children: [pw.SizedBox(width: 120, child: pw.Text("Inspection Date")), pw.Text(": ${DateFormat("dd-MM-yyyy").format(DateTime.now())}")]),
-            if (payload['remarks'] != null && payload['remarks'].toString().trim().isNotEmpty)
-              pw.Padding(padding: const pw.EdgeInsets.only(top: 4), child: pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [pw.SizedBox(width: 120, child: pw.Text("Remarks")), pw.Expanded(child: pw.Text(": ${payload['remarks']}"))])),
-            pw.SizedBox(height: 20),
-            pw.Text("Checklist Results", style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-            pw.Divider(),
-            if (answers.isEmpty) pw.Text("No offline checklist found for this equipment.") else ...answers.map((ans) {
-              final val = ans['answer'].toString().toLowerCase();
-              final isOk = val == 'true' || val == 'yes';
-              final isNa = val == 'na';
-              final icon = isOk ? '✓ ' : (isNa ? '- ' : '✗ ');
-              return pw.Padding(
-                padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                child: pw.Row(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(icon, style: pw.TextStyle(color: isOk ? PdfColors.green : (isNa ? PdfColors.orange : PdfColors.red))),
-                    pw.Expanded(child: pw.Text("${ans['checklist_item_id']}. ${ans['item_text'] ?? 'Item'} : ${ans['answer'] == 'true' || ans['answer'] == true || ans['answer'] == 'YES' ? 'YES' : ans['answer'] == 'false' || ans['answer'] == false || ans['answer'] == 'NO' ? 'NO' : 'N/A'} ${ans['remarks'] != null && ans['remarks'].toString().isNotEmpty ? '(${ans['remarks']})' : ''}")),
-                  ]
-                )
-              );
-            }).toList(),
-          ],
-        ),
+      final pdf = await buildSingleInspectionReportPDF(
+        eqData: eqData,
+        payload: payload,
+        sosCode: sosCode,
+        inspectorName: inspectorName,
+        logoImage: logoImage,
       );
       final fileName = "Single_Report_${sosCode}_${DateTime.now().millisecondsSinceEpoch}.pdf";
       if (kIsWeb) {

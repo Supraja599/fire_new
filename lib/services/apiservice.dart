@@ -340,8 +340,12 @@ class ApiService {
 
   static Future<bool> sendToServer(String data) async {
     try {
+      final decoded = jsonDecode(data);
+      final id = (decoded['id'] ?? decoded['sos_code'] ?? decoded['equipment_id'] ?? '').toString().trim();
+      final url = id.isNotEmpty ? "$baseUrl/equipment/$id" : "$baseUrl/equipment";
+      
       final res = await http.post(
-        Uri.parse("$baseUrl/equipment"),
+        Uri.parse(url),
         headers: headers,
         body: data,
       ).timeout(const Duration(seconds: 10));

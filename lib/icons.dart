@@ -779,6 +779,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
   }
 
   double get overallHealth {
+    if (apiReadinessScore != null) return apiReadinessScore!;
     final activeModules = modules.where((m) => m.health != -1).toList();
     if (activeModules.isEmpty) return 0;
 
@@ -898,7 +899,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                   const SizedBox(width: 12),
                   Flexible(
                     flex: 0,
-                    child: HealthScoreWidget(health: overallHealth.toInt()),
+                    child: HealthScoreWidget(health: overallHealth.round()),
                   ),
                   const SizedBox(width: 12),
                   IconButton(
@@ -1315,18 +1316,6 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                                         fontSize: 10,
                                         fontWeight: FontWeight.w900,
                                         color: color,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                      mod.total == 0 ? "" : "${mod.total} units",
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w600,
-                                        color: isDark ? Colors.white38 : Colors.grey.shade500,
                                       ),
                                     ),
                                   ),
