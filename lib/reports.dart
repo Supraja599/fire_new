@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:fire_new/utils/web_download_helper.dart';
 import 'package:fire_new/common/report_utils.dart';
@@ -49,7 +49,7 @@ class _ReportsPageState extends State<ReportsPage> {
 
   Future<void> _prefillLatestInspection() async {
     try {
-      final pendingList = await LocalDB.getPendingModuleInspections(moduleCode: "fire_extinguisher");
+      final pendingList = await LocalDB.getAllModuleInspections(moduleCode: "fire_extinguisher");
       if (pendingList.isNotEmpty) {
         final last = pendingList.last;
         final payload = last['payload'] as Map<String, dynamic>?;
@@ -238,11 +238,17 @@ class _ReportsPageState extends State<ReportsPage> {
         setState(() => loading = false);
         return;
       }
-      final pendingList = await LocalDB.getPendingModuleInspections(moduleCode: "fire_extinguisher");
+      final pendingList = await LocalDB.getAllModuleInspections(moduleCode: "fire_extinguisher");
       final latestInspection = pendingList.where((e) => e['equipment_id'].toString().toLowerCase() == sosCode.toLowerCase()).toList();
       Map<String, dynamic> payload = {};
       if (latestInspection.isNotEmpty) {
         payload = latestInspection.last['payload'] as Map<String, dynamic>;
+      } else {
+        // Fallback: fetch from backend (handles reinstall / data cleared after 1 year)
+        try {
+          final backendInsp = await ApiService.getLatestInspectionForEquipment(sosCode);
+          if (backendInsp != null) payload = backendInsp;
+        } catch (_) {}
       }
       String inspectorName = inspectorNameController.text.trim();
       if (inspectorName.isEmpty) {

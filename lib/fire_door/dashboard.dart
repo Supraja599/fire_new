@@ -1,4 +1,4 @@
-import 'package:fire_new/widgets/generic_plant_health_page.dart';
+﻿import 'package:fire_new/widgets/generic_plant_health_page.dart';
 import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +10,7 @@ import 'alerts.dart';
 import 'planthealth.dart';
 import 'reports.dart';
 import 'checklist.dart';
-import 'scan.dart';
+import 'inspection.dart';
 import 'services/api_service.dart';
 
 class FireDoorDashboard extends StatefulWidget {
@@ -48,8 +48,7 @@ class _FireDoorDashboardState extends State<FireDoorDashboard> {
             total = s["total_units"] ?? s["total"] ?? 0;
           }
           summaryData = s;
-          final hs = s["health_score"] ?? s["health"] ?? s["score"];
-          health = hs != null ? hs.toInt() : ApiService.calculateHealth(s);
+          health = ApiService.getHealthScore(s);
           isLoading = false;
         });
       } else if (mounted) {
@@ -130,7 +129,7 @@ class _FireDoorDashboardState extends State<FireDoorDashboard> {
               ),
             ),
             const SizedBox(height: 5),
-            // 🏆 MASTER EXECUTIVE RADIAL TELEMETRY BANNER
+            // ðŸ† MASTER EXECUTIVE RADIAL TELEMETRY BANNER
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               padding: const EdgeInsets.all(22),
@@ -151,7 +150,7 @@ class _FireDoorDashboardState extends State<FireDoorDashboard> {
               ),
               child: Column(
                 children: [
-                  // 🚀 TOP TIER: Massive Radial Dial & Upgraded 3D Device Asset
+                  // ðŸš€ TOP TIER: Massive Radial Dial & Upgraded 3D Device Asset
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -241,7 +240,7 @@ class _FireDoorDashboardState extends State<FireDoorDashboard> {
                   const SizedBox(height: 18),
                   const Divider(height: 1, thickness: 1),
                   const SizedBox(height: 16),
-                  // 📝 BOTTOM TIER: System Diagnostic Summary
+                  // ðŸ“ BOTTOM TIER: System Diagnostic Summary
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -376,7 +375,7 @@ class _FireDoorDashboardState extends State<FireDoorDashboard> {
                         imagePath: "assets/fire_door.png",
                         fallbackIcon: Icons.analytics_rounded,
                       ), "Trends"),
-                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const FireDoorScanPage(), "Scan"),
+                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const FireDoorInspectionPage(), "Scan"),
                       _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const FireDoorMaintenancePage(), "Service"),
                       _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const FireDoorAlertsPage(), "Critical"),
                       _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(

@@ -621,34 +621,19 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
         );
 
         if (localSummary.isNotEmpty) {
-          int upcoming = (localSummary["upcoming"] ?? localSummary["upcoming_units"] ?? 0) as int;
-          int active = (localSummary["active_units"] ?? localSummary["active"] ?? localSummary["active_loops"] ?? 0) as int;
-          int service = (localSummary["needs_service"] ?? localSummary["needs_service_units"] ?? 0) as int;
-          int inspection = (localSummary["due_inspection"] ?? localSummary["due_inspection_units"] ?? localSummary["due_inspection_loops"] ?? 0) as int;
-          int expired = (localSummary["expired"] ?? localSummary["expired_units"] ?? localSummary["expired_loops"] ?? 0) as int;
+          final upcoming = (localSummary["upcoming"] ?? localSummary["upcoming_units"] ?? 0) as int;
+          final active = ((localSummary["active_units"] ?? localSummary["active"] ?? localSummary["active_loops"] ?? 0) as int) + upcoming;
+          final service = (localSummary["needs_service"] ?? localSummary["needs_service_units"] ?? 0) as int;
+          final inspection = (localSummary["due_inspection"] ?? localSummary["due_inspection_units"] ?? localSummary["due_inspection_loops"] ?? 0) as int;
+          final expired = (localSummary["expired"] ?? localSummary["expired_units"] ?? localSummary["expired_loops"] ?? 0) as int;
           int total = (localSummary["total"] ?? localSummary["total_units"] ?? localSummary["total_loops"] ?? localSummary["total_extinguishers"] ?? 0) as int;
-
-          localSummary.forEach((key, val) {
-            if (val is num) {
-              final intValue = val.toInt();
-              final lowerKey = key.toLowerCase();
-              if (lowerKey.contains("active") && lowerKey != "active") active = intValue;
-              if (lowerKey.contains("total") && lowerKey != "total") total = intValue;
-              if (lowerKey.contains("expired") && lowerKey != "expired") expired = intValue;
-              if (lowerKey.contains("service") && lowerKey != "needs_service") service = intValue;
-              if (lowerKey.contains("inspection") && lowerKey != "due_inspection") inspection = intValue;
-              if (lowerKey.contains("upcoming") && lowerKey != "upcoming") upcoming = intValue;
-            }
-          });
-
-          active = active + upcoming;
-          total = active + service + inspection + expired;
+          if (total == 0) total = active + service + inspection + expired;
 
           mod.total = total;
           mod.expired = expired;
-          mod.health = total > 0 ? ((active / total) * 100).toInt() : 100;
-          _assignModuleStatus(mod);
-          
+          mod.health = ApiService.getHealthScore(localSummary);
+          mod.status = ApiService.getHealthStatus(localSummary, mod.health);
+
           // Add to background staggers to refresh and keep it synced
           modulesNeedingFetch.add(mod);
         } else {
@@ -659,34 +644,20 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
           );
 
           if (globalMod != null) {
-            int upcoming = (globalMod["upcoming"] ?? globalMod["upcoming_units"] ?? 0) as int;
-            int active = (globalMod["active_units"] ?? globalMod["active"] ?? globalMod["active_loops"] ?? 0) as int;
-            int service = (globalMod["needs_service"] ?? globalMod["needs_service_units"] ?? 0) as int;
-            int inspection = (globalMod["due_inspection"] ?? globalMod["due_inspection_units"] ?? globalMod["due_inspection_loops"] ?? 0) as int;
-            int expired = (globalMod["expired"] ?? globalMod["expired_units"] ?? globalMod["expired_loops"] ?? 0) as int;
-            int total = (globalMod["total"] ?? globalMod["total_units"] ?? globalMod["total_loops"] ?? globalMod["total_extinguishers"] ?? 0) as int;
-
-            globalMod.forEach((key, val) {
-              if (val is num) {
-                final intValue = val.toInt();
-                final lowerKey = key.toLowerCase();
-                if (lowerKey.contains("active") && lowerKey != "active") active = intValue;
-                if (lowerKey.contains("total") && lowerKey != "total") total = intValue;
-                if (lowerKey.contains("expired") && lowerKey != "expired") expired = intValue;
-                if (lowerKey.contains("service") && lowerKey != "needs_service") service = intValue;
-                if (lowerKey.contains("inspection") && lowerKey != "due_inspection") inspection = intValue;
-                if (lowerKey.contains("upcoming") && lowerKey != "upcoming") upcoming = intValue;
-              }
-            });
-
-            active = active + upcoming;
-            total = active + service + inspection + expired;
+            final gMod = Map<String, dynamic>.from(globalMod as Map);
+            final upcoming = (gMod["upcoming"] ?? gMod["upcoming_units"] ?? 0) as int;
+            final active = ((gMod["active_units"] ?? gMod["active"] ?? gMod["active_loops"] ?? 0) as int) + upcoming;
+            final service = (gMod["needs_service"] ?? gMod["needs_service_units"] ?? 0) as int;
+            final inspection = (gMod["due_inspection"] ?? gMod["due_inspection_units"] ?? gMod["due_inspection_loops"] ?? 0) as int;
+            final expired = (gMod["expired"] ?? gMod["expired_units"] ?? gMod["expired_loops"] ?? 0) as int;
+            int total = (gMod["total"] ?? gMod["total_units"] ?? gMod["total_loops"] ?? gMod["total_extinguishers"] ?? 0) as int;
+            if (total == 0) total = active + service + inspection + expired;
 
             mod.total = total;
             mod.expired = expired;
-            mod.health = total > 0 ? ((active / total) * 100).toInt() : 100;
+            mod.health = ApiService.getHealthScore(gMod);
+            mod.status = ApiService.getHealthStatus(gMod, mod.health);
 
-            _assignModuleStatus(mod);
             modulesNeedingFetch.add(mod);
           } else {
             modulesNeedingFetch.add(mod);
@@ -712,38 +683,24 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
           try {
             final summary = await mod.fetchSummary();
             if (summary.isNotEmpty) {
-              int upcoming = (summary["upcoming"] ?? summary["upcoming_units"] ?? 0) as int;
-              int active = (summary["active_units"] ?? summary["active"] ?? summary["active_loops"] ?? 0) as int;
-              int service = (summary["needs_service"] ?? summary["needs_service_units"] ?? 0) as int;
-              int inspection = (summary["due_inspection"] ?? summary["due_inspection_units"] ?? summary["due_inspection_loops"] ?? 0) as int;
-              int expired = (summary["expired"] ?? summary["expired_units"] ?? summary["expired_loops"] ?? 0) as int;
+              final upcoming = (summary["upcoming"] ?? summary["upcoming_units"] ?? 0) as int;
+              final active = ((summary["active_units"] ?? summary["active"] ?? summary["active_loops"] ?? 0) as int) + upcoming;
+              final service = (summary["needs_service"] ?? summary["needs_service_units"] ?? 0) as int;
+              final inspection = (summary["due_inspection"] ?? summary["due_inspection_units"] ?? summary["due_inspection_loops"] ?? 0) as int;
+              final expired = (summary["expired"] ?? summary["expired_units"] ?? summary["expired_loops"] ?? 0) as int;
               int total = (summary["total"] ?? summary["total_units"] ?? summary["total_loops"] ?? summary["total_extinguishers"] ?? 0) as int;
-
-              summary.forEach((key, val) {
-                if (val is num) {
-                  final intValue = val.toInt();
-                  final lowerKey = key.toLowerCase();
-                  if (lowerKey.contains("active") && lowerKey != "active") active = intValue;
-                  if (lowerKey.contains("total") && lowerKey != "total") total = intValue;
-                  if (lowerKey.contains("expired") && lowerKey != "expired") expired = intValue;
-                  if (lowerKey.contains("service") && lowerKey != "needs_service") service = intValue;
-                  if (lowerKey.contains("inspection") && lowerKey != "due_inspection") inspection = intValue;
-                  if (lowerKey.contains("upcoming") && lowerKey != "upcoming") upcoming = intValue;
-                }
-              });
-
-              active = active + upcoming;
-              total = active + service + inspection + expired;
+              if (total == 0) total = active + service + inspection + expired;
 
               mod.total = total;
               mod.expired = expired;
-              mod.health = total > 0 ? ((active / total) * 100).toInt() : 100;
+              mod.health = ApiService.getHealthScore(summary);
+              mod.status = ApiService.getHealthStatus(summary, mod.health);
             } else {
               mod.health = 100;
+              _assignModuleStatus(mod);
             }
           } catch (_) {
             if (mod.health == -1) mod.health = 100;
-          } finally {
             _assignModuleStatus(mod);
           }
         }),

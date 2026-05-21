@@ -1,4 +1,4 @@
-import 'package:fire_new/widgets/generic_plant_health_page.dart';
+﻿import 'package:fire_new/widgets/generic_plant_health_page.dart';
 import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'dart:async';
@@ -12,7 +12,7 @@ import 'checklist.dart';
 import 'maintaince.dart';
 import 'planthealth.dart';
 import 'reports.dart';
-import 'scan.dart';
+import 'inspection.dart';
 import 'services/hydrant_api_service.dart';
 
 class HydrantDashboardPage extends StatefulWidget {
@@ -45,12 +45,11 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
       if (mounted && s != null) {
         setState(() {
           final upcomingCount = (s["upcoming"] ?? s["upcoming_units"] ?? 0) as int;
-          active = (s["active"] ?? 0) + upcomingCount;
-          risk = (s["needs_service"] ?? 0) + (s["expired"] ?? 0);
-          total = s["total"] ?? (active + risk + (s["due_inspection"] ?? 0));
+          active = ((s["active_units"] ?? s["active"] ?? 0) as int) + upcomingCount;
+          risk = (s["needs_service"] ?? s["needs_service_units"] ?? 0) + (s["expired"] ?? s["expired_units"] ?? 0);
+          total = s["total"] ?? s["total_units"] ?? (active + risk + (s["due_inspection"] ?? s["due_inspection_units"] ?? 0));
           summaryData = s;
-          final hs = s["health_score"] ?? s["health"] ?? s["score"];
-          health = hs != null ? hs.toInt() : ApiService.calculateHealth(s);
+          health = ApiService.getHealthScore(s);
           isLoading = false;
         });
       } else if (mounted) {
@@ -129,7 +128,7 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
               ),
             ),
             const SizedBox(height: 5),
-            // 🏆 MASTER EXECUTIVE RADIAL TELEMETRY BANNER
+            // ðŸ† MASTER EXECUTIVE RADIAL TELEMETRY BANNER
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               padding: const EdgeInsets.all(22),
@@ -150,7 +149,7 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
               ),
               child: Column(
                 children: [
-                  // 🚀 TOP TIER: Massive Radial Dial & Upgraded 3D Device Asset
+                  // ðŸš€ TOP TIER: Massive Radial Dial & Upgraded 3D Device Asset
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -240,7 +239,7 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
                   const SizedBox(height: 18),
                   const Divider(height: 1, thickness: 1),
                   const SizedBox(height: 16),
-                  // 📝 BOTTOM TIER: System Diagnostic Summary
+                  // ðŸ“ BOTTOM TIER: System Diagnostic Summary
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -375,7 +374,7 @@ class _HydrantDashboardPageState extends State<HydrantDashboardPage> {
                         imagePath: "assets/firehydrant.png",
                         fallbackIcon: Icons.analytics_rounded,
                       ), "Trends"),
-                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const HydrantScanPage(), "Scan"),
+                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const HydrantInspectionPage(), "Scan"),
                       _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const HydrantMaintenancePage(), "Service"),
                       _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const HydrantAlertsPage(), "Critical"),
                       _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(

@@ -160,6 +160,23 @@ class ApiService {
   // ================= APIs =================
   static Future<List<Map<String, dynamic>>> getAlerts() => _getList("$baseUrl/alerts");
 
+  /// Reads health score from API: prefers readiness_score, then health_score, then calculated.
+  static int getHealthScore(Map<String, dynamic> s) {
+    final rs = s["readiness_score"] ?? s["health_score"] ?? s["health"] ?? s["score"];
+    if (rs != null) return (rs as num).toInt();
+    return calculateHealth(s);
+  }
+
+  /// Maps API health_colour string → status string for the icons page.
+  /// Falls back to threshold calculation if health_colour is absent.
+  static String getHealthStatus(Map<String, dynamic> s, int health) {
+    final c = s["health_colour"]?.toString().toLowerCase();
+    if (c == "green" || c == "amber" || c == "red") return c!;
+    if (health >= 85) return "green";
+    if (health >= 60) return "amber";
+    return "red";
+  }
+
   static int calculateHealth(Map<String, dynamic> s) {
     if (s.isEmpty) return 100;
     
@@ -267,6 +284,33 @@ class ApiService {
       );
       return res.statusCode == 200 || res.statusCode == 201;
     } catch (e) { return false; }
+  }
+
+  /// Fetches the latest inspection record from the backend for long-term history.
+  /// Used as fallback when local DB is empty (e.g. after reinstall).
+  /// Maps backend response to the same payload shape used locally.
+  static Future<Map<String, dynamic>?> getLatestInspectionForEquipment(String sosCode) async {
+    try {
+      final res = await http.get(
+        Uri.parse("$baseUrl/equipment/$sosCode/inspections/latest"),
+        headers: headers,
+      ).timeout(const Duration(seconds: 10));
+      if (res.statusCode != 200) return null;
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      final items = data["items"] as List? ?? [];
+      return {
+        "inspector_name": data["inspector_name"] ?? data["inspected_by"] ?? "N/A",
+        "remarks":        data["remarks"] ?? "",
+        "answers": items.map((it) => {
+          "checklist_item_id": it["checklist_item_id"],
+          "item_text":         it["question"] ?? it["item_text"] ?? "Item",
+          "answer":            it["answer"]?.toString() ?? "na",
+          "remarks":           it["remarks"] ?? "",
+        }).toList(),
+      };
+    } catch (_) {
+      return null;
+    }
   }
 
   static Future<void> syncPendingModuleInspections() async {

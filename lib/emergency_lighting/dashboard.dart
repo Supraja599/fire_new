@@ -1,4 +1,4 @@
-import 'package:fire_new/widgets/generic_plant_health_page.dart';
+﻿import 'package:fire_new/widgets/generic_plant_health_page.dart';
 import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +10,7 @@ import 'checklist.dart';
 import 'maintaince.dart';
 import 'planthealth.dart';
 import 'reports.dart';
-import 'scan.dart';
+import 'inspection.dart';
 import 'services/api_service.dart';
 
 class EmergencyLightingDashboard extends StatefulWidget {
@@ -46,8 +46,7 @@ class _EmergencyLightingDashboardState extends State<EmergencyLightingDashboard>
             total = s["total_units"] ?? s["total"] ?? 0;
           }
           summaryData = s;
-          final hs = s["health_score"] ?? s["health"] ?? s["score"];
-          health = hs != null ? hs.toInt() : ApiService.calculateHealth(s);
+          health = ApiService.getHealthScore(s);
           isLoading = false;
         });
       } else if (mounted) {
@@ -126,7 +125,7 @@ class _EmergencyLightingDashboardState extends State<EmergencyLightingDashboard>
               ),
             ),
             const SizedBox(height: 5),
-            // 🏆 MASTER EXECUTIVE RADIAL TELEMETRY BANNER
+            // ðŸ† MASTER EXECUTIVE RADIAL TELEMETRY BANNER
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               padding: const EdgeInsets.all(22),
@@ -147,7 +146,7 @@ class _EmergencyLightingDashboardState extends State<EmergencyLightingDashboard>
               ),
               child: Column(
                 children: [
-                  // 🚀 TOP TIER: Massive Radial Dial & Upgraded 3D Device Asset
+                  // ðŸš€ TOP TIER: Massive Radial Dial & Upgraded 3D Device Asset
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -237,7 +236,7 @@ class _EmergencyLightingDashboardState extends State<EmergencyLightingDashboard>
                   const SizedBox(height: 18),
                   const Divider(height: 1, thickness: 1),
                   const SizedBox(height: 16),
-                  // 📝 BOTTOM TIER: System Diagnostic Summary
+                  // ðŸ“ BOTTOM TIER: System Diagnostic Summary
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -372,7 +371,7 @@ class _EmergencyLightingDashboardState extends State<EmergencyLightingDashboard>
                         imagePath: "assets/emergency_lighting.png",
                         fallbackIcon: Icons.analytics_rounded,
                       ), "Trends"),
-                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const EmergencyLightingScanPage(), "Scan"),
+                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const EmergencyLightingInspectionPage(), "Scan"),
                       _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const EmergencyLightingMaintenancePage(), "Service"),
                       _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const EmergencyLightingAlertsPage(), "Critical"),
                       _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(

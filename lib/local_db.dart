@@ -448,11 +448,38 @@ class LocalDB {
         .toList();
   }
 
+  /// Returns ALL inspections regardless of sync status — use this for reports/PDF.
+  /// [getPendingModuleInspections] only returns isSynced=0; once pushed to server
+  /// those records become isSynced=1 and disappear from that query.
+  static Future<List<Map<String, dynamic>>> getAllModuleInspections({
+    String? moduleCode,
+  }) async {
+    if (kIsWeb) return [];
+    try {
+      final db = await database;
+      final result = await db.query(
+        'pending_module_sync',
+        where: moduleCode == null ? null : 'module_code = ?',
+        whereArgs: moduleCode == null ? null : [moduleCode],
+        orderBy: 'rowid ASC',
+      );
+      return result.map((row) => {
+        'event_id':    row['event_id'],
+        'module_code': row['module_code'],
+        'equipment_id': row['equipment_id'],
+        'payload':     jsonDecode(row['payload'] as String),
+        'isSynced':    row['isSynced'],
+      }).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
   static Future<Map<String, dynamic>?> getLatestPendingModuleInspection({
     required String equipmentId,
     String? moduleCode,
   }) async {
-    final items = await getPendingModuleInspections(moduleCode: moduleCode);
+    final items = await getAllModuleInspections(moduleCode: moduleCode);
     final target = equipmentId.trim().toLowerCase();
 
     for (final item in items.reversed) {

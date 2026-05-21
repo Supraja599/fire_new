@@ -1,4 +1,4 @@
-import 'package:fire_new/widgets/generic_plant_health_page.dart';
+﻿import 'package:fire_new/widgets/generic_plant_health_page.dart';
 import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:flutter/material.dart';
@@ -43,11 +43,11 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
       if (mounted && summary != null) {
         setState(() {
           final upcomingCount = (summary["upcoming"] ?? summary["upcoming_units"] ?? 0) as int;
-          activeCount = ((summary["active"] ?? summary["active_units"] ?? 0) as int) + upcomingCount;
+          activeCount = ((summary["active_units"] ?? summary["active"] ?? 0) as int) + upcomingCount;
           alertCount = alertSum["active_alerts"] ?? (summary["needs_service"] ?? 0);
           total = summary["total"] ?? summary["total_units"] ?? (activeCount + alertCount + (summary["due_inspection"] ?? 0));
-          final hs = summary["health_score"] ?? summary["health"] ?? summary["score"];
-          health = hs != null ? hs.toInt() : ApiService.calculateHealth(summary);
+          summaryData = summary;
+          health = ApiService.getHealthScore(summary);
           isLoading = false;
         });
       } else if (mounted) {
@@ -128,7 +128,7 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
               ),
             ),
             const SizedBox(height: 5),
-            // 🏆 MASTER EXECUTIVE RADIAL TELEMETRY BANNER
+            // ðŸ† MASTER EXECUTIVE RADIAL TELEMETRY BANNER
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               padding: const EdgeInsets.all(22),
@@ -149,7 +149,7 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
               ),
               child: Column(
                 children: [
-                  // 🚀 TOP TIER: Massive Radial Dial & Upgraded 3D Device Asset
+                  // ðŸš€ TOP TIER: Massive Radial Dial & Upgraded 3D Device Asset
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -239,7 +239,7 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
                   const SizedBox(height: 18),
                   const Divider(height: 1, thickness: 1),
                   const SizedBox(height: 16),
-                  // 📝 BOTTOM TIER: System Diagnostic Summary
+                  // ðŸ“ BOTTOM TIER: System Diagnostic Summary
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

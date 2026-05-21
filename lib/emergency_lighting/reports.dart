@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:pdf/pdf.dart';
 
 import 'package:flutter/foundation.dart';
@@ -9,6 +9,7 @@ import 'package:fire_new/common/report_utils.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:fire_new/local_db.dart';
+import 'package:fire_new/services/apiservice.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:intl/intl.dart';
@@ -175,7 +176,7 @@ class _EmergencyLightingReportsPageState extends State<EmergencyLightingReportsP
 
   Future<void> _prefillLatestInspection() async {
     try {
-      final pendingList = await LocalDB.getPendingModuleInspections(moduleCode: EmergencyLightingApiService.moduleCode);
+      final pendingList = await LocalDB.getAllModuleInspections(moduleCode: EmergencyLightingApiService.moduleCode);
       if (pendingList.isNotEmpty) {
         final last = pendingList.last;
         final payload = last['payload'] as Map<String, dynamic>?;
@@ -205,11 +206,17 @@ class _EmergencyLightingReportsPageState extends State<EmergencyLightingReportsP
         setState(() => loading = false);
         return;
       }
-      final pendingList = await LocalDB.getPendingModuleInspections(moduleCode: EmergencyLightingApiService.moduleCode);
+      final pendingList = await LocalDB.getAllModuleInspections(moduleCode: EmergencyLightingApiService.moduleCode);
       final latestInspection = pendingList.where((e) => e['equipment_id'].toString().toLowerCase() == sosCode.toLowerCase()).toList();
       Map<String, dynamic> payload = {};
       if (latestInspection.isNotEmpty) {
         payload = latestInspection.last['payload'] as Map<String, dynamic>;
+      } else {
+        // Fallback: fetch from backend (handles reinstall / data cleared after 1 year)
+        try {
+          final backendInsp = await ApiService.getLatestInspectionForEquipment(sosCode);
+          if (backendInsp != null) payload = backendInsp;
+        } catch (_) {}
       }
       String inspectorName = inspectorNameController.text.trim();
       if (inspectorName.isEmpty) {

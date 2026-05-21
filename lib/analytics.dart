@@ -16,6 +16,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   List<Map<String, dynamic>> serviceList = [];
   List<Map<String, dynamic>> inspectionList = [];
   List<Map<String, dynamic>> expiredList = [];
+  int summaryTotal = 0;
 
   bool isLoading = true;
 
@@ -29,27 +30,33 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     setState(() => isLoading = true);
 
     try {
-      final res = await Future.wait([
+      // Fetch summary separately (different return type) and lists in parallel
+      final summaryFuture = ApiService.getSummary();
+      final listResults = await Future.wait([
         ApiService.getActive(),
         ApiService.getUpcoming(),
         ApiService.getNeedsService(),
         ApiService.getDueInspection(),
         ApiService.getExpired(),
       ]);
+      final s = await summaryFuture;
 
       if (mounted) {
         setState(() {
-          activeList = [...res[0], ...res[1]];
-          serviceList = res[2];
-          inspectionList = res[3];
-          expiredList = res[4];
+          activeList     = [...listResults[0], ...listResults[1]];
+          serviceList    = listResults[2];
+          inspectionList = listResults[3];
+          expiredList    = listResults[4];
+          // Use the summary endpoint's authoritative total (matches dashboard exactly)
+          final apiTotal = (s["total"] ?? s["total_units"] ?? s["total_extinguishers"] ?? 0) as int;
+          summaryTotal = apiTotal > 0
+              ? apiTotal
+              : activeList.length + serviceList.length + inspectionList.length + expiredList.length;
           isLoading = false;
         });
       }
     } catch (e) {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
@@ -137,10 +144,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ================= TOTAL COUNT =================
   Widget totalCard() {
-    int total = activeList.length +
-        serviceList.length +
-        inspectionList.length +
-        expiredList.length;
+    final int total = summaryTotal;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),

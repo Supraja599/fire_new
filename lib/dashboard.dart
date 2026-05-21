@@ -35,36 +35,17 @@ class _DashboardPageState extends State<DashboardPage> {
       final s = await ApiService.getSummary();
       if (mounted) {
         setState(() {
-          int upcoming = (s["upcoming"] ?? s["upcoming_units"] ?? 0) as int;
-          active = (s["active_units"] ?? s["active"] ?? 0) as int;
+          final upcoming = (s["upcoming"] ?? s["upcoming_units"] ?? 0) as int;
+          active = ((s["active_units"] ?? s["active"] ?? 0) as int) + upcoming;
           needsService = (s["needs_service"] ?? s["needs_service_units"] ?? 0) as int;
           dueInspection = (s["due_inspection"] ?? s["due_inspection_units"] ?? 0) as int;
           expired = (s["expired"] ?? s["expired_units"] ?? 0) as int;
-          total = (s["total"] ?? s["total_units"] ?? s["total_extinguishers"] ?? 0) as int;
-
-          // Dynamic suffix pattern matching fallback for custom suffixes like _extinguishers
-          s.forEach((key, val) {
-            if (val is num) {
-              final intValue = val.toInt();
-              final lowerKey = key.toLowerCase();
-              if (lowerKey.contains("active") && lowerKey != "active") active = intValue;
-              if (lowerKey.contains("total") && lowerKey != "total") total = intValue;
-              if (lowerKey.contains("expired") && lowerKey != "expired") expired = intValue;
-              if (lowerKey.contains("service") && lowerKey != "needs_service") needsService = intValue;
-              if (lowerKey.contains("inspection") && lowerKey != "due_inspection") dueInspection = intValue;
-              if (lowerKey.contains("upcoming") && lowerKey != "upcoming") upcoming = intValue;
-            }
-          });
-
-          active = active + upcoming;
           total = active + needsService + dueInspection + expired;
-          summaryData = s;
-          
-          if (total > 0) {
-            health = ((active / total) * 100).toInt();
-          } else {
-            health = 100;
+          if (total == 0) {
+            total = (s["total"] ?? s["total_units"] ?? s["total_extinguishers"] ?? 0) as int;
           }
+          summaryData = s;
+          health = ApiService.getHealthScore(s);
           isLoading = false;
         });
       }
@@ -73,45 +54,9 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  Widget _statChip(String label, int count, Color color, IconData icon, bool loading) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withOpacity(0.25), width: 1.2),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 16),
-            const SizedBox(height: 4),
-            Text(
-              loading ? "--" : "$count",
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: color),
-            ),
-            Text(
-              label,
-              style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: color.withOpacity(0.8)),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-
-    int crossAxisCount = 2;
-    if (screenWidth > 900) {
-      crossAxisCount = 4;
-    } else if (screenWidth > 600) {
-      crossAxisCount = 3;
-    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FA),
