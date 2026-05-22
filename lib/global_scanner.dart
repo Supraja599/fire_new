@@ -7,7 +7,7 @@ import 'dart:ui';
 // Import all 26 inspection pages
 import 'package:fire_new/inspection.dart';
 import 'package:fire_new/hosereel/inspection.dart';
-import 'package:fire_new/sprinklers/inspection.dart';
+import 'package:fire_new/splinkers/inspection.dart';
 import 'package:fire_new/hydrant/inspection.dart';
 import 'package:fire_new/alarm_panel/inspection.dart';
 import 'package:fire_new/smoke_detector/inspection.dart';

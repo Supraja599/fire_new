@@ -149,26 +149,8 @@ class _LoginPageState extends State<LoginPage>
       }
     } catch (e) {
       if (mounted) {
-        String errMsg;
-        final errStr = e.toString().toLowerCase();
-        if (e is SocketException ||
-            e is HttpException ||
-            e is HandshakeException ||
-            errStr.contains("socketexception") ||
-            errStr.contains("timeout") ||
-            errStr.contains("clientexception") ||
-            errStr.contains("handshake") ||
-            errStr.contains("failed host lookup") ||
-            errStr.contains("connection")) {
-          errMsg = "Network error. Please check if your internet is connected.";
-        } else {
-          errMsg = "Error: ${e.toString()}";
-        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errMsg),
-            backgroundColor: Colors.red.shade800,
-          ),
+          SnackBar(content: Text("Error: ${e.toString()}")),
         );
       }
     } finally {

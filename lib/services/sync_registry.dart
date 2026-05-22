@@ -20,7 +20,7 @@ import 'package:fire_new/scba_units/services/api_service.dart';
 import 'package:fire_new/signage/services/api_service.dart';
 import 'package:fire_new/smoke_detector/services/smoke_detector_api_service.dart';
 import 'package:fire_new/spill_kits/services/api_service.dart';
-import 'package:fire_new/sprinklers/services/sprinkler_api_service.dart';
+import 'package:fire_new/splinkers/services/sprinkler_api_service.dart';
 import 'package:fire_new/wind_sock/services/api_service.dart';
 import 'package:fire_new/heat_detector/services/api_service.dart';
 import 'package:fire_new/co_detector/services/api_service.dart';

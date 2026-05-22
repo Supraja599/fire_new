@@ -4,10 +4,10 @@ import glob
 
 lib_dir = r'c:\Users\A\AndroidStudioProjects\Fire_New\lib'
 dashboards = glob.glob(os.path.join(lib_dir, '**', 'dashboard.dart'), recursive=True)
-dashboards.append(os.path.join(lib_dir, 'sprinklers', 'sprinkler.dart'))
+dashboards.append(os.path.join(lib_dir, 'splinkers', 'sprinkler.dart'))
 
 mappings = {
-    "sprinklers": "assets/sprinkler.png",
+    "splinkers": "assets/sprinkler.png",
     "hydrant": "assets/firehydrant.png",
     "hosereel": "assets/hosereel.png",
     "alarm_panel": "assets/alarm_panel.png",
@@ -124,7 +124,7 @@ for path in dashboards:
     # Determine directory name
     parent_dir = os.path.basename(os.path.dirname(path))
     if "sprinkler.dart" in path:
-        parent_dir = "sprinklers"
+        parent_dir = "splinkers"
         
     image_path = mappings.get(parent_dir, "assets/extinguisher.png")
     

@@ -7,7 +7,7 @@ def deploy_dashboard_gauge():
     # Find all sub-module dashboard files
     dashboards = glob.glob(os.path.join(root_dir, '**', 'dashboard.dart'), recursive=True)
     # Also include special sprinklers dashboard
-    sprinkler = os.path.join(root_dir, 'sprinklers', 'sprinkler.dart')
+    sprinkler = os.path.join(root_dir, 'splinkers', 'sprinkler.dart')
     if os.path.exists(sprinkler):
         dashboards.append(sprinkler)
         

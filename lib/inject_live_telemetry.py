@@ -3,7 +3,7 @@ import glob
 
 lib_dir = r'c:\Users\A\AndroidStudioProjects\Fire_New\lib'
 dashboards = glob.glob(os.path.join(lib_dir, '**', 'dashboard.dart'), recursive=True)
-dashboards.append(os.path.join(lib_dir, 'sprinklers', 'sprinkler.dart'))
+dashboards.append(os.path.join(lib_dir, 'splinkers', 'sprinkler.dart'))
 
 # The hyper-premium telemetry console containing the Dynamic Linear Gauge
 live_gauge_code = """                        const BlinkingActiveBadge(),

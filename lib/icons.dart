@@ -15,7 +15,7 @@ import 'responsive.dart';
 import 'dashboard.dart';
 import 'hydrant/dashboard.dart';
 import 'hosereel/dashboard.dart' as hose;
-import 'sprinklers/sprinkler.dart';
+import 'splinkers/sprinkler.dart';
 import 'alarm_panel/dashboard.dart';
 import 'smoke_detector/dashboard.dart';
 import 'fire_trolley/dashboard.dart';
@@ -43,7 +43,7 @@ import 'fire_door/dashboard.dart';
 import 'services/apiservice.dart'; // Extinguishers
 import 'hydrant/services/hydrant_api_service.dart';
 import 'hosereel/services/apiservice.dart';
-import 'sprinklers/services/sprinkler_api_service.dart';
+import 'splinkers/services/sprinkler_api_service.dart';
 import 'alarm_panel/services/alarm_panel_api_service.dart';
 import 'smoke_detector/services/smoke_detector_api_service.dart';
 import 'fire_trolley/services/fire_trolley_api_service.dart';
@@ -422,7 +422,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
         page: const EmergencyExitsDashboard(),
         fetchSummary: () => EmergencyExitsApiService().getSummary(),
       ),
-        ModuleItem(
+      ModuleItem(
         name: 'Ambulance',
         image: 'assets/ambulance.png',
         moduleCode: 'ambulance',
@@ -689,7 +689,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
 
       await Future.wait(
         batch.map((mod) async {
-          try {
+          try {  
             final summary = await mod.fetchSummary();
             if (summary.isNotEmpty) {
               final upcoming = (summary["upcoming"] ?? summary["upcoming_units"] ?? 0) as int;
