@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:fire_new/utils/web_download_helper.dart';
 import 'package:fire_new/common/report_utils.dart';
@@ -112,60 +112,20 @@ class _ReportsPageState extends State<ReportsPage> {
         return;
       }
 
-      final pdf = pw.Document();
       pw.MemoryImage? logoImage;
       try {
         final logoBytes = await rootBundle.load('assets/eltrive_logo.jpg');
         logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
       } catch (e) {}
 
-      pdf.addPage(
-        pw.MultiPage(
-          pageTheme: pw.PageTheme(
-            buildBackground: (context) {
-              return pw.FullPage(
-                ignoreMargins: true,
-                child: pw.Center(
-                  child: pw.Transform.rotate(
-                    angle: 0.6,
-                    child: pw.Opacity(opacity: 0.12, child: pw.Text("ELTRIVE", style: pw.TextStyle(fontSize: 130, fontWeight: pw.FontWeight.bold))),
-                  ),
-                ),
-              );
-            },
-          ),
-          build: (context) => [
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text("ELTRIVE PLANT REPORT", style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
-                if (logoImage != null) pw.Image(logoImage, width: 75, height: 75),
-              ],
-            ),
-            pw.SizedBox(height: 10),
-            pw.Text("Plant: $selectedPlant"),
-            pw.Text("Unit: $selectedUnit"),
-            pw.Text("Date: ${DateFormat("dd-MM-yyyy").format(startDate)} to ${DateFormat("dd-MM-yyyy").format(endDate)}"),
-            pw.SizedBox(height: 20),
-            pw.Table.fromTextArray(
-              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-              headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
-              headers: ["SOS Code", "Location", "Status", "Previous Inspection", "Next Inspection"],
-              data: allData.map((e) {
-                final statusVal = reportStatus(e);
-                final prevIns = reportPreviousInspection(e);
-                final nextIns = reportNextInspection(e);
-                return [
-                  reportEquipmentId(e),
-                  reportLocation(e),
-                  statusVal,
-                  prevIns,
-                  nextIns,
-                ];
-              }).toList(),
-            ),
-          ],
-        ),
+      final pdf = await buildPlantReportPDF(
+        plantName: selectedPlant,
+        unitName: selectedUnit,
+        startDate: startDate,
+        endDate: endDate,
+        allData: allData,
+        logoImage: logoImage,
+        customTitle: "ELTRIVE PLANT REPORT",
       );
 
       final fileName = "Report_${DateTime.now().millisecondsSinceEpoch}.pdf";

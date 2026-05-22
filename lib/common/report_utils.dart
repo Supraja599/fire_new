@@ -562,12 +562,7 @@ Future<pw.Document> buildSingleInspectionReportPDF({
                       pw.Divider(color: PdfColor.fromInt(0xFFE2E8F0), thickness: 0.5, height: 10),
                       _detailRow("Inspector Name", inspectorName.isNotEmpty ? inspectorName : (payload['inspector_name'] ?? 'N/A')),
                       _detailRow("Inspection Date", DateFormat("dd-MM-yyyy").format(DateTime.now())),
-                      _detailRow(
-                        "Remarks",
-                        (payload['remarks'] != null && payload['remarks'].toString().trim().isNotEmpty)
-                            ? payload['remarks'].toString().trim()
-                            : "None",
-                      ),
+                      _detailRow("Status", answers.isNotEmpty ? "Completed" : "Pending"),
                     ],
                   ),
                 ),
@@ -596,6 +591,125 @@ Future<pw.Document> buildSingleInspectionReportPDF({
             },
             defaultVerticalAlignment: pw.TableCellVerticalAlignment.middle,
             children: tableRows,
+          ),
+          pw.SizedBox(height: 20),
+
+          // 5. Overall Remarks Section
+          pw.Container(
+            width: double.infinity,
+            padding: const pw.EdgeInsets.all(12),
+            decoration: pw.BoxDecoration(
+              color: PdfColor.fromInt(0xFFF8FAFC), // Slate 50
+              border: pw.Border.all(color: PdfColor.fromInt(0xFFE2E8F0), width: 1),
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  "INSPECTION REMARKS & CORRECTIVE ACTIONS",
+                  style: pw.TextStyle(
+                    color: PdfColor.fromInt(0xFF0F172A),
+                    fontSize: 9,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: 6),
+                pw.Text(
+                  (payload['remarks'] != null && payload['remarks'].toString().trim().isNotEmpty)
+                      ? payload['remarks'].toString().trim()
+                      : "No major non-conformances observed. Equipment is certified safe for operation under standard guidelines.",
+                  style: pw.TextStyle(
+                    fontSize: 8.5,
+                    color: PdfColor.fromInt(0xFF334155), // Slate 700
+                    lineSpacing: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 25),
+
+          // 6. Sign-off / Signature Section
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              // Inspector Column
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    "INSPECTED BY",
+                    style: pw.TextStyle(
+                      fontSize: 8,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColor.fromInt(0xFF64748B), // Slate 500
+                    ),
+                  ),
+                  pw.SizedBox(height: 25), // Signature space
+                  pw.Container(
+                    width: 150,
+                    decoration: const pw.BoxDecoration(
+                      border: pw.Border(bottom: pw.BorderSide(color: PdfColor.fromInt(0xFFCBD5E1), width: 1)),
+                    ),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    inspectorName.isNotEmpty ? inspectorName : (payload['inspector_name'] ?? 'N/A'),
+                    style: pw.TextStyle(
+                      fontSize: 9,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColor.fromInt(0xFF1E293B), // Slate 800
+                    ),
+                  ),
+                  pw.Text(
+                    "Safety Inspector",
+                    style: const pw.TextStyle(
+                      fontSize: 8,
+                      color: PdfColors.grey500,
+                    ),
+                  ),
+                ],
+              ),
+
+              // Approver Column
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    "APPROVED BY",
+                    style: pw.TextStyle(
+                      fontSize: 8,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColor.fromInt(0xFF64748B),
+                    ),
+                  ),
+                  pw.SizedBox(height: 25), // Signature space
+                  pw.Container(
+                    width: 150,
+                    decoration: const pw.BoxDecoration(
+                      border: pw.Border(bottom: pw.BorderSide(color: PdfColor.fromInt(0xFFCBD5E1), width: 1)),
+                    ),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    "Authorized Signatory",
+                    style: pw.TextStyle(
+                      fontSize: 9,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColor.fromInt(0xFF1E293B),
+                    ),
+                  ),
+                  pw.Text(
+                    "Safety Manager / HOD",
+                    style: const pw.TextStyle(
+                      fontSize: 8,
+                      color: PdfColors.grey500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ];
       },
@@ -634,5 +748,505 @@ pw.Widget _detailRow(String label, String value) {
         ),
       ],
     ),
+  );
+}
+
+Future<pw.Document> buildPlantReportPDF({
+  required String plantName,
+  required String unitName,
+  required DateTime startDate,
+  required DateTime endDate,
+  required List<Map<String, dynamic>> allData,
+  pw.MemoryImage? logoImage,
+  String? customTitle,
+}) async {
+  final pdf = pw.Document();
+
+  // Calculate status counts
+  final int totalCount = allData.length;
+  final int activeCount = allData.where((e) => matchesReportStatus(e, "Active")).length;
+  final int serviceCount = allData.where((e) => matchesReportStatus(e, "Needs Service")).length;
+  final int inspectCount = allData.where((e) => matchesReportStatus(e, "Due Inspection")).length;
+  final int expiredCount = allData.where((e) => matchesReportStatus(e, "Expired")).length;
+
+  pdf.addPage(
+    pw.MultiPage(
+      pageTheme: pw.PageTheme(
+        margin: const pw.EdgeInsets.all(32),
+        buildBackground: (context) {
+          return pw.FullPage(
+            ignoreMargins: true,
+            child: pw.Center(
+              child: pw.Transform.rotate(
+                angle: 0.6,
+                child: pw.Opacity(
+                  opacity: 0.05,
+                  child: pw.Text(
+                    "ELTRIVE",
+                    style: pw.TextStyle(
+                      fontSize: 120,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.grey,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+      footer: (context) {
+        return pw.Container(
+          alignment: pw.Alignment.centerRight,
+          margin: const pw.EdgeInsets.only(top: 15),
+          decoration: const pw.BoxDecoration(
+            border: pw.Border(top: pw.BorderSide(color: PdfColors.grey200, width: 0.5)),
+          ),
+          padding: const pw.EdgeInsets.only(top: 5),
+          child: pw.Text(
+            "Page ${context.pageNumber} of ${context.pagesCount}",
+            style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
+          ),
+        );
+      },
+      build: (context) {
+        final List<pw.TableRow> tableRows = [];
+
+        // Add Header Row
+        tableRows.add(
+          pw.TableRow(
+            decoration: const pw.BoxDecoration(
+              color: PdfColor.fromInt(0xFFE2E8F0), // Slate 200
+              borderRadius: pw.BorderRadius.only(
+                topLeft: pw.Radius.circular(4),
+                topRight: pw.Radius.circular(4),
+              ),
+            ),
+            children: [
+              pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                child: pw.Text(
+                  "SOS CODE",
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9, color: PdfColor.fromInt(0xFF1E293B)),
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                child: pw.Text(
+                  "LOCATION",
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9, color: PdfColor.fromInt(0xFF1E293B)),
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                child: pw.Text(
+                  "STATUS",
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9, color: PdfColor.fromInt(0xFF1E293B)),
+                  textAlign: pw.TextAlign.center,
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                child: pw.Text(
+                  "LAST INSPECT",
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9, color: PdfColor.fromInt(0xFF1E293B)),
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                child: pw.Text(
+                  "NEXT DUE",
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9, color: PdfColor.fromInt(0xFF1E293B)),
+                ),
+              ),
+            ],
+          ),
+        );
+
+        for (int i = 0; i < allData.length; i++) {
+          final item = allData[i];
+          final sosCode = reportEquipmentId(item);
+          final location = reportLocation(item);
+          final statusVal = reportStatus(item);
+          final prevIns = reportPreviousInspection(item);
+          final nextIns = reportNextInspection(item);
+
+          final bool isEven = i % 2 == 0;
+          final rowBg = isEven ? PdfColors.white : PdfColor.fromInt(0xFFF8FAFC); // Slate 50
+
+          // Status Badge styling
+          final PdfColor badgeBg;
+          final PdfColor badgeBorder;
+          final PdfColor badgeTextColor;
+          final String badgeText;
+
+          if (matchesReportStatus(item, "Active")) {
+            badgeBg = PdfColor.fromInt(0xFFDCFCE7); // Light Green
+            badgeBorder = PdfColor.fromInt(0xFF86EFAC);
+            badgeTextColor = PdfColor.fromInt(0xFF15803D);
+            badgeText = "ACTIVE";
+          } else if (matchesReportStatus(item, "Needs Service")) {
+            badgeBg = PdfColor.fromInt(0xFFFEF3C7); // Light Amber
+            badgeBorder = PdfColor.fromInt(0xFFFCD34D);
+            badgeTextColor = PdfColor.fromInt(0xFFB45309);
+            badgeText = "SERVICE";
+          } else if (matchesReportStatus(item, "Due Inspection")) {
+            badgeBg = PdfColor.fromInt(0xFFDBEAFE); // Light Blue
+            badgeBorder = PdfColor.fromInt(0xFF93C5FD);
+            badgeTextColor = PdfColor.fromInt(0xFF1D4ED8);
+            badgeText = "DUE INSPECT";
+          } else if (matchesReportStatus(item, "Expired")) {
+            badgeBg = PdfColor.fromInt(0xFFFEE2E2); // Light Red
+            badgeBorder = PdfColor.fromInt(0xFFFCA5A5);
+            badgeTextColor = PdfColor.fromInt(0xFFB91C1C);
+            badgeText = "EXPIRED";
+          } else {
+            badgeBg = PdfColor.fromInt(0xFFF1F5F9);
+            badgeBorder = PdfColor.fromInt(0xFFCBD5E1);
+            badgeTextColor = PdfColor.fromInt(0xFF475569);
+            badgeText = statusVal.toUpperCase();
+          }
+
+          tableRows.add(
+            pw.TableRow(
+              decoration: pw.BoxDecoration(
+                color: rowBg,
+                border: const pw.Border(
+                  bottom: pw.BorderSide(color: PdfColors.grey200, width: 0.5),
+                ),
+              ),
+              children: [
+                pw.Padding(
+                  padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                  child: pw.Text(sosCode, style: pw.TextStyle(fontSize: 8.5, fontWeight: pw.FontWeight.bold)),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                  child: pw.Text(location, style: const pw.TextStyle(fontSize: 8.5)),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                  child: pw.Container(
+                    alignment: pw.Alignment.center,
+                    child: pw.Container(
+                      padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: pw.BoxDecoration(
+                        color: badgeBg,
+                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+                        border: pw.Border.all(color: badgeBorder, width: 0.5),
+                      ),
+                      child: pw.Text(
+                        badgeText,
+                        style: pw.TextStyle(color: badgeTextColor, fontSize: 7.5, fontWeight: pw.FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                  child: pw.Text(prevIns, style: const pw.TextStyle(fontSize: 8.5)),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                  child: pw.Text(nextIns, style: const pw.TextStyle(fontSize: 8.5)),
+                ),
+              ],
+            ),
+          );
+        }
+
+        final titleText = customTitle ?? "ELTRIVE PLANT REPORT";
+
+        return [
+          // 1. Header Banner
+          pw.Container(
+            padding: const pw.EdgeInsets.all(12),
+            decoration: const pw.BoxDecoration(
+              color: PdfColor.fromInt(0xFF0F172A), // Slate 900
+              borderRadius: pw.BorderRadius.all(pw.Radius.circular(6)),
+            ),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      titleText.toUpperCase(),
+                      style: pw.TextStyle(
+                        color: PdfColors.white,
+                        fontSize: 14,
+                        fontWeight: pw.FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      "Eltrive Safety & Compliance System",
+                      style: pw.TextStyle(
+                        color: PdfColors.blueGrey100,
+                        fontSize: 8.5,
+                      ),
+                    ),
+                  ],
+                ),
+                if (logoImage != null)
+                  pw.Container(
+                    width: 45,
+                    height: 45,
+                    decoration: const pw.BoxDecoration(
+                      color: PdfColors.white,
+                      borderRadius: pw.BorderRadius.all(pw.Radius.circular(4)),
+                    ),
+                    padding: const pw.EdgeInsets.all(3),
+                    child: pw.Image(logoImage),
+                  ),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 15),
+
+          // 2. Metadata Columns
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Expanded(
+                child: pw.Container(
+                  margin: const pw.EdgeInsets.only(right: 6),
+                  padding: const pw.EdgeInsets.all(10),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColor.fromInt(0xFFE2E8F0), width: 1),
+                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        "REPORT PARAMETERS",
+                        style: pw.TextStyle(
+                          color: PdfColor.fromInt(0xFF1E3A8A),
+                          fontSize: 8.5,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                      pw.Divider(color: PdfColor.fromInt(0xFFE2E8F0), thickness: 0.5, height: 10),
+                      _detailRow("Plant Category", plantName),
+                      _detailRow("Facility Unit", unitName),
+                      _detailRow("Date Range", "${DateFormat("dd/MM/yyyy").format(startDate)} - ${DateFormat("dd/MM/yyyy").format(endDate)}"),
+                    ],
+                  ),
+                ),
+              ),
+              pw.Expanded(
+                child: pw.Container(
+                  margin: const pw.EdgeInsets.only(left: 6),
+                  padding: const pw.EdgeInsets.all(10),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColor.fromInt(0xFFE2E8F0), width: 1),
+                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        "EQUIPMENT STATISTICS",
+                        style: pw.TextStyle(
+                          color: PdfColor.fromInt(0xFF1E3A8A),
+                          fontSize: 8.5,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                      pw.Divider(color: PdfColor.fromInt(0xFFE2E8F0), thickness: 0.5, height: 10),
+                      _detailRow("Total Inspected", "$totalCount Units"),
+                      _detailRow("Active / Compliant", "$activeCount Units"),
+                      _detailRow("Needs Action", "${serviceCount + inspectCount + expiredCount} Units"),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 15),
+
+          // 3. Horizontal Stats Summary Bar
+          pw.Container(
+            padding: const pw.EdgeInsets.all(8),
+            decoration: pw.BoxDecoration(
+              color: PdfColor.fromInt(0xFFF1F5F9), // Slate 100
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+            ),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+              children: [
+                _statsBadge("ACTIVE", activeCount, PdfColor.fromInt(0xFF15803D)),
+                _statsBadge("SERVICE", serviceCount, PdfColor.fromInt(0xFFB45309)),
+                _statsBadge("DUE INSPECT", inspectCount, PdfColor.fromInt(0xFF1D4ED8)),
+                _statsBadge("EXPIRED", expiredCount, PdfColor.fromInt(0xFFB91C1C)),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 15),
+
+          // 4. Equipment Status Table Title
+          pw.Text(
+            "EQUIPMENT INVENTORY & COMPLIANCE STATUS",
+            style: pw.TextStyle(
+              color: PdfColor.fromInt(0xFF0F172A),
+              fontSize: 9.5,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+          pw.SizedBox(height: 8),
+
+          // 5. Table
+          pw.Table(
+            columnWidths: const {
+              0: pw.FixedColumnWidth(60),
+              1: pw.FlexColumnWidth(),
+              2: pw.FixedColumnWidth(65),
+              3: pw.FixedColumnWidth(70),
+              4: pw.FixedColumnWidth(70),
+            },
+            defaultVerticalAlignment: pw.TableCellVerticalAlignment.middle,
+            children: tableRows,
+          ),
+          pw.SizedBox(height: 20),
+
+          // 6. Overall Remarks Section
+          pw.Container(
+            width: double.infinity,
+            padding: const pw.EdgeInsets.all(12),
+            decoration: pw.BoxDecoration(
+              color: PdfColor.fromInt(0xFFF8FAFC),
+              border: pw.Border.all(color: PdfColor.fromInt(0xFFE2E8F0), width: 1),
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  "PLANT AUDIT REMARKS & GENERAL STATUS",
+                  style: pw.TextStyle(
+                    color: PdfColor.fromInt(0xFF0F172A),
+                    fontSize: 9,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: 6),
+                pw.Text(
+                  (expiredCount > 0)
+                      ? "ALERT: $expiredCount expired items detected in the inventory. Immediate replacement or compliance inspection is required to avoid regulatory non-conformances."
+                      : (serviceCount > 0)
+                          ? "ATTENTION: $serviceCount items require maintenance/service. Please schedule technicians to inspect these units."
+                          : "COMPLIANCE STATUS: ALL items inspected are operational and active. No immediate action required.",
+                  style: pw.TextStyle(
+                    fontSize: 8.5,
+                    color: PdfColor.fromInt(0xFF334155),
+                    lineSpacing: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 25),
+
+          // 7. Signature Block
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    "PREPARED BY (SAFETY OFFICER)",
+                    style: pw.TextStyle(
+                      fontSize: 8,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColor.fromInt(0xFF64748B),
+                    ),
+                  ),
+                  pw.SizedBox(height: 25),
+                  pw.Container(
+                    width: 150,
+                    decoration: const pw.BoxDecoration(
+                      border: pw.Border(bottom: pw.BorderSide(color: PdfColor.fromInt(0xFFCBD5E1), width: 1)),
+                    ),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    "Safety Officer",
+                    style: pw.TextStyle(
+                      fontSize: 9,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColor.fromInt(0xFF1E293B),
+                    ),
+                  ),
+                  pw.Text(
+                    "Health & Safety Dept",
+                    style: const pw.TextStyle(
+                      fontSize: 8,
+                      color: PdfColors.grey500,
+                    ),
+                  ),
+                ],
+              ),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    "APPROVED BY (PLANT HEAD / MANAGER)",
+                    style: pw.TextStyle(
+                      fontSize: 8,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColor.fromInt(0xFF64748B),
+                    ),
+                  ),
+                  pw.SizedBox(height: 25),
+                  pw.Container(
+                    width: 150,
+                    decoration: const pw.BoxDecoration(
+                      border: pw.Border(bottom: pw.BorderSide(color: PdfColor.fromInt(0xFFCBD5E1), width: 1)),
+                    ),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    "Authorized Signatory",
+                    style: pw.TextStyle(
+                      fontSize: 9,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColor.fromInt(0xFF1E293B),
+                    ),
+                  ),
+                  pw.Text(
+                    "Plant Management",
+                    style: const pw.TextStyle(
+                      fontSize: 8,
+                      color: PdfColors.grey500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ];
+      },
+    ),
+  );
+
+  return pdf;
+}
+
+pw.Widget _statsBadge(String label, int value, PdfColor color) {
+  return pw.Row(
+    children: [
+      pw.Container(
+        width: 8,
+        height: 8,
+        decoration: pw.BoxDecoration(color: color, borderRadius: const pw.BorderRadius.all(pw.Radius.circular(2))),
+      ),
+      pw.SizedBox(width: 4),
+      pw.Text("$label: ", style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+      pw.Text(value.toString(), style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: color)),
+    ],
   );
 }

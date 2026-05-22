@@ -98,22 +98,15 @@ class _FireTrolleyReportsPageState extends State<FireTrolleyReportsPage> {
   Future<void> generatePDF() async {
     setState(() => loading = true);
     try {
-      
       final dataMap = await fetchData();
-      List<Map<String, dynamic>> allData = [];
-      dataMap.forEach((status, list) {
-        allData.addAll(list.map((e) => {...e, "status": status}));
-      });
+      final allData = <Map<String, dynamic>>[];
+      dataMap.forEach((k, v) => allData.addAll(v.map((e) => {...e, "status": k, "status_label": k})));
 
       if (allData.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("No data to generate PDF")),
-        );
-        setState(() => loading = false);
-        return;
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No data found")));
+        setState(() => loading = false); return;
       }
 
-      final pdf = pw.Document();
       pw.MemoryImage? logoImage;
       try {
         final logoBytes = await rootBundle.load('assets/eltrive_logo.jpg');
@@ -121,105 +114,29 @@ class _FireTrolleyReportsPageState extends State<FireTrolleyReportsPage> {
       } catch (e) {
         print("Logo load error: $e");
       }
-      pdf.addPage(
-        pw.MultiPage(maxPages: 1000, 
-          pageTheme: pw.PageTheme(
-            buildBackground: (context) {
-              return pw.FullPage(
-                ignoreMargins: true,
-                child: pw.Center(
-                  child: pw.Transform.rotate(
-                    angle: 0.6, // Professional upward-diagonal tilt
-                    child: pw.Opacity(
-                      opacity: 0.12, // Perfect balance of high visibility & readability
-                      child: pw.Text(
-                        "ELTRIVE",
-                        style: pw.TextStyle(
-                          fontSize: 130,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-          build: (context) => [
-    
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text("ELTRIVE PLANT REPORT", style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
-                if (logoImage != null)
-                  pw.Image(logoImage, width: 75, height: 75),
-              ],
-            ),
-            pw.SizedBox(height: 10),
-            pw.Text("Plant: $selectedPlant"),
-            pw.Text("Unit: $selectedUnit"),
-            pw.Text("Date: ${DateFormat("dd-MM-yyyy").format(startDate)} to ${DateFormat("dd-MM-yyyy").format(endDate)}"),
-            pw.SizedBox(height: 20),
-            pw.Text("Summary", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 5),
-            pw.Column(
-              children: dataMap.entries.map((e) {
-                return pw.Padding(
-                  padding: const pw.EdgeInsets.symmetric(vertical: 2),
-                  child: pw.Row(
-                    children: [
-                      pw.SizedBox(
-                        width: 180,
-                        child: pw.Text("${e.key}:", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Text("${e.value.length}"),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
-            pw.SizedBox(height: 20),
-            pw.Table.fromTextArray(
-          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-          headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
-          headers: ["SOS Code", "Location", "Status", "Previous Inspection", "Next Inspection"],
-          data: allData.map((e) {
-            final statusVal = reportStatus(e);
-            final prevIns = reportPreviousInspection(e);
-            final nextIns = reportNextInspection(e);
-            return [
-              reportEquipmentId(e),
-              reportLocation(e),
-              statusVal,
-              prevIns,
-              nextIns,
-            ];
-          }).toList(),
-        ),
-          ],
-        ),
+
+      final pdf = await buildPlantReportPDF(
+        plantName: selectedPlant,
+        unitName: selectedUnit,
+        startDate: startDate,
+        endDate: endDate,
+        allData: allData,
+        logoImage: logoImage,
+        customTitle: "ELTRIVE ${selectedPlant.toUpperCase()} SAFETY REPORT",
       );
 
-      
-      
-      final fileName = "FireTrolley_Report_${DateTime.now().millisecondsSinceEpoch}.pdf";
-      
+      final fileName = "${selectedPlant.replaceAll(' ', '_').toLowerCase()}_Report_${DateTime.now().millisecondsSinceEpoch}.pdf";
+
       if (kIsWeb) {
-        WebDownloadHelper.downloadFile(await pdf.save(), "Report_${DateTime.now().millisecondsSinceEpoch}.pdf");
+        WebDownloadHelper.downloadFile(await pdf.save(), fileName);
         if (mounted) { setState(() => loading = false); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF Downloaded ✅"))); }
         return;
       }
-
-      final saveDir = await getApplicationDocumentsDirectory();
-      final file = File("${saveDir.path}/$fileName");
-
-      await file.writeAsBytes(await pdf.save());
-      await OpenFilex.open(file.path);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF saved")));
-    } catch (e) {
-      debugPrint("PDF ERROR: $e");
-    }
-    setState(() => loading = false);
+      final directory = await getApplicationDocumentsDirectory();
+      final path = "${directory.path}/$fileName";
+      final file = File(path); await file.writeAsBytes(await pdf.save());
+      if (mounted) { setState(() => loading = false); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PDF Generated. Opening..."))); await OpenFilex.open(path); }
+    } catch (e) { if (mounted) { setState(() => loading = false); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"))); } }
   }
 
   Future<void> downloadExcel() async {
