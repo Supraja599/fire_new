@@ -112,13 +112,13 @@ class StatusCountStrip extends StatelessWidget {
           // 4-count chips row
           Row(
             children: [
-              _chip("Active",     active,     const Color(0xFF1E8E3E), Icons.verified_rounded,          isLoading),
+              _chip("Active",     active,     const Color(0xFF10B981), Icons.check_circle_rounded,       isLoading),
               const SizedBox(width: 7),
-              _chip("Service",    service,    const Color(0xFFFF8F00), Icons.engineering_rounded,        isLoading),
+              _chip("Service",    service,    const Color(0xFFF59E0B), Icons.handyman_rounded,           isLoading),
               const SizedBox(width: 7),
-              _chip("Inspection", inspection, const Color(0xFF1565C0), Icons.pending_actions_rounded,    isLoading),
+              _chip("Inspection", inspection, const Color(0xFF3B82F6), Icons.fact_check_rounded,         isLoading),
               const SizedBox(width: 7),
-              _chip("Expired",    expired,    const Color(0xFFD50000), Icons.report_rounded,             isLoading),
+              _chip("Expired",    expired,    const Color(0xFFEF4444), Icons.error_rounded,              isLoading),
             ],
           ),
         ],
@@ -131,21 +131,14 @@ class StatusCountStrip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              color.withValues(alpha: 0.13),
-              color.withValues(alpha: 0.04),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.28), width: 1.4),
+          border: Border.all(color: color.withValues(alpha: 0.24), width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: color.withValues(alpha: 0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+              color: color.withValues(alpha: 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -153,18 +146,32 @@ class StatusCountStrip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.14),
+                gradient: LinearGradient(
+                  colors: [
+                    color,
+                    color.withValues(alpha: 0.82),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.35),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2.5),
+                  ),
+                ],
               ),
-              child: Icon(icon, color: color, size: 17),
+              child: Icon(icon, color: Colors.white, size: 15),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(
               loading ? "--" : "$count",
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 19,
                 fontWeight: FontWeight.w900,
                 color: color,
                 letterSpacing: -0.5,
@@ -175,8 +182,8 @@ class StatusCountStrip extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: 9.5,
-                fontWeight: FontWeight.w700,
-                color: color.withValues(alpha: 0.75),
+                fontWeight: FontWeight.w800,
+                color: color.withValues(alpha: 0.8),
                 letterSpacing: 0.2,
               ),
               textAlign: TextAlign.center,

@@ -9,6 +9,10 @@ class GuidedCaptureWizardPage extends StatefulWidget {
   final Map<String, dynamic>? selectedEquipment;
   final String? equipmentImage;
   final Widget nextScreen;
+  /// Pass the module code (e.g. "fire_alarm", "hose_reel") so the wizard
+  /// shows the correct part labels for each module instead of guessing from
+  /// the asset filename.
+  final String? moduleCode;
 
   const GuidedCaptureWizardPage({
     super.key,
@@ -16,6 +20,7 @@ class GuidedCaptureWizardPage extends StatefulWidget {
     this.selectedEquipment,
     this.equipmentImage,
     required this.nextScreen,
+    this.moduleCode,
   });
 
   @override
@@ -25,6 +30,7 @@ class GuidedCaptureWizardPage extends StatefulWidget {
 class StepInstruction {
   final String title;
   final String subtitle;
+  final String shortLabel; // shown in the gallery thumbnail ribbon
   final IconData icon;
   final List<String> bulletPoints;
   final String referenceAsset;
@@ -32,6 +38,7 @@ class StepInstruction {
   StepInstruction({
     required this.title,
     required this.subtitle,
+    required this.shortLabel,
     required this.icon,
     required this.bulletPoints,
     this.referenceAsset = 'assets/extinguisher.png',
@@ -51,35 +58,105 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
   bool _isAnalyzing = false;
 
   String _view3TargetLabel = "CONTROLS";
+  String _view3ShortLabel = "CONTROLS"; // short label shown in gallery ribbon
   String _eqName = "Safety Asset";
 
   late final List<StepInstruction> _steps;
 
+  // Maps moduleCode → canonical keyword used by the anatomy engine.
+  static const Map<String, String> _moduleKeywords = {
+    'fire_extinguisher': 'extinguisher',
+    'hose_reel':         'hose',
+    'fire_alarm':        'alarm',
+    'smoke_detector':    'detector',
+    'heat_detector':     'detector',
+    'co_detector':       'detector',
+    'suppression_system':'co2',
+    'safety_shower':     'shower',
+    'eyewash_station':   'eye',
+    'fire_blanket':      'blanket',
+    'ppe_station':       'ppe',
+    'spill_kit':         'spill',
+    'fire_trolley':      'trolley',
+    'ambulance':         'ambulance',
+    'hydrant':           'hydrant',
+    'sprinkler':         'sprinkler',
+    'fire_door':         'door',
+    'exit_sign':         'exit',
+    'signage':           'signage',
+    'muster_point':      'muster',
+    'emergency_light':   'lighting',
+    'scba_unit':         'scba',
+    'first_aid_kit':     'first aid',
+    'emergency_comm':    'comm',
+    'pa_system':         'pa system',
+    'wind_sock':         'sock',
+  };
+
+  // Maps moduleCode → display name shown in instructions.
+  static const Map<String, String> _moduleNames = {
+    'fire_extinguisher': 'Fire Extinguisher',
+    'hose_reel':         'Hose Reel',
+    'fire_alarm':        'Alarm Panel',
+    'smoke_detector':    'Smoke Detector',
+    'heat_detector':     'Heat Detector',
+    'co_detector':       'CO Detector',
+    'suppression_system':'CO2 System',
+    'safety_shower':     'Emergency Shower',
+    'eyewash_station':   'Eye Wash Station',
+    'fire_blanket':      'Fire Blanket',
+    'ppe_station':       'PPE Cabinet',
+    'spill_kit':         'Spill Kit',
+    'fire_trolley':      'Fire Trolley',
+    'ambulance':         'Ambulance',
+    'hydrant':           'Hydrant',
+    'sprinkler':         'Fire Sprinkler',
+    'fire_door':         'Fire Door',
+    'exit_sign':         'Emergency Exit',
+    'signage':           'Safety Signage',
+    'muster_point':      'Muster Point',
+    'emergency_light':   'Emergency Lighting',
+    'scba_unit':         'SCBA Unit',
+    'first_aid_kit':     'First Aid Kit',
+    'emergency_comm':    'Emergency Comm',
+    'pa_system':         'PA System',
+    'wind_sock':         'Wind Sock',
+  };
+
   @override
   void initState() {
     super.initState();
-    
+
     final String img = widget.equipmentImage ?? 'assets/extinguisher.png';
     final bool isHoseReel = img.contains('hosereel');
-    
-    // Derive hyper-specific Equipment Name for clear explanation injecting!
-    try {
-      final String filePart = img.split('/').last.split('.').first;
-      _eqName = filePart.split('_').map((w) {
-        if (w.isEmpty) return "";
-        return "${w[0].toUpperCase()}${w.substring(1)}";
-      }).join(' ');
-      
-      if (_eqName.toLowerCase().contains("ehs") || _eqName.toLowerCase().contains("scan")) {
+    final String moduleKey = widget.moduleCode?.toLowerCase().trim() ?? '';
+
+    // 1. Primary: use moduleCode for reliable name + keyword resolution.
+    if (moduleKey.isNotEmpty && _moduleNames.containsKey(moduleKey)) {
+      _eqName = _moduleNames[moduleKey]!;
+    } else {
+      // Fallback: derive name from asset filename.
+      try {
+        final String filePart = img.split('/').last.split('.').first;
+        _eqName = filePart.split('_').map((w) {
+          if (w.isEmpty) return "";
+          return "${w[0].toUpperCase()}${w.substring(1)}";
+        }).join(' ');
+        if (_eqName.toLowerCase().contains("ehs") || _eqName.toLowerCase().contains("scan")) {
+          _eqName = "Safety Equipment";
+        }
+      } catch (_) {
         _eqName = "Safety Equipment";
       }
-    } catch (_) {
-      _eqName = "Safety Equipment";
     }
 
-    // --- DYNAMIC ANATOMY ENGINE ---
-    // Automatically parses equipment type and builds hyper-specific target labels!
-    String view3Title = "$_eqName Controls View";
+    // 2. Resolve anatomy keyword: moduleCode first, asset name second.
+    final String nameLower = (moduleKey.isNotEmpty && _moduleKeywords.containsKey(moduleKey))
+        ? _moduleKeywords[moduleKey]!
+        : _eqName.toLowerCase();
+
+    // 3. DYNAMIC ANATOMY ENGINE — builds step 3 content from the resolved keyword.
+    String view3Title    = "$_eqName Controls View";
     String view3Subtitle = "Inspect $_eqName operational mechanism";
     List<String> view3Bullets = [
       "Capture direct, clear view of $_eqName operating controls.",
@@ -87,129 +164,143 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
       "Verify clear, unblocked functional access path.",
     ];
     _view3TargetLabel = "INTERFACE / CONTROLS";
+    _view3ShortLabel  = "CONTROLS";
 
-    final String nameLower = _eqName.toLowerCase();
     if (nameLower.contains("extinguisher") || nameLower.contains("hose")) {
-      view3Title = "Pressure Gauge & Nozzle View";
-      view3Subtitle = "Inspect pressure dial and discharge nozzle";
+      view3Title        = "Pressure Gauge & Nozzle View";
+      view3Subtitle     = "Inspect pressure dial and discharge nozzle";
       _view3TargetLabel = "PRESSURE GAUGE / NOZZLE";
+      _view3ShortLabel  = "NOZZLE";
       view3Bullets = [
         "Frame the pressure indicator needle inside the green zone.",
         "Confirm safety metal pin and tamper plastic loop are intact.",
         "Verify the discharge nozzle mouth is clean and unobstructed.",
       ];
-    } else if (nameLower.contains("detector") || nameLower.contains("sensor")) {
-      view3Title = "Sensor Chamber & LED View";
-      view3Subtitle = "Inspect status indicator and vents";
+    } else if (nameLower.contains("detector") || nameLower.contains("sensor") || nameLower.contains("co2") && nameLower.contains("detect")) {
+      view3Title        = "Sensor Chamber & LED View";
+      view3Subtitle     = "Inspect status indicator and vents";
       _view3TargetLabel = "SENSOR CHAMBER / STATUS LED";
+      _view3ShortLabel  = "SENSOR";
       view3Bullets = [
         "Focus closely on the status LED light (should be green/blinking).",
         "Confirm sensor entry chamber is clean and free of heavy dust.",
         "Verify device is mounted securely to the ceiling/wall base.",
       ];
     } else if (nameLower.contains("shower") || nameLower.contains("eye")) {
-      view3Title = "Pull Lever & Spray Head View";
-      view3Subtitle = "Inspect actuator lever and nozzle head";
+      view3Title        = "Pull Lever & Spray Head View";
+      view3Subtitle     = "Inspect actuator lever and nozzle head";
       _view3TargetLabel = "ACTUATOR LEVER / SPRAY HEAD";
+      _view3ShortLabel  = "LEVER";
       view3Bullets = [
         "Focus on the triangular activation pull rod or push handle.",
         "Verify spray head dust covers are present and loosely fitted.",
         "Check main bowl/drainage area for clear, debris-free state.",
       ];
     } else if (nameLower.contains("sock")) {
-      view3Title = "Swivel Mast & Fabric View";
-      view3Subtitle = "Inspect rotation bearing and fabric";
+      view3Title        = "Swivel Mast & Fabric View";
+      view3Subtitle     = "Inspect rotation bearing and fabric";
       _view3TargetLabel = "SWIVEL BEARING / WIND FABRIC";
+      _view3ShortLabel  = "SWIVEL";
       view3Bullets = [
         "Focus closely on the top swivel bearing and mounting ring.",
         "Inspect the orange wind fabric for rips, fading, or blockages.",
         "Verify structural mast is vertically level and secured.",
       ];
     } else if (nameLower.contains("kit") || nameLower.contains("cabinet") || nameLower.contains("ppe") || nameLower.contains("blanket")) {
-      view3Title = "Tamper Seal & Inventory View";
-      view3Subtitle = "Inspect security locks and contents";
+      view3Title        = "Tamper Seal & Inventory View";
+      view3Subtitle     = "Inspect security locks and contents";
       _view3TargetLabel = "SECURITY LOCKS / INVENTORY";
+      _view3ShortLabel  = "SEAL";
       view3Bullets = [
         "Focus tightly on the plastic tamper lock or security tape.",
         "Verify cabinet hinges and door latches operate smoothly.",
         "Check that outer inventory list/expiry log is present.",
       ];
-    } else if (nameLower.contains("panel") || nameLower.contains("siren") || nameLower.contains("mcp") || nameLower.contains("alarm") || nameLower.contains("pa system") || nameLower.contains("comm")) {
-      view3Title = "Status Display & Interface View";
-      view3Subtitle = "Inspect screen/LEDs and controls";
+    } else if (nameLower.contains("panel") || nameLower.contains("alarm") || nameLower.contains("comm") || nameLower.contains("pa system") || nameLower.contains("siren") || nameLower.contains("mcp")) {
+      view3Title        = "Status Display & Interface View";
+      view3Subtitle     = "Inspect screen/LEDs and control buttons";
       _view3TargetLabel = "LED MATRIX / INTERFACE";
+      _view3ShortLabel  = "DISPLAY";
       view3Bullets = [
         "Verify main screen/LED status shows 'System Normal' (no red fault).",
         "Ensure outer protective glass or cover is not cracked.",
         "Confirm physical keyswitch or buttons are in ready position.",
       ];
-    } else if (nameLower.contains("hydrant") || nameLower.contains("sprinkler") || nameLower.contains("valve") || nameLower.contains("co2")) {
-      view3Title = "Gate Valve & Pressure View";
-      view3Subtitle = "Inspect metal connections and gauge";
+    } else if (nameLower.contains("hydrant") || nameLower.contains("sprinkler") || nameLower.contains("co2") || nameLower.contains("valve")) {
+      view3Title        = "Gate Valve & Pressure View";
+      view3Subtitle     = "Inspect metal connections and gauge";
       _view3TargetLabel = "GATE VALVE / PRESSURE GAUGE";
+      _view3ShortLabel  = "VALVE";
       view3Bullets = [
         "Focus on the main gate valve wheel or pressure dial.",
         "Verify threaded couplings show no rust, water leaks, or cracks.",
         "Ensure secure locking bolts are fully tightened and intact.",
       ];
     } else if (nameLower.contains("ambulance") || nameLower.contains("trolley") || nameLower.contains("vehicle")) {
-      view3Title = "Equipment Rack & Light View";
-      view3Subtitle = "Inspect storage and sirens";
+      view3Title        = "Equipment Rack & Light View";
+      view3Subtitle     = "Inspect storage rack and siren lights";
       _view3TargetLabel = "STORAGE RACK / SIREN LIGHTS";
+      _view3ShortLabel  = "RACK";
       view3Bullets = [
         "Focus on the main equipment mounting rack or sirens.",
         "Verify strobe/flashing lights are clean and undamaged.",
         "Confirm safety hatches are fully latched and secure.",
       ];
     } else if (nameLower.contains("door")) {
-      view3Title = "Seal & Closer View";
-      view3Subtitle = "Inspect fire seal and door hardware";
+      view3Title        = "Seal & Door Closer View";
+      view3Subtitle     = "Inspect intumescent seal and door hardware";
       _view3TargetLabel = "FIRE SEAL / DOOR CLOSER";
+      _view3ShortLabel  = "SEAL";
       view3Bullets = [
         "Focus on the intumescent seal strip along the door edges.",
         "Inspect the automatic door closer mechanism at the top.",
         "Verify the latch engages flush with no visible gap.",
       ];
     } else if (nameLower.contains("exit") || nameLower.contains("signage") || nameLower.contains("muster")) {
-      view3Title = "Sign Face & Clarity View";
-      view3Subtitle = "Inspect sign legibility and mounting";
+      view3Title        = "Sign Face & Clarity View";
+      view3Subtitle     = "Inspect sign legibility and mounting";
       _view3TargetLabel = "SIGN FACE / MOUNTING";
+      _view3ShortLabel  = "SIGN";
       view3Bullets = [
         "Focus directly on the sign face at eye-level distance.",
         "Verify text and pictograms are not faded or obscured.",
         "Confirm the sign is securely mounted and clearly visible.",
       ];
     } else if (nameLower.contains("lighting")) {
-      view3Title = "Lamp Head & Battery View";
-      view3Subtitle = "Inspect emergency light status";
+      view3Title        = "Lamp Head & Battery View";
+      view3Subtitle     = "Inspect emergency lamp and charge LED";
       _view3TargetLabel = "LAMP HEAD / BATTERY LED";
+      _view3ShortLabel  = "LAMP";
       view3Bullets = [
         "Focus on the lamp heads and the battery status LED.",
         "Verify lamp heads are angled toward the escape path.",
         "Locate the self-test button on the side or bottom.",
       ];
     } else if (nameLower.contains("scba")) {
-      view3Title = "Cylinder Gauge & Mask View";
-      view3Subtitle = "Inspect air levels and regulator";
+      view3Title        = "Cylinder Gauge & Mask View";
+      view3Subtitle     = "Inspect air pressure and regulator";
       _view3TargetLabel = "AIR GAUGE / DEMAND VALVE";
+      _view3ShortLabel  = "GAUGE";
       view3Bullets = [
         "Focus on the cylinder pressure gauge (should be >200 bar).",
         "Inspect the face mask and demand valve for cracks.",
         "Confirm all harness straps are intact and functional.",
       ];
     } else if (nameLower.contains("first aid")) {
-      view3Title = "Tamper Seal & Stock View";
-      view3Subtitle = "Inspect seal and contents list";
+      view3Title        = "Tamper Seal & Stock View";
+      view3Subtitle     = "Inspect seal integrity and medical contents";
       _view3TargetLabel = "TAMPER SEAL / CONTENTS";
+      _view3ShortLabel  = "STOCK";
       view3Bullets = [
         "Focus on the plastic tamper seal or security lock.",
         "Verify the contents checklist is present and up to date.",
         "Confirm essential medical supplies are fully stocked.",
       ];
     } else if (nameLower.contains("spill")) {
-      view3Title = "Lid Seal & Absorber View";
-      view3Subtitle = "Inspect kit seal and inventory";
+      view3Title        = "Lid Seal & Absorber View";
+      view3Subtitle     = "Inspect spill kit seal and absorbent stock";
       _view3TargetLabel = "LID SEAL / ABSORBENT STOCK";
+      _view3ShortLabel  = "SEAL";
       view3Bullets = [
         "Focus on the bin lid seal and security latch.",
         "Verify absorbent socks and pads are fully stocked.",
@@ -217,13 +308,13 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
       ];
     }
 
-
     final bool isExtOrHose = nameLower.contains("extinguisher") || nameLower.contains("hose");
 
     _steps = [
       StepInstruction(
         title: "$_eqName Profile View",
         subtitle: "Capture full physical state of $_eqName",
+        shortLabel: "OVERALL",
         icon: Icons.photo_camera_back,
         referenceAsset: img,
         bulletPoints: [
@@ -235,6 +326,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
       StepInstruction(
         title: "Barcode & Tag View",
         subtitle: "Secure $_eqName registry identification",
+        shortLabel: "BARCODE",
         icon: Icons.qr_code_scanner,
         referenceAsset: 'assets/instructions_scan.png',
         bulletPoints: [
@@ -246,19 +338,25 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
       StepInstruction(
         title: view3Title,
         subtitle: view3Subtitle,
+        shortLabel: _view3ShortLabel,
         icon: Icons.settings_input_component,
+        // Extinguisher → dedicated nozzle/valve image
+        // Hose Reel    → dedicated hose reel detail image
+        // All others   → universal gauge/component reference image
         referenceAsset: isExtOrHose
             ? (isHoseReel ? 'assets/hosereel3.png' : 'assets/instructions_valve.png')
-            : img,
+            : 'assets/instructions_gauge_universal.png',
         bulletPoints: view3Bullets,
       ),
       StepInstruction(
         title: "Surrounding Access View",
         subtitle: "Audit $_eqName placement clearance",
+        shortLabel: "SURROUNDS",
         icon: Icons.view_in_ar,
+        // Universal surroundings reference for every module
         referenceAsset: isExtOrHose
             ? 'assets/instructions_surroundings.png'
-            : img,
+            : 'assets/instructions_surroundings_universal.png',
         bulletPoints: [
           "Step back to include the $_eqName wall mount/boundary.",
           "Verify zero obstructions/storage blocks access.",
@@ -447,22 +545,16 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
     final ProximityResult? location = _locationVerifications[_currentStepIndex];
     final telemetry = _telemetryCache[_currentStepIndex];
 
-    // Dynamic AI Zoom Simulators (Translates 1 general image into 4 distinct guidance frames!)
-    double zoomScale = 1.0;
-    Alignment zoomAlignment = Alignment.center;
     final String asset = activeStep.referenceAsset;
     final bool isSpecialized = asset.contains('hosereel3') || asset.contains('s2') || asset.contains('s3') || asset.contains('scan.png');
 
     if (!isSpecialized) {
       if (_currentStepIndex == 1) {
-        zoomScale = 2.6; // Simulate close-up Macro Scan
-        zoomAlignment = Alignment.topCenter; 
+        // close-up macro scan
       } else if (_currentStepIndex == 2) {
-        zoomScale = 1.9; // Simulate Core Valve focus
-        zoomAlignment = Alignment.center;
+        // core component focus
       } else if (_currentStepIndex == 3) {
-        zoomScale = 0.7; // Simulate stepped back wide surroundings
-        zoomAlignment = Alignment.center;
+        // wide surroundings view
       }
     }
 
@@ -501,7 +593,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                       decoration: BoxDecoration(
                         color: isCompleted
                             ? Colors.green.shade500
-                            : (isActive ? Colors.red.shade500 : Colors.white.withOpacity(0.1)),
+                            : (isActive ? Colors.red.shade500 : Colors.white.withValues(alpha: 0.1)),
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
@@ -567,13 +659,13 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                 border: Border.all(
                                   color: isActive
                                       ? Colors.redAccent
-                                      : (isCaptured ? Colors.greenAccent.withOpacity(0.6) : Colors.white.withOpacity(0.1)),
+                                      : (isCaptured ? Colors.greenAccent.withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.1)),
                                   width: isActive ? 2.5 : 1,
                                 ),
                                 boxShadow: isActive
                                     ? [
                                         BoxShadow(
-                                          color: Colors.redAccent.withOpacity(0.3),
+                                          color: Colors.redAccent.withValues(alpha: 0.3),
                                           blurRadius: 10,
                                           spreadRadius: 1,
                                         )
@@ -615,7 +707,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                             ? Colors.redAccent 
                                             : (isCaptured ? Colors.green.shade700 : Colors.black54),
                                         child: Text(
-                                          isCaptured ? "SECURED" : "VIEW ${i + 1}",
+                                          isCaptured ? "SECURED" : _steps[i].shortLabel,
                                           textAlign: TextAlign.center,
                                           style: const TextStyle(
                                             color: Colors.white,
@@ -655,11 +747,11 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                         color: const Color(0xFF1E293B),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.05),
+                          color: Colors.white.withValues(alpha: 0.05),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           )
@@ -760,7 +852,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                     color: Colors.black26,
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.1),
+                                      color: Colors.white.withValues(alpha: 0.1),
                                       width: 1.5,
                                     ),
                                   ),
@@ -774,7 +866,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                           Container(color: const Color(0xFF0A1128)), // Dark Blue Grid BG
                                           Positioned.fill(
                                             child: GridPaper(
-                                              color: Colors.cyanAccent.withOpacity(0.08),
+                                              color: Colors.cyanAccent.withValues(alpha: 0.08),
                                               divisions: 1,
                                               interval: 20.0,
                                               subdivisions: 1,
@@ -785,9 +877,9 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                             child: Container(
                                               padding: const EdgeInsets.all(10),
                                               decoration: BoxDecoration(
-                                                color: Colors.cyanAccent.withOpacity(0.05),
+                                                color: Colors.cyanAccent.withValues(alpha: 0.05),
                                                 shape: BoxShape.circle,
-                                                border: Border.all(color: Colors.cyanAccent.withOpacity(0.2)),
+                                                border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.2)),
                                               ),
                                               child: Image.asset(
                                                 activeStep.referenceAsset,
@@ -814,7 +906,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                           Container(color: const Color(0xFF1A0B0F)), // Deep Red Black
                                           Positioned.fill(
                                             child: GridPaper(
-                                              color: Colors.redAccent.withOpacity(0.06),
+                                              color: Colors.redAccent.withValues(alpha: 0.06),
                                               divisions: 1,
                                               interval: 25.0,
                                               subdivisions: 1,
@@ -838,7 +930,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                               height: 50,
                                               decoration: BoxDecoration(
                                                 border: Border.all(color: Colors.redAccent, width: 2),
-                                                color: Colors.redAccent.withOpacity(0.1),
+                                                color: Colors.redAccent.withValues(alpha: 0.1),
                                               ),
                                             ),
                                           ),
@@ -864,7 +956,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                               height: 90,
                                               decoration: BoxDecoration(
                                                 shape: BoxShape.circle,
-                                                border: Border.all(color: Colors.greenAccent.withOpacity(0.15), width: 1),
+                                                border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.15), width: 1),
                                               ),
                                             ),
                                           ),
@@ -874,7 +966,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                               height: 65,
                                               decoration: BoxDecoration(
                                                 shape: BoxShape.circle,
-                                                border: Border.all(color: Colors.greenAccent.withOpacity(0.3), width: 1.5),
+                                                border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.3), width: 1.5),
                                               ),
                                             ),
                                           ),
@@ -900,7 +992,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                               decoration: BoxDecoration(
                                                 shape: BoxShape.circle,
                                                 border: Border.all(color: Colors.greenAccent, width: 2),
-                                                color: Colors.greenAccent.withOpacity(0.1),
+                                                color: Colors.greenAccent.withValues(alpha: 0.1),
                                               ),
                                               child: const Icon(Icons.center_focus_strong, color: Colors.greenAccent, size: 20),
                                             ),
@@ -914,7 +1006,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                                 child: Container(
                                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                                   decoration: BoxDecoration(
-                                                    color: Colors.greenAccent.withOpacity(0.2),
+                                                    color: Colors.greenAccent.withValues(alpha: 0.2),
                                                     border: Border.all(color: Colors.greenAccent, width: 0.5),
                                                     borderRadius: BorderRadius.circular(4),
                                                   ),
@@ -939,7 +1031,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                           Container(
                                             margin: const EdgeInsets.all(4),
                                             decoration: BoxDecoration(
-                                              border: Border.all(color: Colors.orangeAccent.withOpacity(0.4), width: 1),
+                                              border: Border.all(color: Colors.orangeAccent.withValues(alpha: 0.4), width: 1),
                                             ),
                                           ),
                                           Positioned(
@@ -947,9 +1039,9 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                             left: 0, right: 0,
                                             height: 45,
                                             child: Container(
-                                              color: Colors.orangeAccent.withOpacity(0.15),
+                                              color: Colors.orangeAccent.withValues(alpha: 0.15),
                                               child: GridPaper(
-                                                color: Colors.orangeAccent.withOpacity(0.4),
+                                                color: Colors.orangeAccent.withValues(alpha: 0.4),
                                                 divisions: 1, interval: 10, subdivisions: 1,
                                                 child: Container(),
                                               ),
@@ -979,7 +1071,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                                 child: Container(
                                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                                   decoration: BoxDecoration(
-                                                    color: Colors.orangeAccent.withOpacity(0.2),
+                                                    color: Colors.orangeAccent.withValues(alpha: 0.2),
                                                     border: Border.all(color: Colors.orangeAccent, width: 0.5),
                                                     borderRadius: BorderRadius.circular(4),
                                                   ),
@@ -1005,7 +1097,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                           child: Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                                             decoration: BoxDecoration(
-                                              color: Colors.black.withOpacity(0.85),
+                                              color: Colors.black.withValues(alpha: 0.85),
                                               borderRadius: BorderRadius.circular(4),
                                               border: Border.all(
                                                 color: _currentStepIndex == 0 ? Colors.cyanAccent :
@@ -1054,8 +1146,8 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
                             color: currentImage != null
-                                ? Colors.green.withOpacity(0.5)
-                                : Colors.red.withOpacity(0.3),
+                                ? Colors.green.withValues(alpha: 0.5)
+                                : Colors.red.withValues(alpha: 0.3),
                             width: 2,
                           ),
                         ),
@@ -1086,7 +1178,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                       Text(
                                         "Launches Camera Feed",
                                         style: TextStyle(
-                                          color: Colors.white.withOpacity(0.4),
+                                          color: Colors.white.withValues(alpha: 0.4),
                                           fontSize: 12,
                                         ),
                                       ),
@@ -1132,8 +1224,8 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
                                             color: (location?.success == true && location?.withinRange == true)
-                                                ? Colors.green.withOpacity(0.2)
-                                                : Colors.orange.withOpacity(0.2),
+                                                ? Colors.green.withValues(alpha: 0.2)
+                                                : Colors.orange.withValues(alpha: 0.2),
                                             borderRadius: BorderRadius.circular(4),
                                             border: Border.all(
                                               color: (location?.success == true && location?.withinRange == true)
@@ -1225,7 +1317,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                             decoration: BoxDecoration(
                                               color: Colors.black38,
                                               borderRadius: BorderRadius.circular(8),
-                                              border: Border.all(color: Colors.cyanAccent.withOpacity(0.3)),
+                                              border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.3)),
                                             ),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.min,

@@ -109,7 +109,7 @@ class _SprinklerPageState extends State<SprinklerPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          "Splinkers",
+                          "sprinklers",
                           style: TextStyle(
                             color: Colors.grey[900],
                             fontSize: 24,
@@ -331,7 +331,7 @@ class _SprinklerPageState extends State<SprinklerPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Splinkers Intelligence Hub",
+                          "sprinklers Intelligence Hub",
                           style: TextStyle(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w900,
@@ -374,9 +374,9 @@ class _SprinklerPageState extends State<SprinklerPage> {
                     childAspectRatio: aspectRatio,
                     children: [
                       _ActionCard("Analytics", "assets/dashboard_icons/analytics.png", const Color(0xFFD32F2F), GenericAnalyticsPage(
-                        title: "Splinkers Analytics",
-                        shortName: "Splinkers",
-                        assetLabel: "TOTAL SPLINKERS",
+                        title: "sprinklers Analytics",
+                        shortName: "sprinklers",
+                        assetLabel: "TOTAL sprinklerS",
                         apiService: api,
                         imagePath: "assets/sprinkler.png",
                         fallbackIcon: Icons.analytics_rounded,
@@ -385,8 +385,8 @@ class _SprinklerPageState extends State<SprinklerPage> {
                       _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const SprinklerMaintenancePage(), "Service"),
                       _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const SprinklerAlertsPage(), "Critical"),
                       _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(
-                        title: "Splinkers Health",
-                        shortName: "Splinkers",
+                        title: "sprinklers Health",
+                        shortName: "sprinklers",
                         apiService: api,
                         imagePath: "assets/sprinkler.png",
                         fallbackIcon: Icons.health_and_safety_rounded,

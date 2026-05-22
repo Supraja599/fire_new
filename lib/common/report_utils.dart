@@ -127,6 +127,21 @@ bool matchesReportStatus(Map<String, dynamic> item, String statusLabel) {
   return targetAliases.contains(normalizedItem);
 }
 
+String _resolveInspectionDate(Map<String, dynamic> payload) {
+  for (final key in ["inspection_date", "inspected_at", "inspected_on", "date", "created_at"]) {
+    final val = payload[key]?.toString().trim();
+    if (val != null && val.isNotEmpty && val.toLowerCase() != "null") {
+      try {
+        final dt = DateTime.parse(val);
+        return DateFormat("dd-MM-yyyy").format(dt);
+      } catch (_) {
+        return val;
+      }
+    }
+  }
+  return DateFormat("dd-MM-yyyy").format(DateTime.now());
+}
+
 Future<pw.Document> buildSingleInspectionReportPDF({
   required Map<String, dynamic> eqData,
   required Map<String, dynamic> payload,
@@ -156,24 +171,54 @@ Future<pw.Document> buildSingleInspectionReportPDF({
     pw.MultiPage(
       pageTheme: pw.PageTheme(
         margin: const pw.EdgeInsets.all(32),
-        buildBackground: (context) {
+        buildForeground: (context) {
           return pw.FullPage(
             ignoreMargins: true,
-            child: pw.Center(
-              child: pw.Transform.rotate(
-                angle: 0.6,
-                child: pw.Opacity(
-                  opacity: 0.05,
-                  child: pw.Text(
-                    "ELTRIVE",
-                    style: pw.TextStyle(
-                      fontSize: 120,
-                      fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.grey,
+            child: pw.Stack(
+              children: [
+                pw.Positioned(
+                  top: 140,
+                  left: 0,
+                  right: 0,
+                  child: pw.Center(
+                    child: pw.Transform.rotate(
+                      angle: 0.4,
+                      child: pw.Opacity(
+                        opacity: 0.08,
+                        child: pw.Text(
+                          "ELTRIVE",
+                          style: pw.TextStyle(
+                            fontSize: 80,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.grey,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
+                pw.Positioned(
+                  top: 440,
+                  left: 0,
+                  right: 0,
+                  child: pw.Center(
+                    child: pw.Transform.rotate(
+                      angle: 0.4,
+                      child: pw.Opacity(
+                        opacity: 0.08,
+                        child: pw.Text(
+                          "ELTRIVE",
+                          style: pw.TextStyle(
+                            fontSize: 80,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -200,10 +245,6 @@ Future<pw.Document> buildSingleInspectionReportPDF({
           pw.TableRow(
             decoration: const pw.BoxDecoration(
               color: PdfColor.fromInt(0xFFE2E8F0), // Slate 200
-              borderRadius: pw.BorderRadius.only(
-                topLeft: pw.Radius.circular(4),
-                topRight: pw.Radius.circular(4),
-              ),
             ),
             children: [
               pw.Padding(
@@ -282,9 +323,6 @@ Future<pw.Document> buildSingleInspectionReportPDF({
               pw.TableRow(
                 decoration: pw.BoxDecoration(
                   color: rowBg,
-                  border: const pw.Border(
-                    bottom: pw.BorderSide(color: PdfColors.grey200, width: 0.5),
-                  ),
                 ),
                 children: [
                   pw.Padding(
@@ -389,9 +427,6 @@ Future<pw.Document> buildSingleInspectionReportPDF({
               pw.TableRow(
                 decoration: pw.BoxDecoration(
                   color: rowBg,
-                  border: const pw.Border(
-                    bottom: pw.BorderSide(color: PdfColors.grey200, width: 0.5),
-                  ),
                 ),
                 children: [
                   pw.Padding(
@@ -561,7 +596,7 @@ Future<pw.Document> buildSingleInspectionReportPDF({
                       ),
                       pw.Divider(color: PdfColor.fromInt(0xFFE2E8F0), thickness: 0.5, height: 10),
                       _detailRow("Inspector Name", inspectorName.isNotEmpty ? inspectorName : (payload['inspector_name'] ?? 'N/A')),
-                      _detailRow("Inspection Date", DateFormat("dd-MM-yyyy").format(DateTime.now())),
+                      _detailRow("Inspection Date", _resolveInspectionDate(payload)),
                       _detailRow("Status", answers.isNotEmpty ? "Completed" : "Pending"),
                     ],
                   ),
@@ -582,16 +617,26 @@ Future<pw.Document> buildSingleInspectionReportPDF({
           ),
           pw.SizedBox(height: 8),
 
-          // 4. Checklist Results Table
-          pw.Table(
-            columnWidths: const {
-              0: pw.FixedColumnWidth(25),
-              1: pw.FlexColumnWidth(),
-              2: pw.FixedColumnWidth(60),
-            },
-            defaultVerticalAlignment: pw.TableCellVerticalAlignment.middle,
-            children: tableRows,
-          ),
+          // 4. Checklist Results Table (split by row to allow automatic page breaks with a clean grid box)
+          ...List.generate(tableRows.length, (index) {
+            final row = tableRows[index];
+            return pw.Table(
+              columnWidths: const {
+                0: pw.FixedColumnWidth(25),
+                1: pw.FlexColumnWidth(),
+                2: pw.FixedColumnWidth(60),
+              },
+              defaultVerticalAlignment: pw.TableCellVerticalAlignment.middle,
+              border: pw.TableBorder(
+                left: const pw.BorderSide(color: PdfColor.fromInt(0xFFCBD5E1), width: 0.8),
+                right: const pw.BorderSide(color: PdfColor.fromInt(0xFFCBD5E1), width: 0.8),
+                bottom: const pw.BorderSide(color: PdfColor.fromInt(0xFFCBD5E1), width: 0.8),
+                top: index == 0 ? const pw.BorderSide(color: PdfColor.fromInt(0xFFCBD5E1), width: 0.8) : pw.BorderSide.none,
+                verticalInside: const pw.BorderSide(color: PdfColor.fromInt(0xFFCBD5E1), width: 0.5),
+              ),
+              children: [row],
+            );
+          }),
           pw.SizedBox(height: 20),
 
           // 5. Overall Remarks Section
@@ -773,24 +818,54 @@ Future<pw.Document> buildPlantReportPDF({
     pw.MultiPage(
       pageTheme: pw.PageTheme(
         margin: const pw.EdgeInsets.all(32),
-        buildBackground: (context) {
+        buildForeground: (context) {
           return pw.FullPage(
             ignoreMargins: true,
-            child: pw.Center(
-              child: pw.Transform.rotate(
-                angle: 0.6,
-                child: pw.Opacity(
-                  opacity: 0.05,
-                  child: pw.Text(
-                    "ELTRIVE",
-                    style: pw.TextStyle(
-                      fontSize: 120,
-                      fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.grey,
+            child: pw.Stack(
+              children: [
+                pw.Positioned(
+                  top: 140,
+                  left: 0,
+                  right: 0,
+                  child: pw.Center(
+                    child: pw.Transform.rotate(
+                      angle: 0.4,
+                      child: pw.Opacity(
+                        opacity: 0.08,
+                        child: pw.Text(
+                          "ELTRIVE",
+                          style: pw.TextStyle(
+                            fontSize: 80,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.grey,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
+                pw.Positioned(
+                  top: 440,
+                  left: 0,
+                  right: 0,
+                  child: pw.Center(
+                    child: pw.Transform.rotate(
+                      angle: 0.4,
+                      child: pw.Opacity(
+                        opacity: 0.08,
+                        child: pw.Text(
+                          "ELTRIVE",
+                          style: pw.TextStyle(
+                            fontSize: 80,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -817,10 +892,6 @@ Future<pw.Document> buildPlantReportPDF({
           pw.TableRow(
             decoration: const pw.BoxDecoration(
               color: PdfColor.fromInt(0xFFE2E8F0), // Slate 200
-              borderRadius: pw.BorderRadius.only(
-                topLeft: pw.Radius.circular(4),
-                topRight: pw.Radius.circular(4),
-              ),
             ),
             children: [
               pw.Padding(
@@ -911,14 +982,11 @@ Future<pw.Document> buildPlantReportPDF({
             pw.TableRow(
               decoration: pw.BoxDecoration(
                 color: rowBg,
-                border: const pw.Border(
-                  bottom: pw.BorderSide(color: PdfColors.grey200, width: 0.5),
-                ),
               ),
               children: [
                 pw.Padding(
                   padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-                  child: pw.Text(sosCode, style: pw.TextStyle(fontSize: 8.5, fontWeight: pw.FontWeight.bold)),
+                  child: pw.Text(sosCode, style: pw.TextStyle(fontSize: 8.5, fontWeight: pw.FontWeight.bold), softWrap: false),
                 ),
                 pw.Padding(
                   padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 6),
@@ -1098,18 +1166,28 @@ Future<pw.Document> buildPlantReportPDF({
           ),
           pw.SizedBox(height: 8),
 
-          // 5. Table
-          pw.Table(
-            columnWidths: const {
-              0: pw.FixedColumnWidth(60),
-              1: pw.FlexColumnWidth(),
-              2: pw.FixedColumnWidth(65),
-              3: pw.FixedColumnWidth(70),
-              4: pw.FixedColumnWidth(70),
-            },
-            defaultVerticalAlignment: pw.TableCellVerticalAlignment.middle,
-            children: tableRows,
-          ),
+          // 5. Table (split by row to allow automatic page breaks with a clean grid box)
+          ...List.generate(tableRows.length, (index) {
+            final row = tableRows[index];
+            return pw.Table(
+              columnWidths: const {
+                0: pw.FixedColumnWidth(90), // Increased width to keep SOS code on one line
+                1: pw.FlexColumnWidth(),
+                2: pw.FixedColumnWidth(60),
+                3: pw.FixedColumnWidth(65),
+                4: pw.FixedColumnWidth(65),
+              },
+              defaultVerticalAlignment: pw.TableCellVerticalAlignment.middle,
+              border: pw.TableBorder(
+                left: const pw.BorderSide(color: PdfColor.fromInt(0xFFCBD5E1), width: 0.8),
+                right: const pw.BorderSide(color: PdfColor.fromInt(0xFFCBD5E1), width: 0.8),
+                bottom: const pw.BorderSide(color: PdfColor.fromInt(0xFFCBD5E1), width: 0.8),
+                top: index == 0 ? const pw.BorderSide(color: PdfColor.fromInt(0xFFCBD5E1), width: 0.8) : pw.BorderSide.none,
+                verticalInside: const pw.BorderSide(color: PdfColor.fromInt(0xFFCBD5E1), width: 0.5),
+              ),
+              children: [row],
+            );
+          }),
           pw.SizedBox(height: 20),
 
           // 6. Overall Remarks Section

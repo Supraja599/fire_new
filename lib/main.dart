@@ -37,7 +37,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'SOS Emergency Platform',
-      theme: ThemeData(primarySwatch: Colors.red, useMaterial3: true),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.red,
+          primary: const Color(0xFFD50000),
+        ),
+        useMaterial3: true,
+      ),
       builder: (context, child) {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(
@@ -143,8 +149,26 @@ class _LoginPageState extends State<LoginPage>
       }
     } catch (e) {
       if (mounted) {
+        String errMsg;
+        final errStr = e.toString().toLowerCase();
+        if (e is SocketException ||
+            e is HttpException ||
+            e is HandshakeException ||
+            errStr.contains("socketexception") ||
+            errStr.contains("timeout") ||
+            errStr.contains("clientexception") ||
+            errStr.contains("handshake") ||
+            errStr.contains("failed host lookup") ||
+            errStr.contains("connection")) {
+          errMsg = "Network error. Please check if your internet is connected.";
+        } else {
+          errMsg = "Error: ${e.toString()}";
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${e.toString()}")),
+          SnackBar(
+            content: Text(errMsg),
+            backgroundColor: Colors.red.shade800,
+          ),
         );
       }
     } finally {
@@ -259,6 +283,7 @@ class _LoginPageState extends State<LoginPage>
                         /// USERNAME (FIXED)
                         TextField(
                           controller: emailController,
+                          selectAllOnFocus: false,
                           decoration: boxStyle("Enter Username", Icons.person_outline),
                         ),
 
@@ -268,6 +293,7 @@ class _LoginPageState extends State<LoginPage>
                         TextField(
                           controller: passController,
                           obscureText: !isPasswordVisible,
+                          selectAllOnFocus: false,
                           decoration: boxStyle("Enter Password", Icons.key_outlined).copyWith(
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -291,10 +317,11 @@ class _LoginPageState extends State<LoginPage>
                           width: double.infinity,
                           height: 52,
                           child: ElevatedButton.icon(
-                            icon: const Icon(Icons.login),
+                            icon: const Icon(Icons.login, color: Colors.white),
                             onPressed: isLoading ? null : login,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFD50000),
+                              foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
                               ),
@@ -302,7 +329,13 @@ class _LoginPageState extends State<LoginPage>
                             label: isLoading
                                 ? const CircularProgressIndicator(
                                 color: Colors.white)
-                                : const Text("LOGIN TO SYSTEM"),
+                                : const Text(
+                                    "LOGIN TO SYSTEM",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                           ),
                         ),
 

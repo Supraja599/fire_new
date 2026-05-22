@@ -100,7 +100,7 @@ class _SprinklerScanPageState extends State<SprinklerScanPage> {
   Future<void> _submitInspection() async {
     if (item == null) return;
     await LocalDB.saveSingleModuleRecord(
-      moduleCode: "splinkers",
+      moduleCode: "sprinklers",
       recordType: "equipment",
       item: item!,
     );

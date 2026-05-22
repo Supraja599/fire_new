@@ -41,13 +41,17 @@ class ApiService {
           token = decoded["token"];
           return decoded;
         }
-      } else {
+      } else if (res.statusCode == 400 || res.statusCode == 401 || res.statusCode == 403) {
         print("LOGIN FAILED: ${res.statusCode} - ${res.body}");
+        return null;
+      } else {
+        print("LOGIN SERVER ERROR: ${res.statusCode} - ${res.body}");
+        throw http.ClientException("Server returned status code ${res.statusCode}");
       }
       return null;
     } catch (e) {
       print("LOGIN NETWORK ERROR: $e");
-      return null;
+      rethrow;
     }
   }
 
@@ -286,9 +290,8 @@ class ApiService {
     } catch (e) { return false; }
   }
 
-  /// Fetches the latest inspection record from the backend for long-term history.
-  /// Used as fallback when local DB is empty (e.g. after reinstall).
-  /// Maps backend response to the same payload shape used locally.
+  /// Fetches the latest inspection record from the server.
+  /// Server is always the authoritative source — works 10 days, 1 year, 10 years later.
   static Future<Map<String, dynamic>?> getLatestInspectionForEquipment(String sosCode) async {
     try {
       final res = await http.get(
@@ -299,8 +302,10 @@ class ApiService {
       final data = jsonDecode(res.body) as Map<String, dynamic>;
       final items = data["items"] as List? ?? [];
       return {
-        "inspector_name": data["inspector_name"] ?? data["inspected_by"] ?? "N/A",
-        "remarks":        data["remarks"] ?? "",
+        "inspector_name":  data["inspector_name"] ?? data["inspected_by"] ?? "N/A",
+        "remarks":         data["remarks"] ?? "",
+        "inspection_date": data["inspection_date"] ?? data["inspected_at"]
+                            ?? data["created_at"] ?? data["date"],
         "answers": items.map((it) => {
           "checklist_item_id": it["checklist_item_id"],
           "item_text":         it["question"] ?? it["item_text"] ?? "Item",

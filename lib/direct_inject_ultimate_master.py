@@ -7,12 +7,12 @@ def inject_master_dashboards():
     dashboards = glob.glob(os.path.join(lib_dir, '**', 'dashboard.dart'), recursive=True)
     
     # Include special sprinklers dashboard
-    sprinkler = os.path.join(lib_dir, 'splinkers', 'sprinkler.dart')
+    sprinkler = os.path.join(lib_dir, 'sprinklers', 'sprinkler.dart')
     if os.path.exists(sprinkler):
         dashboards.append(sprinkler)
         
     mappings = {
-        "splinkers": "assets/sprinkler.png",
+        "sprinklers": "assets/sprinkler.png",
         "hydrant": "assets/firehydrant.png",
         "hosereel": "assets/hosereel.png",
         "alarm_panel": "assets/alarm_panel.png",
@@ -61,7 +61,7 @@ def inject_master_dashboards():
         # 2. Find image asset mapping
         parent_dir = os.path.basename(os.path.dirname(db_path))
         if "sprinkler.dart" in db_path:
-            parent_dir = "splinkers"
+            parent_dir = "sprinklers"
         asset_path = mappings.get(parent_dir, "assets/extinguisher.png")
         tag_name = f"hero_image_{asset_path}"
         

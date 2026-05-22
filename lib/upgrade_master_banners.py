@@ -6,7 +6,7 @@ def deploy_master_consolidated_banner():
     root_dir = r'c:\Users\A\AndroidStudioProjects\Fire_New\lib'
     dashboards = glob.glob(os.path.join(root_dir, '**', 'dashboard.dart'), recursive=True)
     
-    sprinkler = os.path.join(root_dir, 'splinkers', 'sprinkler.dart')
+    sprinkler = os.path.join(root_dir, 'sprinklers', 'sprinkler.dart')
     if os.path.exists(sprinkler):
         dashboards.append(sprinkler)
         

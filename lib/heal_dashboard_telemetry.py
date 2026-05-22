@@ -4,7 +4,7 @@ import re
 
 lib_dir = r'c:\Users\A\AndroidStudioProjects\Fire_New\lib'
 dashboards = glob.glob(os.path.join(lib_dir, '**', 'dashboard.dart'), recursive=True)
-dashboards.append(os.path.join(lib_dir, 'splinkers', 'sprinkler.dart'))
+dashboards.append(os.path.join(lib_dir, 'sprinklers', 'sprinkler.dart'))
 
 # Priority list of active-indicating state variable names
 potential_vars = ['activeUnits', 'activeCount', 'activeLoops', 'active', 'deviceCount']

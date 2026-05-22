@@ -15,7 +15,7 @@ import 'responsive.dart';
 import 'dashboard.dart';
 import 'hydrant/dashboard.dart';
 import 'hosereel/dashboard.dart' as hose;
-import 'splinkers/sprinkler.dart';
+import 'sprinklers/sprinkler.dart';
 import 'alarm_panel/dashboard.dart';
 import 'smoke_detector/dashboard.dart';
 import 'fire_trolley/dashboard.dart';
@@ -43,7 +43,7 @@ import 'fire_door/dashboard.dart';
 import 'services/apiservice.dart'; // Extinguishers
 import 'hydrant/services/hydrant_api_service.dart';
 import 'hosereel/services/apiservice.dart';
-import 'splinkers/services/sprinkler_api_service.dart';
+import 'sprinklers/services/sprinkler_api_service.dart';
 import 'alarm_panel/services/alarm_panel_api_service.dart';
 import 'smoke_detector/services/smoke_detector_api_service.dart';
 import 'fire_trolley/services/fire_trolley_api_service.dart';
@@ -422,6 +422,14 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
         page: const EmergencyExitsDashboard(),
         fetchSummary: () => EmergencyExitsApiService().getSummary(),
       ),
+        ModuleItem(
+        name: 'Ambulance',
+        image: 'assets/ambulance.png',
+        moduleCode: 'ambulance',
+        moduleId: 0, // Not in spec
+        page: const AmbulanceDashboard(),
+        fetchSummary: () => AmbulanceApiService().getSummary(),
+      ),
       ModuleItem(
         name: 'Lighting',
         image: 'assets/emergency_lighting.png',
@@ -454,14 +462,14 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
         page: const SCBAUnitsDashboard(),
         fetchSummary: () => SCBAUnitsApiService().getSummary(),
       ),
-      ModuleItem(
-        name: 'Ambulance',
-        image: 'assets/ambulance.png',
-        moduleCode: 'ambulance',
-        moduleId: 0, // Not in spec
-        page: const AmbulanceDashboard(),
-        fetchSummary: () => AmbulanceApiService().getSummary(),
-      ),
+      // ModuleItem(
+      //   name: 'Ambulance',
+      //   image: 'assets/ambulance.png',
+      //   moduleCode: 'ambulance',
+      //   moduleId: 0, // Not in spec
+      //   page: const AmbulanceDashboard(),
+      //   fetchSummary: () => AmbulanceApiService().getSummary(),
+      // ),
       ModuleItem(
         name: 'First Aid',
         image: 'assets/first_aid.png',
