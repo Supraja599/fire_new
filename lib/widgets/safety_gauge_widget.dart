@@ -34,7 +34,7 @@ class _SafetyGaugeWidgetState extends State<SafetyGaugeWidget> {
     final Map<String, String> imageMap = {
       "Hydrant": "assets/firehydrant.png",
       "Emergency Exits": "assets/emergency_exit.png",
-      "Splinkers": "assets/sprinkler.png",
+      "Sprinklers": "assets/sprinkler.png",
       "Fire Extinguisher": "assets/extinguisher.png",
       "Alarm Panel": "assets/alarm_panel.png",
     };
