@@ -1,3 +1,6 @@
+
+import '../utils/edit_helper.dart';
+import '../screens/equipment_history_page.dart';
 import 'package:flutter/material.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
 
@@ -46,27 +49,35 @@ class _EyeWashScanPageState extends State<EyeWashScanPage> {
 
   void _editDetails() {
     if (item == null) return;
-    final controllers = <String, TextEditingController>{};
-    item!.forEach((key, value) { controllers[key] = TextEditingController(text: value?.toString() ?? ""); });
-    showDialog(context: context, builder: (c) => AlertDialog(
-      title: const Text("Edit Details"),
-      content: SizedBox(width: double.maxFinite, child: SingleChildScrollView(child: Column(children: controllers.entries.where((e) => !e.key.contains("id")).map((e) => Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: TextField(controller: e.value, decoration: InputDecoration(labelText: e.key.toUpperCase(), border: const OutlineInputBorder())))).toList()))),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(c), child: const Text("Cancel")),
-        ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.red), onPressed: () async {
-          controllers.forEach((key, controller) { item![key] = controller.text; });
-          await LocalDB.saveSingleModuleRecord(moduleCode: EyeWashApiService.moduleCode, recordType: "equipment", item: item!);
-          setState(() {}); Navigator.pop(c); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Updated locally (Offline)")));
-        }, child: const Text("SAVE", style: TextStyle(color: Colors.white)))
-      ],
-    ));
+    EditHelper.editDetails(
+      context: context,
+      item: item!,
+      moduleCode: EyeWashApiService.moduleCode,
+      equipmentId: (item!["sos_code"] ?? item!["equipment_id"] ?? item!["id"] ?? "").toString(),
+      onSaved: () => setState(() {}),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
-      appBar: AppBar(title: const Text("Inspection System"), backgroundColor: Colors.red, actions: [if (item != null) IconButton(icon: const Icon(Icons.edit), onPressed: _editDetails), IconButton(icon: const Icon(Icons.refresh), onPressed: () => setState(() { item = null; idController.clear(); suggestions = []; showScanner = true; isManualMode = false; }))]),
+      appBar: AppBar(title: const Text("Inspection System"), backgroundColor: Colors.red, actions: [if (item != null) IconButton(icon: const Icon(Icons.edit), onPressed: _editDetails),
+          if (item != null)
+            IconButton(
+              icon: const Icon(Icons.timeline_rounded, color: Colors.white),
+              onPressed: () {
+                final id = item!['sos_code'] ?? item!['id'] ?? item!['equipment_id'] ?? '';
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => EquipmentHistoryPage(
+                      equipmentId: id.toString(),
+                    ),
+                  ),
+                );
+              },
+            ), IconButton(icon: const Icon(Icons.refresh), onPressed: () => setState(() { item = null; idController.clear(); suggestions = []; showScanner = true; isManualMode = false; }))]),
             body: SingleChildScrollView(
         child: Column(
           children: [

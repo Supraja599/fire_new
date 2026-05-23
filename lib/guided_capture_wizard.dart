@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:math';
+import 'dart:convert';
 import 'package:fire_new/services/location_service.dart';
 import 'package:fire_new/services/image_integrity_service.dart';
 class GuidedCaptureWizardPage extends StatefulWidget {
+  static List<String>? latestCapturedImagesBase64;
   final String? equipmentId;
   final Map<String, dynamic>? selectedEquipment;
   final String? equipmentImage;
@@ -56,6 +58,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
   
   bool _isCapturing = false;
   bool _isAnalyzing = false;
+  String _analysisMessage = "VALIDATING SECURE PROOFS...";
 
   String _view3TargetLabel = "CONTROLS";
   String _view3ShortLabel = "CONTROLS"; // short label shown in gallery ribbon
@@ -529,13 +532,40 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
            _capturedImages.values.every((img) => img != null);
   }
 
-  void _unlockAndProceed() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => widget.nextScreen,
-      ),
-    );
+  Future<void> _unlockAndProceed() async {
+    if (_isAnalyzing || _isCapturing) return;
+    setState(() {
+      _isAnalyzing = true;
+      _analysisMessage = "PROCESSING IMAGES FOR UPLOAD...";
+    });
+
+    try {
+      final List<String> base64Images = [];
+      for (int i = 0; i < _steps.length; i++) {
+        final File? file = _capturedImages[i];
+        if (file != null && await file.exists()) {
+          final bytes = await file.readAsBytes();
+          final base64Str = base64Encode(bytes);
+          base64Images.add(base64Str);
+        }
+      }
+      GuidedCaptureWizardPage.latestCapturedImagesBase64 = base64Images;
+    } catch (e) {
+      debugPrint("Error encoding images to base64: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAnalyzing = false;
+          _analysisMessage = "VALIDATING SECURE PROOFS...";
+        });
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => widget.nextScreen,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -1301,9 +1331,9 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                             ),
                                           ),
                                           const SizedBox(height: 16),
-                                          const Text(
-                                            "VALIDATING SECURE PROOFS...",
-                                            style: TextStyle(
+                                          Text(
+                                            _analysisMessage,
+                                            style: const TextStyle(
                                               color: Colors.cyanAccent,
                                               fontWeight: FontWeight.w900,
                                               fontSize: 11,

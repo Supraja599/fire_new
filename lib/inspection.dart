@@ -4,8 +4,9 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'checklist.dart';
 import 'guided_capture_wizard.dart';
-import 'services/apiservice.dart';
 import 'local_db.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'screens/equipment_history_page.dart';
 
 class InspectionPage extends StatefulWidget {
   final String? preScannedId;
@@ -201,19 +202,134 @@ class _InspectionPageState extends State<InspectionPage> {
 
   void editAllFields() {
     if (item == null) return;
+    
+    final box = Hive.box('inspectionBox');
+    final String role = box.get('role', defaultValue: 'user').toString().toLowerCase().trim();
+    
     final controllers = <String, TextEditingController>{};
     item!.forEach((key, value) {
-      controllers[key] = TextEditingController(text: value.toString());
+      controllers[key] = TextEditingController(text: value?.toString() ?? '');
     });
+
+    final remarksController = TextEditingController();
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Edit Details"),
-        content: SizedBox(width: double.maxFinite, child: SingleChildScrollView(child: Column(children: controllers.entries.map((e) => Padding(padding: const EdgeInsets.symmetric(vertical: 6), child: TextField(controller: e.value, decoration: InputDecoration(labelText: e.key, border: const OutlineInputBorder())))).toList()))),
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          role == 'supervisor' || role == 'admin' || role == 'superadmin'
+              ? "Edit details (Override)"
+              : "Propose Equipment Updates",
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (role != 'supervisor' && role != 'admin' && role != 'superadmin') ...[
+                  TextField(
+                    controller: remarksController,
+                    decoration: InputDecoration(
+                      labelText: "Remarks / Reason (Required)",
+                      labelStyle: const TextStyle(fontSize: 13, color: Colors.red),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      prefixIcon: const Icon(Icons.comment_rounded, color: Colors.red),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  const Divider(),
+                  const SizedBox(height: 10),
+                ],
+                ...controllers.entries.map((e) {
+                  final isCoreId = e.key == 'id' || e.key == 'sos_code' || e.key == 'serial_number';
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: TextField(
+                      controller: e.value,
+                      enabled: !isCoreId,
+                      decoration: InputDecoration(
+                        labelText: e.key.toUpperCase().replaceAll('_', ' '),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ],
+            ),
+          ),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-          ElevatedButton(onPressed: () async { controllers.forEach((key, controller) { item![key] = controller.text; }); await LocalDB.insert(scannedId!, item!); setState(() {}); Navigator.pop(context); await saveData(); }, child: const Text("Save")),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () async {
+              if (role == 'supervisor' || role == 'admin' || role == 'superadmin') {
+                controllers.forEach((key, controller) {
+                  item![key] = controller.text;
+                });
+                await LocalDB.insert(scannedId!, item!);
+                setState(() {});
+                Navigator.pop(context);
+                await saveData();
+              } else {
+                final proposed = <String, dynamic>{};
+                controllers.forEach((key, controller) {
+                  final originalVal = item![key]?.toString() ?? '';
+                  final newVal = controller.text.trim();
+                  if (originalVal != newVal) {
+                    proposed[key] = newVal;
+                  }
+                });
+
+                if (remarksController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Remarks are required to submit an update request")),
+                  );
+                  return;
+                }
+
+                proposed['remarks'] = remarksController.text.trim();
+
+                setState(() => loading = true);
+                Navigator.pop(context);
+
+                final result = await ApiService.createEquipmentUpdateRequest(scannedId!, proposed);
+                setState(() => loading = false);
+
+                if (result != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      backgroundColor: Colors.green,
+                      content: Text("Update request submitted for supervisor approval! ✅"),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      backgroundColor: Colors.red,
+                      content: Text("Failed to submit update request. Please try again."),
+                    ),
+                  );
+                }
+              }
+            },
+            child: Text(
+              role == 'supervisor' || role == 'admin' || role == 'superadmin'
+                  ? "Save"
+                  : "Submit Proposal",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
         ],
       ),
     );
@@ -249,6 +365,21 @@ class _InspectionPageState extends State<InspectionPage> {
         backgroundColor: Colors.red,
         actions: [
           if (item != null) IconButton(icon: const Icon(Icons.edit), onPressed: editAllFields),
+          if (item != null)
+            IconButton(
+              icon: const Icon(Icons.timeline_rounded, color: Colors.white),
+              onPressed: () {
+                final id = scannedId ?? item!['sos_code'] ?? item!['id'] ?? '';
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => EquipmentHistoryPage(
+                      equipmentId: id.toString(),
+                    ),
+                  ),
+                );
+              },
+            ),
           IconButton(icon: const Icon(Icons.save), onPressed: saveData),
           IconButton(icon: const Icon(Icons.navigation), onPressed: openNavigation),
           IconButton(icon: const Icon(Icons.refresh), onPressed: () => setState(() { item = null; scannedId = null; idController.clear(); error = null; showSearch = true; suggestions = []; })),

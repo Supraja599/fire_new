@@ -312,6 +312,7 @@ class ApiService {
           "answer":            it["answer"]?.toString() ?? "na",
           "remarks":           it["remarks"] ?? "",
         }).toList(),
+        "images":          data["images"] ?? data["photos"] ?? [],
       };
     } catch (_) {
       return null;
@@ -356,5 +357,174 @@ class ApiService {
       ).timeout(const Duration(seconds: 10));
       return res.statusCode == 200 || res.statusCode == 201;
     } catch (e) { return false; }
+  }
+
+  // =========================================================
+  // 🔄 EQUIPMENT UPDATES WORKFLOW APIs
+  // =========================================================
+  
+  static Future<Map<String, dynamic>?> createEquipmentUpdateRequest(
+      String equipmentId, Map<String, dynamic> proposedChanges) async {
+    try {
+      final url = Uri.parse("$baseUrl/equipment/$equipmentId/updates");
+      final res = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode({
+          "proposed_changes": proposedChanges,
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+      print("CREATE UPDATE FAILED: ${res.statusCode} - ${res.body}");
+      return null;
+    } catch (e) {
+      print("CREATE UPDATE ERROR: $e");
+      return null;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getUpdates() async {
+    try {
+      final url = Uri.parse("$baseUrl/updates");
+      final res = await http.get(url, headers: headers).timeout(const Duration(seconds: 10));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded is List) {
+          return List<Map<String, dynamic>>.from(decoded);
+        } else if (decoded is Map && decoded["data"] is List) {
+          return List<Map<String, dynamic>>.from(decoded["data"]);
+        } else if (decoded is Map && decoded["items"] is List) {
+          return List<Map<String, dynamic>>.from(decoded["items"]);
+        }
+      }
+      return [];
+    } catch (e) {
+      print("GET UPDATES ERROR: $e");
+      return [];
+    }
+  }
+
+  static Future<bool> supervisorApproveUpdate(String updateId, String remarks) async {
+    try {
+      final url = Uri.parse("$baseUrl/updates/$updateId/supervisor-approve");
+      final res = await http.patch(
+        url,
+        headers: headers,
+        body: jsonEncode({"review_remarks": remarks}),
+      ).timeout(const Duration(seconds: 10));
+      return res.statusCode == 200 || res.statusCode == 204;
+    } catch (e) {
+      print("SUPERVISOR APPROVE ERROR: $e");
+      return false;
+    }
+  }
+
+  static Future<bool> supervisorRejectUpdate(String updateId, String remarks) async {
+    try {
+      final url = Uri.parse("$baseUrl/updates/$updateId/supervisor-reject");
+      final res = await http.patch(
+        url,
+        headers: headers,
+        body: jsonEncode({"review_remarks": remarks}),
+      ).timeout(const Duration(seconds: 10));
+      return res.statusCode == 200 || res.statusCode == 204;
+    } catch (e) {
+      print("SUPERVISOR REJECT ERROR: $e");
+      return false;
+    }
+  }
+
+  static Future<bool> adminApproveUpdate(String updateId, String remarks) async {
+    try {
+      final url = Uri.parse("$baseUrl/updates/$updateId/admin-approve");
+      final res = await http.patch(
+        url,
+        headers: headers,
+        body: jsonEncode({"review_remarks": remarks}),
+      ).timeout(const Duration(seconds: 10));
+      return res.statusCode == 200 || res.statusCode == 204;
+    } catch (e) {
+      print("ADMIN APPROVE ERROR: $e");
+      return false;
+    }
+  }
+
+  static Future<bool> adminRejectUpdate(String updateId, String remarks) async {
+    try {
+      final url = Uri.parse("$baseUrl/updates/$updateId/admin-reject");
+      final res = await http.patch(
+        url,
+        headers: headers,
+        body: jsonEncode({"review_remarks": remarks}),
+      ).timeout(const Duration(seconds: 10));
+      return res.statusCode == 200 || res.statusCode == 204;
+    } catch (e) {
+      print("ADMIN REJECT ERROR: $e");
+      return false;
+    }
+  }
+
+  // =========================================================
+  // 🔔 NOTIFICATIONS APIs
+  // =========================================================
+
+  static Future<List<Map<String, dynamic>>> getNotifications() async {
+    try {
+      final url = Uri.parse("$baseUrl/notifications");
+      final res = await http.get(url, headers: headers).timeout(const Duration(seconds: 10));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded is List) {
+          return List<Map<String, dynamic>>.from(decoded);
+        } else if (decoded is Map && decoded["data"] is List) {
+          return List<Map<String, dynamic>>.from(decoded["data"]);
+        } else if (decoded is Map && decoded["items"] is List) {
+          return List<Map<String, dynamic>>.from(decoded["items"]);
+        }
+      }
+      return [];
+    } catch (e) {
+      print("GET NOTIFICATIONS ERROR: $e");
+      return [];
+    }
+  }
+
+  static Future<bool> markNotificationRead(String notificationId) async {
+    try {
+      final url = Uri.parse("$baseUrl/notifications/$notificationId/read");
+      final res = await http.patch(url, headers: headers).timeout(const Duration(seconds: 5));
+      return res.statusCode == 200 || res.statusCode == 204;
+    } catch (e) {
+      print("MARK NOTIFICATION READ ERROR: $e");
+      return false;
+    }
+  }
+
+  // =========================================================
+  // ⏳ EQUIPMENT HISTORY / AUDIT LOGS APIs
+  // =========================================================
+
+  static Future<List<Map<String, dynamic>>> getEquipmentHistory(String equipmentId) async {
+    try {
+      final url = Uri.parse("$baseUrl/equipment/$equipmentId/history");
+      final res = await http.get(url, headers: headers).timeout(const Duration(seconds: 10));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded is List) {
+          return List<Map<String, dynamic>>.from(decoded);
+        } else if (decoded is Map && decoded["data"] is List) {
+          return List<Map<String, dynamic>>.from(decoded["data"]);
+        } else if (decoded is Map && decoded["items"] is List) {
+          return List<Map<String, dynamic>>.from(decoded["items"]);
+        }
+      }
+      return [];
+    } catch (e) {
+      print("GET EQUIPMENT HISTORY ERROR: $e");
+      return [];
+    }
   }
 }

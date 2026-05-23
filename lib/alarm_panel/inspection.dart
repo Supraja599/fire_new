@@ -1,3 +1,6 @@
+
+import '../utils/edit_helper.dart';
+import '../screens/equipment_history_page.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
@@ -197,13 +200,26 @@ class _AlarmPanelInspectionPageState extends State<AlarmPanelInspectionPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+    void _editDetails() {
+    if (item == null) return;
+    EditHelper.editDetails(
+      context: context,
+      item: item!,
+      moduleCode: "alarm_panel",
+      equipmentId: (item!["sos_code"] ?? item!["equipment_id"] ?? item!["id"] ?? "").toString(),
+      onSaved: () => setState(() {}),
+    );
+  }
+
+Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFDE8E8),
       appBar: AppBar(
         title: const Text("Panel Inspection", style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFFB71C1C),
         actions: [
+          if (item != null) IconButton(icon: const Icon(Icons.edit, color: Colors.white), onPressed: _editDetails),
+          if (item != null) IconButton(icon: const Icon(Icons.timeline_rounded, color: Colors.white), onPressed: () { final id = item!['sos_code'] ?? item!['id'] ?? item!['equipment_id'] ?? ''; Navigator.push(context, MaterialPageRoute(builder: (_) => EquipmentHistoryPage(equipmentId: id.toString()))); }),
           IconButton(icon: const Icon(Icons.refresh), onPressed: () => setState(() { item = null; idController.clear(); error = null; showSearch = true; filteredEquipment = []; })),
         ],
       ),

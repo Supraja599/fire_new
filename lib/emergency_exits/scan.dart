@@ -1,3 +1,6 @@
+
+import '../utils/edit_helper.dart';
+import '../screens/equipment_history_page.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
@@ -66,49 +69,12 @@ class _EmergencyExitsScanPageState extends State<EmergencyExitsScanPage> {
 
   void _editDetails() {
     if (item == null) return;
-    
-    final controllers = <String, TextEditingController>{};
-    item!.forEach((key, value) {
-      controllers[key] = TextEditingController(text: value?.toString() ?? "");
-    });
-
-    showDialog(
+    EditHelper.editDetails(
       context: context,
-      builder: (c) => AlertDialog(
-        title: const Text("Edit Equipment Details"),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
-            child: Column(children: controllers.entries.where((e) => !e.key.contains("id")).map((e) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: TextField(controller: e.value, decoration: InputDecoration(labelText: e.key.toUpperCase(), border: const OutlineInputBorder())),
-            )).toList()),
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(c), child: const Text("Cancel")),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () async {
-              controllers.forEach((key, controller) {
-                item![key] = controller.text;
-              });
-              
-              // SAVE TO SQLITE (Local Offline Update)
-              await LocalDB.saveSingleModuleRecord(
-                moduleCode: EmergencyExitsApiService.moduleCode,
-                recordType: "equipment",
-                item: item!,
-              );
-              
-              setState(() {});
-              if (mounted) Navigator.pop(c);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Details updated locally (Offline)")));
-            },
-            child: const Text("SAVE UPDATE", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+      item: item!,
+      moduleCode: EmergencyExitsApiService.moduleCode,
+      equipmentId: (item!["sos_code"] ?? item!["equipment_id"] ?? item!["id"] ?? "").toString(),
+      onSaved: () => setState(() {}),
     );
   }
 
@@ -121,6 +87,21 @@ class _EmergencyExitsScanPageState extends State<EmergencyExitsScanPage> {
         backgroundColor: Colors.red,
         actions: [
           if (item != null) IconButton(icon: const Icon(Icons.edit), onPressed: _editDetails),
+          if (item != null)
+            IconButton(
+              icon: const Icon(Icons.timeline_rounded, color: Colors.white),
+              onPressed: () {
+                final id = item!['sos_code'] ?? item!['id'] ?? item!['equipment_id'] ?? '';
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => EquipmentHistoryPage(
+                      equipmentId: id.toString(),
+                    ),
+                  ),
+                );
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => setState(() {

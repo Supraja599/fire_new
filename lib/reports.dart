@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fire_new/utils/web_download_helper.dart';
 import 'package:fire_new/common/report_utils.dart';
+import 'package:fire_new/guided_capture_wizard.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
 import 'services/apiservice.dart';
@@ -256,6 +257,8 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
         payload: payload,
         sosCode: sosCode,
         inspectorName: inspectorName,
+        moduleCode: 'fire_extinguisher',
+        capturedImagesBase64: GuidedCaptureWizardPage.latestCapturedImagesBase64,
         logoImage: logoImage,
       );
       final fileName = "Single_Report_${sosCode}_${DateTime.now().millisecondsSinceEpoch}.pdf";

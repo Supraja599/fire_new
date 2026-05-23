@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import '../services/location_service.dart';
 import '../services/apiservice.dart';
 import '../local_db.dart';
+import '../guided_capture_wizard.dart';
 
 /// Unified checklist widget used by all 26 modules.
 /// fromScan = true  → came from QR/barcode scan, equipment ID auto-filled, no image wizard.
@@ -41,10 +43,15 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
   List<Map<String, dynamic>> _checklist = [];
   bool _loading = true;
   bool _saving  = false;
+  List<String>? _capturedImages;
 
   @override
   void initState() {
     super.initState();
+    // Retrieve and immediately clear Wizard images from cache
+    _capturedImages = GuidedCaptureWizardPage.latestCapturedImagesBase64;
+    GuidedCaptureWizardPage.latestCapturedImagesBase64 = null;
+
     // Auto-populate equipment ID: prefer selectedEquipment (from scan), else equipmentId param
     if (widget.selectedEquipment != null) {
       _equipCtrl.text =
@@ -141,6 +148,55 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
       return;
     }
 
+    // Check if there are any unanswered questions
+    final missingIndices = <int>[];
+    for (int i = 0; i < _checklist.length; i++) {
+      if (!_answers.containsKey(i) || _answers[i] == null) {
+        missingIndices.add(i);
+      }
+    }
+
+    if (missingIndices.isNotEmpty) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            icon: Icon(Icons.warning_amber_rounded, size: 50, color: Colors.orange.shade800),
+            title: const Text(
+              "Checklist Incomplete",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Please answer all checklist items before submitting. You have answered ${_answers.length} out of ${_checklist.length} questions.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey.shade700, height: 1.4, fontSize: 15),
+                ),
+              ],
+            ),
+            actionsAlignment: MainAxisAlignment.center,
+            actions: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: widget.primaryColor,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+      }
+      return;
+    }
+
+    // Build the answers list and find the anomalies (items marked NO)
+    final anomalies = <String>[];
     final payloadAnswers = <Map<String, dynamic>>[];
     for (var i = 0; i < _checklist.length; i++) {
       final answer = _answers[i];
@@ -154,14 +210,136 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
         "answer": answer == "YES" ? "true" : answer == "NO" ? "false" : "na",
         "remarks": "",
       });
+
+      if (answer == "NO") {
+        anomalies.add(text);
+      }
     }
 
-    if (payloadAnswers.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please answer at least one checklist item.")),
-      );
-      return;
-    }
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        final Color primaryColor = widget.primaryColor;
+        final bool hasAnomalies = anomalies.isNotEmpty;
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          icon: Icon(
+            hasAnomalies ? Icons.report_problem_rounded : Icons.check_circle_rounded,
+            size: 50,
+            color: hasAnomalies ? Colors.red.shade700 : Colors.green.shade700,
+          ),
+          title: Text(
+            hasAnomalies ? "Anomalies Flagged" : "Confirm Submission",
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (hasAnomalies) ...[
+                  Text(
+                    "You flagged the following items as failing/incorrect:",
+                    style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey.shade800, fontSize: 14),
+                  ),
+                  const SizedBox(height: 10),
+                  Flexible(
+                    child: Container(
+                      constraints: const BoxConstraints(maxHeight: 200),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.shade100),
+                      ),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: anomalies.length,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(Icons.circle, size: 8, color: Colors.red.shade700),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    anomalies[index],
+                                    style: TextStyle(
+                                      color: Colors.red.shade900,
+                                      fontSize: 13,
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                ] else ...[
+                  Text(
+                    "All checklist items are marked as passed or not applicable.",
+                    style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 15),
+                ],
+                Text(
+                  "Are you sure you want to submit this checklist?",
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey.shade900, fontSize: 15),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          actionsPadding: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.grey.shade400),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onPressed: () => Navigator.pop(context, false),
+                    child: Text(
+                      "Cancel",
+                      style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: hasAnomalies ? Colors.red.shade700 : primaryColor,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text(
+                      "Submit",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+    if (!mounted) return;
 
     setState(() => _saving = true);
     await LocalDB.queueModuleInspection(
@@ -172,6 +350,7 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
         "inspector_name": inspector,
         "remarks":        _remarksCtrl.text.trim(),
         "answers":        payloadAnswers,
+        "images":         _capturedImages ?? [],
       },
     );
     // Fire-and-forget: push all unsynced inspections to backend in background.
@@ -313,6 +492,68 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
             }),
 
             const SizedBox(height: 8),
+
+            if (_capturedImages != null && _capturedImages!.isNotEmpty) ...[
+              Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.photo_library_rounded, color: c, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          "Captured Inspection Photos",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13.5,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 90,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _capturedImages!.length,
+                        itemBuilder: (context, idx) {
+                          return Container(
+                            margin: const EdgeInsets.only(right: 10),
+                            width: 90,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade200, width: 1.5),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.memory(
+                                base64Decode(_capturedImages![idx]),
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Center(
+                                    child: Icon(Icons.broken_image, color: Colors.grey),
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
 
             // ── Remarks ─────────────────────────────────────────
             Container(

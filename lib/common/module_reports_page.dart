@@ -7,7 +7,9 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:excel/excel.dart' hide Border;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:fire_new/common/report_utils.dart';
+import 'package:fire_new/guided_capture_wizard.dart';
 import 'package:fire_new/local_db.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'package:fire_new/utils/web_download_helper.dart';
@@ -88,6 +90,67 @@ class _ModuleReportsPageState extends State<ModuleReportsPage>
         });
       }
     } catch (_) {}
+  }
+
+  Future<void> _scanQRCode() async {
+    if (kIsWeb) {
+      _showSnack("QR scanner not available on web. Please type the SOS number.", isError: true);
+      return;
+    }
+    final MobileScannerController scanCtrl = MobileScannerController();
+    bool scanned = false;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        height: MediaQuery.of(context).size.height * 0.65,
+        decoration: const BoxDecoration(
+          color: Color(0xFF0D1B2A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(children: [
+          const SizedBox(height: 12),
+          Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+          const SizedBox(height: 14),
+          const Text("SCAN EQUIPMENT QR CODE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.2, fontSize: 13)),
+          const SizedBox(height: 6),
+          const Text("Point camera at the equipment barcode or QR tag", style: TextStyle(color: Colors.white54, fontSize: 12)),
+          const SizedBox(height: 12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: MobileScanner(
+                  controller: scanCtrl,
+                  onDetect: (capture) {
+                    if (scanned) return;
+                    final raw = capture.barcodes.firstOrNull?.rawValue;
+                    if (raw == null || raw.isEmpty) return;
+                    scanned = true;
+                    setState(() => sosController.text = raw.trim());
+                    scanCtrl.dispose();
+                    Navigator.pop(context);
+                    _showSnack("SOS scanned: ${raw.trim()}");
+                  },
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+            child: TextButton.icon(
+              onPressed: () { scanCtrl.dispose(); Navigator.pop(context); },
+              icon: const Icon(Icons.close, color: Colors.white54),
+              label: const Text("Cancel", style: TextStyle(color: Colors.white54)),
+            ),
+          ),
+        ]),
+      ),
+    );
+    if (!scanned) scanCtrl.dispose();
   }
 
   Future<void> _pickDate(bool isStart) async {
@@ -274,6 +337,8 @@ class _ModuleReportsPageState extends State<ModuleReportsPage>
         sosCode: sosCode,
         inspectorName: inspectorName,
         logoImage: logoImage,
+        moduleCode: widget.moduleCode,
+        capturedImagesBase64: GuidedCaptureWizardPage.latestCapturedImagesBase64,
       );
 
       final fileName = "Single_Report_${sosCode}_${DateTime.now().millisecondsSinceEpoch}.pdf";
@@ -503,7 +568,13 @@ class _ModuleReportsPageState extends State<ModuleReportsPage>
             _sectionHeader("Equipment Details", Icons.qr_code_scanner_rounded, _kAccent),
             TextField(
               controller: sosController,
-              decoration: _inputDec("SOS Number / Equipment ID", Icons.qr_code_rounded),
+              decoration: _inputDec("SOS Number / Equipment ID", Icons.qr_code_rounded).copyWith(
+                suffixIcon: IconButton(
+                  tooltip: "Scan QR / Barcode",
+                  icon: const Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF1565C0)),
+                  onPressed: _scanQRCode,
+                ),
+              ),
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),

@@ -10,6 +10,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'main.dart';
 import 'package:fire_new/widgets/health_score_widget.dart';
 import 'package:fire_new/global_scanner.dart';
+import 'package:fire_new/screens/notifications_page.dart';
+import 'package:fire_new/screens/approval_queue_page.dart';
 
 import 'responsive.dart';
 import 'dashboard.dart';
@@ -302,8 +304,21 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
   int pendingSyncCount = 0;
   bool _isSyncSpinning = false;
   Timer? _pendingRefreshTimer;
+  int unreadNotificationsCount = 0;
 
   late List<ModuleItem> modules;
+
+  Future<void> _loadUnreadNotificationsCount() async {
+    try {
+      final list = await ApiService.getNotifications();
+      final count = list.where((n) => n['read'] != true).length;
+      if (mounted) {
+        setState(() {
+          unreadNotificationsCount = count;
+        });
+      }
+    } catch (_) {}
+  }
 
   @override
   void initState() {
@@ -319,8 +334,12 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
     );
 
     _updatePendingCount();
+    _loadUnreadNotificationsCount();
     _pendingRefreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       _updatePendingCount();
+      if (timer.tick % 3 == 0) {
+        _loadUnreadNotificationsCount();
+      }
     });
 
     final box = Hive.box('inspectionBox');
@@ -724,6 +743,8 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       apiReadinessScore = null;
     }
 
+    await _loadUnreadNotificationsCount();
+
     if (mounted) setState(() => isLoading = false);
   }
 
@@ -926,6 +947,52 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                     },
                   ),
                   const SizedBox(width: 12),
+                  IconButton(
+                    icon: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(
+                          Icons.notifications_rounded,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                          size: 28,
+                        ),
+                        if (unreadNotificationsCount > 0)
+                          Positioned(
+                            right: -2,
+                            top: -2,
+                            child: Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 14,
+                                minHeight: 14,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "$unreadNotificationsCount",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => NotificationsPage(isDark: isDark)),
+                      );
+                      _loadUnreadNotificationsCount();
+                    },
+                  ),
+                  const SizedBox(width: 12),
                   PopupMenuButton<String>(
                     icon: Stack(
                       clipBehavior: Clip.none,
@@ -968,14 +1035,21 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                     ),
                     color: isDark ? const Color(0xFF334155) : Colors.white,
                     onSelected: (value) async {
+                      final box = Hive.box('inspectionBox');
+
                       if (value == 'light') {
                         setState(() => isDark = false);
                       } else if (value == 'dark') {
                         setState(() => isDark = true);
                       } else if (value == 'sync') {
                         _triggerManualSync();
+                      } else if (value == 'approval_queue') {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => ApprovalQueuePage(isDark: isDark)),
+                        );
+                        _loadHealthData();
                       } else if (value == 'logout') {
-                        final box = Hive.box('inspectionBox');
                         await box.clear();
                         ApiService.token = null;
                         if (mounted) {
@@ -1055,98 +1129,120 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                         );
                       }
                     },
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'light',
-                        child: Row(
-                          children: [
-                            Icon(Icons.wb_sunny_rounded, color: Colors.amber.shade700, size: 20),
-                            const SizedBox(width: 12),
-                            Text(
-                              "Light Theme",
-                              style: TextStyle(
-                                color: isDark ? Colors.white70 : Colors.black87,
-                                fontWeight: FontWeight.bold,
+                    itemBuilder: (context) {
+                      final box = Hive.box('inspectionBox');
+                      final String role = box.get('role', defaultValue: 'user').toString().toLowerCase().trim();
+                      return [
+                        PopupMenuItem(
+                          value: 'light',
+                          child: Row(
+                            children: [
+                              Icon(Icons.wb_sunny_rounded, color: Colors.amber.shade700, size: 20),
+                              const SizedBox(width: 12),
+                              Text(
+                                "Light Theme",
+                                style: TextStyle(
+                                  color: isDark ? Colors.white70 : Colors.black87,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            if (!isDark) ...[
-                              const Spacer(),
-                              const Icon(Icons.check_circle_rounded, color: Colors.green, size: 16),
+                              if (!isDark) ...[
+                                const Spacer(),
+                                const Icon(Icons.check_circle_rounded, color: Colors.green, size: 16),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
-                      ),
-                      PopupMenuItem(
-                        value: 'dark',
-                        child: Row(
-                          children: [
-                            Icon(Icons.nightlight_round, color: Colors.indigo.shade300, size: 20),
-                            const SizedBox(width: 12),
-                            Text(
-                              "Dark Theme",
-                              style: TextStyle(
-                                color: isDark ? Colors.white70 : Colors.black87,
-                                fontWeight: FontWeight.bold,
+                        PopupMenuItem(
+                          value: 'dark',
+                          child: Row(
+                            children: [
+                              Icon(Icons.nightlight_round, color: Colors.indigo.shade300, size: 20),
+                              const SizedBox(width: 12),
+                              Text(
+                                "Dark Theme",
+                                style: TextStyle(
+                                  color: isDark ? Colors.white70 : Colors.black87,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            if (isDark) ...[
-                              const Spacer(),
-                              const Icon(Icons.check_circle_rounded, color: Colors.green, size: 16),
+                              if (isDark) ...[
+                                const Spacer(),
+                                const Icon(Icons.check_circle_rounded, color: Colors.green, size: 16),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
-                      ),
-                      const PopupMenuDivider(),
-                      PopupMenuItem(
-                        value: 'sync',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.sync_rounded, color: Colors.blue, size: 20),
-                            const SizedBox(width: 12),
-                            Text(
-                              "Sync All Modules",
-                              style: TextStyle(
-                                color: isDark ? Colors.white70 : Colors.black87,
-                                fontWeight: FontWeight.bold,
+                        const PopupMenuDivider(),
+                        PopupMenuItem(
+                          value: 'sync',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.sync_rounded, color: Colors.blue, size: 20),
+                              const SizedBox(width: 12),
+                              Text(
+                                "Sync All Modules",
+                                style: TextStyle(
+                                  color: isDark ? Colors.white70 : Colors.black87,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      PopupMenuItem(
-                        value: 'about',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.info_outline_rounded, color: Colors.teal, size: 20),
-                            const SizedBox(width: 12),
-                            Text(
-                              "About App",
-                              style: TextStyle(
-                                color: isDark ? Colors.white70 : Colors.black87,
-                                fontWeight: FontWeight.bold,
+                        PopupMenuItem(
+                          value: 'approval_queue',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.rule_folder_rounded, color: Colors.purple, size: 20),
+                              const SizedBox(width: 12),
+                              Text(
+                                role == 'supervisor' || role == 'admin' || role == 'superadmin'
+                                    ? "Approval Queue"
+                                    : "My Requests",
+                                style: TextStyle(
+                                  color: isDark ? Colors.white70 : Colors.black87,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      const PopupMenuDivider(),
-                      PopupMenuItem(
-                        value: 'logout',
-                        child: const Row(
-                          children: [
-                            Icon(Icons.logout_rounded, color: Colors.red, size: 20),
-                            const SizedBox(width: 12),
-                            Text(
-                              "Logout",
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontWeight: FontWeight.w900,
+                        PopupMenuItem(
+                          value: 'about',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.info_outline_rounded, color: Colors.teal, size: 20),
+                              const SizedBox(width: 12),
+                              Text(
+                                "About App",
+                                style: TextStyle(
+                                  color: isDark ? Colors.white70 : Colors.black87,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                        const PopupMenuDivider(),
+                        PopupMenuItem(
+                          value: 'logout',
+                          child: const Row(
+                            children: [
+                              Icon(Icons.logout_rounded, color: Colors.red, size: 20),
+                              const SizedBox(width: 12),
+                              Text(
+                                "Logout",
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ];
+                    },
                   ),
                 ],
               ),

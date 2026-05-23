@@ -1,4 +1,7 @@
-﻿import 'package:fire_new/services/apiservice.dart';
+﻿
+import '../utils/edit_helper.dart';
+import '../screens/equipment_history_page.dart';
+import 'package:fire_new/services/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
 
@@ -128,7 +131,18 @@ class _SprinklerInspectionPageState extends State<SprinklerInspectionPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+    void _editDetails() {
+    if (item == null) return;
+    EditHelper.editDetails(
+      context: context,
+      item: item!,
+      moduleCode: "sprinklers",
+      equipmentId: (item!["sos_code"] ?? item!["equipment_id"] ?? item!["id"] ?? "").toString(),
+      onSaved: () => setState(() {}),
+    );
+  }
+
+Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -136,6 +150,8 @@ class _SprinklerInspectionPageState extends State<SprinklerInspectionPage> {
         backgroundColor: const Color(0xFFD50000),
         foregroundColor: Colors.white,
         actions: [
+          if (item != null) IconButton(icon: const Icon(Icons.edit, color: Colors.white), onPressed: _editDetails),
+          if (item != null) IconButton(icon: const Icon(Icons.timeline_rounded, color: Colors.white), onPressed: () { final id = item!['sos_code'] ?? item!['id'] ?? item!['equipment_id'] ?? ''; Navigator.push(context, MaterialPageRoute(builder: (_) => EquipmentHistoryPage(equipmentId: id.toString()))); }),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => setState(() {

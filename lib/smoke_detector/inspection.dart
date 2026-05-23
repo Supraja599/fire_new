@@ -1,3 +1,6 @@
+
+import '../utils/edit_helper.dart';
+import '../screens/equipment_history_page.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
@@ -159,37 +162,12 @@ class _SmokeDetectorInspectionPageState extends State<SmokeDetectorInspectionPag
 
   void editAllFields() {
     if (item == null) return;
-    final controllers = <String, TextEditingController>{};
-    item!.forEach((key, value) => controllers[key] = TextEditingController(text: value?.toString() ?? ""));
-
-    showDialog(
+    EditHelper.editDetails(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Edit Details"),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
-            child: Column(
-              children: controllers.entries.map((e) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: TextField(controller: e.value, decoration: InputDecoration(labelText: e.key.replaceAll("_", " ").toUpperCase(), border: const OutlineInputBorder())),
-              )).toList(),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-          ElevatedButton(
-            onPressed: () async {
-              controllers.forEach((key, controller) => item![key] = controller.text);
-              await LocalDB.saveSingleModuleRecord(moduleCode: "smoke_detector", recordType: "equipment", item: item!);
-              setState(() {});
-              Navigator.pop(context);
-            },
-            child: const Text("Save"),
-          ),
-        ],
-      ),
+      item: item!,
+      moduleCode: "smoke_detector",
+      equipmentId: (item!["sos_code"] ?? item!["equipment_id"] ?? item!["id"] ?? "").toString(),
+      onSaved: () => setState(() {}),
     );
   }
 
@@ -260,6 +238,21 @@ class _SmokeDetectorInspectionPageState extends State<SmokeDetectorInspectionPag
         backgroundColor: Colors.blue.shade800,
         actions: [
           if (item != null) IconButton(icon: const Icon(Icons.edit), onPressed: editAllFields),
+              if (item != null)
+                IconButton(
+                  icon: const Icon(Icons.timeline_rounded, color: Colors.white),
+                  onPressed: () {
+                    final id = item!['sos_code'] ?? item!['id'] ?? item!['equipment_id'] ?? '';
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => EquipmentHistoryPage(
+                          equipmentId: id.toString(),
+                        ),
+                      ),
+                    );
+                  },
+                ),
           IconButton(icon: const Icon(Icons.refresh), onPressed: () => setState(() { item = null; scannedId = null; idController.clear(); error = null; showSearch = true; filteredEquipment = []; })),
         ],
       ),
