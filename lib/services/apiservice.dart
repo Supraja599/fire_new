@@ -527,4 +527,46 @@ class ApiService {
       return [];
     }
   }
+
+  // =========================================================
+  // 👥 ADMIN USER DIRECTORY & ACCESS APIs
+  // =========================================================
+
+  static Future<List<Map<String, dynamic>>> getAdminUsers() async {
+    try {
+      final url = Uri.parse("$baseUrl/admin/users");
+      final res = await http.get(url, headers: headers).timeout(const Duration(seconds: 10));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded is List) {
+          return List<Map<String, dynamic>>.from(decoded);
+        } else if (decoded is Map && decoded["users"] is List) {
+          return List<Map<String, dynamic>>.from(decoded["users"]);
+        } else if (decoded is Map && decoded["data"] is List) {
+          return List<Map<String, dynamic>>.from(decoded["data"]);
+        }
+      }
+      return [];
+    } catch (e) {
+      print("GET ADMIN USERS ERROR: $e");
+      return [];
+    }
+  }
+
+  static Future<List<String>> getUserNavAccess(String userId) async {
+    try {
+      final url = Uri.parse("$baseUrl/admin/users/$userId/nav-access");
+      final res = await http.get(url, headers: headers).timeout(const Duration(seconds: 10));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded is Map && decoded["modules"] is List) {
+          return List<String>.from(decoded["modules"]);
+        }
+      }
+      return [];
+    } catch (e) {
+      print("GET USER NAV ACCESS ERROR: $e");
+      return [];
+    }
+  }
 }

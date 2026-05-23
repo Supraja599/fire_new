@@ -148,10 +148,44 @@ class _LoginPageState extends State<LoginPage>
         }
       }
     } catch (e) {
+      final errStr = e.toString().toLowerCase();
+      final isNetworkError = errStr.contains('socket') ||
+          errStr.contains('handshake') ||
+          errStr.contains('timeout') ||
+          errStr.contains('clientexception') ||
+          errStr.contains('network') ||
+          errStr.contains('failed host lookup');
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${e.toString()}")),
-        );
+        if (isNetworkError) {
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: const Row(
+                children: [
+                  Icon(Icons.wifi_off_rounded, color: Colors.red, size: 28),
+                  SizedBox(width: 10),
+                  Text("No Connection", style: TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+              content: const Text(
+                "Could not connect to the server. Please check your internet connection and try again.",
+                style: TextStyle(fontSize: 14),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text("OK", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error: ${e.toString()}")),
+          );
+        }
       }
     } finally {
       if (mounted) setState(() => isLoading = false);

@@ -12,6 +12,7 @@ import 'package:fire_new/widgets/health_score_widget.dart';
 import 'package:fire_new/global_scanner.dart';
 import 'package:fire_new/screens/notifications_page.dart';
 import 'package:fire_new/screens/approval_queue_page.dart';
+import 'package:fire_new/screens/user_management_page.dart';
 
 import 'responsive.dart';
 import 'dashboard.dart';
@@ -1049,6 +1050,12 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                           MaterialPageRoute(builder: (_) => ApprovalQueuePage(isDark: isDark)),
                         );
                         _loadHealthData();
+                      } else if (value == 'user_directory') {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => UserManagementPage(isDark: isDark)),
+                        );
+                        _loadHealthData();
                       } else if (value == 'logout') {
                         await box.clear();
                         ApiService.token = null;
@@ -1208,6 +1215,23 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                             ],
                           ),
                         ),
+                        if (role == 'admin' || role == 'superadmin')
+                          PopupMenuItem(
+                            value: 'user_directory',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.people_alt_rounded, color: Colors.orange, size: 20),
+                                const SizedBox(width: 12),
+                                Text(
+                                  "User Directory",
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white70 : Colors.black87,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         PopupMenuItem(
                           value: 'about',
                           child: Row(
