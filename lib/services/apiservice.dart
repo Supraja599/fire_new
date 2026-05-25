@@ -172,13 +172,10 @@ class ApiService {
     return calculateHealth(s);
   }
 
-  /// Maps API health_colour string → status string for the icons page.
-  /// Falls back to threshold calculation if health_colour is absent.
+  /// Maps status string for the icons page based strictly on client-side health thresholds.
   static String getHealthStatus(Map<String, dynamic> s, int health) {
-    final c = s["health_colour"]?.toString().toLowerCase();
-    if (c == "green" || c == "amber" || c == "red") return c!;
-    if (health >= 85) return "green";
-    if (health >= 60) return "amber";
+    if (health >= 80) return "green";
+    if (health >= 50) return "amber";
     return "red";
   }
 

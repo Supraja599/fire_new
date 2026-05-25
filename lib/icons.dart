@@ -518,9 +518,9 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
   }
 
   void _assignModuleStatus(ModuleItem mod) {
-    if (mod.health < 60) {
+    if (mod.health < 50) {
       mod.status = 'red';
-    } else if (mod.health < 85) {
+    } else if (mod.health < 80) {
       mod.status = 'amber';
     } else {
       mod.status = 'green';
@@ -849,7 +849,6 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
   }
 
   double get overallHealth {
-    if (apiReadinessScore != null) return apiReadinessScore!;
     final activeModules = modules.where((m) => m.health != -1).toList();
     if (activeModules.isEmpty) return 0;
 

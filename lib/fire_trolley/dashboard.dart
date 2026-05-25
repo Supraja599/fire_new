@@ -184,11 +184,11 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
 
                                       ? Colors.grey 
 
-                                      : (health >= 85 
+                                      : (health >= 80 
 
                                           ? const Color(0xFF1E8E3E) 
 
-                                          : (health >= 60 ? const Color(0xFFFF8F00) : const Color(0xFFD50000))),
+                                          : (health >= 50 ? const Color(0xFFFF8F00) : const Color(0xFFD50000))),
 
                                   ),
 
@@ -251,17 +251,17 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
                             Text(
                               isLoading
                                   ? "Accessing systems..."
-                                  : (health >= 85 
+                                  : (health >= 80 
                                       ? "Optimal Status Standing" 
-                                      : (health >= 60 ? "Advisory Maintenance Required" : "Critical System Attention Required")),
+                                      : (health >= 50 ? "Advisory Maintenance Required" : "Critical System Attention Required")),
                               style: TextStyle(
                                 fontSize: 14.5,
                                 fontWeight: FontWeight.w900,
                                 color: isLoading 
                                     ? Colors.grey 
-                                    : (health >= 85 
+                                    : (health >= 80 
                                         ? const Color(0xFF1E8E3E) 
-                                        : (health >= 60 ? const Color(0xFFFF8F00) : const Color(0xFFD50000))),
+                                        : (health >= 50 ? const Color(0xFFFF8F00) : const Color(0xFFD50000))),
                                 letterSpacing: -0.2,
                               ),
                             ),
