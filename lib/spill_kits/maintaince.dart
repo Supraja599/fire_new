@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class SpillKitsMaintenancePage extends StatefulWidget {
   const SpillKitsMaintenancePage({super.key});
@@ -10,7 +9,7 @@ class SpillKitsMaintenancePage extends StatefulWidget {
 }
 
 class _SpillKitsMaintenancePageState extends State<SpillKitsMaintenancePage> {
-  final api = SpillKitsApiService();
+  final api = ModuleApiService.spillKit;
   final List<Map<String, dynamic>> all = [];
 
   List<Map<String, dynamic>> today = [];

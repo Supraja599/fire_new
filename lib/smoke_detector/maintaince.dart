@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-import 'services/smoke_detector_api_service.dart';
-
 class SmokeDetectorMaintenancePage extends StatefulWidget {
   const SmokeDetectorMaintenancePage({super.key});
 
@@ -9,7 +8,7 @@ class SmokeDetectorMaintenancePage extends StatefulWidget {
 }
 
 class _SmokeDetectorMaintenancePageState extends State<SmokeDetectorMaintenancePage> {
-  final api = SmokeDetectorApiService();
+  final api = ModuleApiService.smokeDetector;
   List<Map<String, dynamic>> records = [];
   bool isLoading = true;
 

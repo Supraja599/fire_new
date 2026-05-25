@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/sprinkler_api_service.dart';
 
 class SprinklerMaintenancePage extends StatefulWidget {
   const SprinklerMaintenancePage({super.key});
@@ -10,7 +9,7 @@ class SprinklerMaintenancePage extends StatefulWidget {
 }
 
 class _SprinklerMaintenancePageState extends State<SprinklerMaintenancePage> {
-  final api = SprinklerApiService();
+  final api = ModuleApiService.sprinkler;
   final List<Map<String, dynamic>> all = [];
 
   List<Map<String, dynamic>> today = [];

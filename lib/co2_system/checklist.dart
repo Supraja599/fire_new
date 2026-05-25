@@ -1,8 +1,7 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/widgets/generic_checklist_page.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
-import 'services/api_service.dart';
-
 class CO2SystemChecklistPage extends StatelessWidget {
   final Map<String, dynamic>? selectedEquipment;
   final bool fromScan;
@@ -22,6 +21,6 @@ class CO2SystemChecklistPage extends StatelessWidget {
     moduleName: 'CO2 System',
     primaryColor: const Color(0xFF00838F),
     eventIdPrefix: 'co2',
-    fetchChecklist: () => CO2SystemApiService().getChecklist(),
+    fetchChecklist: () => ModuleApiService.co2System.getChecklist(),
   );
 }

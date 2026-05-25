@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class PPECabinetsAlertsPage extends StatefulWidget {
   const PPECabinetsAlertsPage({super.key});
@@ -10,7 +9,7 @@ class PPECabinetsAlertsPage extends StatefulWidget {
 }
 
 class _PPECabinetsAlertsPageState extends State<PPECabinetsAlertsPage> {
-  final api = PPECabinetsApiService();
+  final api = ModuleApiService.ppeCabinet;
 
   List<Map<String, dynamic>> alerts = [];
   bool isLoading = true;

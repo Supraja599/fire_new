@@ -1,4 +1,5 @@
 ﻿import 'package:fire_new/widgets/generic_plant_health_page.dart';
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +13,6 @@ import 'reports.dart';
 import 'checklist.dart';
 import 'inspection.dart';
 
-import 'services/api_service.dart';
-
 class FirstAidDashboard extends StatefulWidget {
   const FirstAidDashboard({super.key});
 
@@ -25,7 +24,7 @@ class _FirstAidDashboardState extends State<FirstAidDashboard> {
   static const Color primary = Color(0xFF2E7D32);
   static const Color deep = Color(0xFF1B5E20);
 
-  final api = FirstAidApiService();
+  final api = ModuleApiService.firstAid;
   bool isLoading = true;
   Map<String, dynamic>? summaryData;
   int activeUnits = 0;
@@ -379,18 +378,18 @@ class _FirstAidDashboardState extends State<FirstAidDashboard> {
                         apiService: api,
                         imagePath: "assets/first_aid.png",
                         fallbackIcon: Icons.analytics_rounded,
-                      ), "Trends"),
-                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const FirstAidInspectionPage(), "Scan"),
-                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const FirstAidMaintenancePage(), "Service"),
-                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const FirstAidAlertsPage(), "Critical"),
+                      ), "Trends", _loadData),
+                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const FirstAidInspectionPage(), "Scan", _loadData),
+                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const FirstAidMaintenancePage(), "Service", _loadData),
+                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const FirstAidAlertsPage(), "Critical", _loadData),
                       _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(
                         title: "First Aid Health",
                         shortName: "First Aid",
                         apiService: api,
                         imagePath: "assets/first_aid.png",
                         fallbackIcon: Icons.health_and_safety_rounded,
-                      ), "Score"),
-                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const FirstAidReportsPage(), "Logs"),
+                      ), "Score", _loadData),
+                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const FirstAidReportsPage(), "Logs", _loadData),
                     ],
                   ),
                 );
@@ -409,8 +408,9 @@ class _ActionCard extends StatefulWidget {
   final Color color;
   final Widget page;
   final String? subtitle;
+  final VoidCallback? onReturn;
 
-  const _ActionCard(this.title, this.imagePath, this.color, this.page, [this.subtitle]);
+  const _ActionCard(this.title, this.imagePath, this.color, this.page, [this.subtitle, this.onReturn]);
 
   @override
   State<_ActionCard> createState() => _ActionCardState();
@@ -479,7 +479,10 @@ class _ActionCardState extends State<_ActionCard> {
         onTapDown: (_) => setState(() => _scale = 0.94),
         onTapUp: (_) => setState(() => _scale = 1.0),
         onTapCancel: () => setState(() => _scale = 1.0),
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => widget.page)),
+        onTap: () async {
+          await Navigator.push(context, MaterialPageRoute(builder: (_) => widget.page));
+          widget.onReturn?.call();
+        },
         child: AnimatedScale(
           scale: _scale,
           duration: const Duration(milliseconds: 120),

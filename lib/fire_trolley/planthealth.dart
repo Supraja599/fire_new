@@ -1,8 +1,7 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../widgets/equipment_list_page.dart';
-import 'services/fire_trolley_api_service.dart';
-
 class FireTrolleyPlantHealthPage extends StatefulWidget {
   const FireTrolleyPlantHealthPage({super.key});
 
@@ -11,7 +10,7 @@ class FireTrolleyPlantHealthPage extends StatefulWidget {
 }
 
 class _FireTrolleyPlantHealthPageState extends State<FireTrolleyPlantHealthPage> {
-  final api = FireTrolleyApiService();
+  final api = ModuleApiService.fireTrolley;
   Map<String, dynamic> summary = {};
   List<Map<String, dynamic>> equipment = [];
   bool isLoading = true;

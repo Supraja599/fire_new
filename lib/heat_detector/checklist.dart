@@ -1,8 +1,7 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/widgets/generic_checklist_page.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
-import 'services/api_service.dart';
-
 class HeatDetectorChecklistPage extends StatelessWidget {
   final Map<String, dynamic>? selectedEquipment;
   final bool fromScan;
@@ -22,6 +21,6 @@ class HeatDetectorChecklistPage extends StatelessWidget {
     moduleName: 'Heat Detector',
     primaryColor: const Color(0xFFE65100),
     eventIdPrefix: 'heat_detector',
-    fetchChecklist: () => HeatDetectorApiService().getChecklist(),
+    fetchChecklist: () => ModuleApiService.heatDetector.getChecklist(),
   );
 }

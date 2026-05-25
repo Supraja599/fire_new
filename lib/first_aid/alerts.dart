@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class FirstAidAlertsPage extends StatefulWidget {
   const FirstAidAlertsPage({super.key});
@@ -10,7 +9,7 @@ class FirstAidAlertsPage extends StatefulWidget {
 }
 
 class _FirstAidAlertsPageState extends State<FirstAidAlertsPage> {
-  final api = FirstAidApiService();
+  final api = ModuleApiService.firstAid;
 
   List<Map<String, dynamic>> alerts = [];
   bool isLoading = true;

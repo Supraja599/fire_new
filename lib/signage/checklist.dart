@@ -1,8 +1,7 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/widgets/generic_checklist_page.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
-import 'services/api_service.dart';
-
 class SignageChecklistPage extends StatelessWidget {
   final Map<String, dynamic>? selectedEquipment;
   final bool fromScan;
@@ -22,6 +21,6 @@ class SignageChecklistPage extends StatelessWidget {
     moduleName: 'Signage',
     primaryColor: const Color(0xFF512DA8),
     eventIdPrefix: 'signage',
-    fetchChecklist: () => SignageApiService().getChecklist(),
+    fetchChecklist: () => ModuleApiService.signage.getChecklist(),
   );
 }

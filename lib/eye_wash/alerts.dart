@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'services/api_service.dart';
+import 'package:fire_new/services/module_api_service.dart';
 
 class EyeWashAlertsPage extends StatefulWidget {
   const EyeWashAlertsPage({super.key});
@@ -10,7 +10,7 @@ class EyeWashAlertsPage extends StatefulWidget {
 }
 
 class _EyeWashAlertsPageState extends State<EyeWashAlertsPage> {
-  final api = EyeWashApiService();
+  final api = ModuleApiService.eyeWash;
 
   List<Map<String, dynamic>> alerts = [];
   bool isLoading = true;

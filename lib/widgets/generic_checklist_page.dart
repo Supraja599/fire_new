@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:hive/hive.dart';
 import '../services/location_service.dart';
 import '../services/apiservice.dart';
 import '../local_db.dart';
@@ -342,6 +343,17 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
     if (!mounted) return;
 
     setState(() => _saving = true);
+
+    try {
+      final box = Hive.isBoxOpen('inspectionBox') ? Hive.box<dynamic>('inspectionBox') : null;
+      if (box != null) {
+        await box.put('last_equipment_id_${widget.moduleCode}', id);
+        await box.put('last_inspector_name_${widget.moduleCode}', inspector);
+        await box.put('last_equipment_id', id);
+        await box.put('last_inspector_name', inspector);
+      }
+    } catch (_) {}
+
     await LocalDB.queueModuleInspection(
       eventId:     "${widget.eventIdPrefix}-${DateTime.now().millisecondsSinceEpoch}",
       moduleCode:  widget.moduleCode,
@@ -352,6 +364,10 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
         "answers":        payloadAnswers,
         "images":         _capturedImages ?? [],
       },
+    );
+    await LocalDB.updateLocalEquipmentStatusAfterInspection(
+      moduleCode: widget.moduleCode,
+      equipmentId: id,
     );
     // Fire-and-forget: push all unsynced inspections to backend in background.
     // Offline-safe — silently ignored if no network.
@@ -422,21 +438,44 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
             ),
             const SizedBox(height: 14),
 
-            // ── Progress Chip ────────────────────────────────────
-            Row(children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: c.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: c.withValues(alpha: 0.25)),
+            // ── Progress Chip & Bulk Selection ───────────────────
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: c.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: c.withValues(alpha: 0.25)),
+                  ),
+                  child: Text(
+                    "${_answers.length} / ${_checklist.length} answered",
+                    style: TextStyle(color: c, fontWeight: FontWeight.w700, fontSize: 12),
+                  ),
                 ),
-                child: Text(
-                  "${_answers.length} / ${_checklist.length} answered",
-                  style: TextStyle(color: c, fontWeight: FontWeight.w700, fontSize: 12),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _bulkActionButton("ALL YES", const Color(0xFF1E8E3E), () {
+                      setState(() {
+                        for (int i = 0; i < _checklist.length; i++) {
+                          _answers[i] = "YES";
+                        }
+                      });
+                    }),
+                    const SizedBox(width: 8),
+                    _bulkActionButton("ALL NO", const Color(0xFFD50000), () {
+                      setState(() {
+                        for (int i = 0; i < _checklist.length; i++) {
+                          _answers[i] = "NO";
+                        }
+                      });
+                    }),
+                  ],
                 ),
-              ),
-            ]),
+              ],
+            ),
             const SizedBox(height: 12),
 
             // ── Checklist Items ──────────────────────────────────
@@ -655,6 +694,41 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
                   fontSize: 13,
                 )),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _bulkActionButton(String label, Color color, VoidCallback onTap) {
+    final isYes = label == "ALL YES";
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.35), width: 1.2),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isYes ? Icons.check_circle_outline_rounded : Icons.cancel_outlined,
+              size: 13,
+              color: color,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w900,
+                fontSize: 10.5,
+              ),
+            ),
+          ],
         ),
       ),
     );

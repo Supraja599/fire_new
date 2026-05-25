@@ -16,6 +16,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   List<Map<String, dynamic>> serviceList = [];
   List<Map<String, dynamic>> inspectionList = [];
   List<Map<String, dynamic>> expiredList = [];
+  int countActive = 0;
+  int countService = 0;
+  int countInspection = 0;
+  int countExpired = 0;
+  int countTotal = 0;
   int summaryTotal = 0;
 
   bool isLoading = true;
@@ -47,11 +52,38 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           serviceList    = listResults[2];
           inspectionList = listResults[3];
           expiredList    = listResults[4];
-          // Use the summary endpoint's authoritative total (matches dashboard exactly)
-          final apiTotal = (s["total"] ?? s["total_units"] ?? s["total_extinguishers"] ?? 0) as int;
-          summaryTotal = apiTotal > 0
-              ? apiTotal
-              : activeList.length + serviceList.length + inspectionList.length + expiredList.length;
+
+          final summary = s;
+          int upcoming = (summary["upcoming"] ?? summary["upcoming_units"] ?? 0) as int;
+          int active = (summary["active_units"] ?? summary["active"] ?? summary["active_loops"] ?? 0) as int;
+          int service = (summary["needs_service"] ?? summary["needs_service_units"] ?? 0) as int;
+          int inspection = (summary["due_inspection"] ?? summary["due_inspection_units"] ?? summary["due_inspection_loops"] ?? 0) as int;
+          int expired = (summary["expired"] ?? summary["expired_units"] ?? summary["expired_loops"] ?? 0) as int;
+          int total = (summary["total"] ?? summary["total_units"] ?? summary["total_loops"] ?? summary["total_extinguishers"] ?? 0) as int;
+
+          // Dynamic suffix pattern matching for all 24 modules
+          summary.forEach((key, val) {
+            if (val is num) {
+              final intValue = val.toInt();
+              final lowerKey = key.toLowerCase();
+              if (lowerKey.contains("active") && lowerKey != "active") active = intValue;
+              if (lowerKey.contains("total") && lowerKey != "total") total = intValue;
+              if (lowerKey.contains("expired") && lowerKey != "expired") expired = intValue;
+              if (lowerKey.contains("service") && lowerKey != "needs_service") service = intValue;
+              if (lowerKey.contains("inspection") && lowerKey != "due_inspection") inspection = intValue;
+              if (lowerKey.contains("upcoming") && lowerKey != "upcoming") upcoming = intValue;
+            }
+          });
+
+          active = active + upcoming;
+          total = active + service + inspection + expired;
+
+          countActive = active;
+          countService = service;
+          countInspection = inspection;
+          countExpired = expired;
+          countTotal = total;
+          summaryTotal = total;
           isLoading = false;
         });
       }
@@ -69,14 +101,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // ================= PIE DATA =================
   List<PieChartSectionData> getSections() {
     final data = [
-      {"label": "Active", "value": activeList.length, "color": activeColor},
-      {"label": "Need Service", "value": serviceList.length, "color": serviceColor},
-      {"label": "Due Inspection", "value": inspectionList.length, "color": inspectionColor},
-      {"label": "Expired", "value": expiredList.length, "color": expiredColor},
+      {"label": "Active", "value": countActive, "color": activeColor},
+      {"label": "Need Service", "value": countService, "color": serviceColor},
+      {"label": "Due Inspection", "value": countInspection, "color": inspectionColor},
+      {"label": "Expired", "value": countExpired, "color": expiredColor},
     ];
 
     // If total is zero, show a subtle grey ring placeholder to prevent fl_chart rendering anomalies
-    int totalCount = activeList.length + serviceList.length + inspectionList.length + expiredList.length;
+    int totalCount = countTotal;
     if (totalCount == 0) {
       return [
         PieChartSectionData(
@@ -528,14 +560,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         children: [
                           Row(
                             children: [
-                              buildCard("Active", activeList.length, activeList),
-                              buildCard("Need Service", serviceList.length, serviceList),
+                              buildCard("Active", countActive, activeList),
+                              buildCard("Need Service", countService, serviceList),
                             ],
                           ),
                           Row(
                             children: [
-                              buildCard("Due Inspection", inspectionList.length, inspectionList),
-                              buildCard("Expired", expiredList.length, expiredList),
+                              buildCard("Due Inspection", countInspection, inspectionList),
+                              buildCard("Expired", countExpired, expiredList),
                             ],
                           ),
                         ],

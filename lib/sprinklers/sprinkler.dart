@@ -1,4 +1,5 @@
 ﻿import 'package:fire_new/widgets/generic_plant_health_page.dart';
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +13,6 @@ import 'checklist.dart';
 import 'inspection.dart';
 
 import 'package:fire_new/services/apiservice.dart';
-import 'services/sprinkler_api_service.dart';
-
 class SprinklerPage extends StatefulWidget {
   const SprinklerPage({super.key});
 
@@ -25,7 +24,7 @@ class _SprinklerPageState extends State<SprinklerPage> {
   static const Color primary = Color(0xFFD50000);
   static const Color deep = Color(0xFF424242);
 
-  final api = SprinklerApiService();
+  final api = ModuleApiService.sprinkler;
   bool isLoading = true;
   Map<String, dynamic>? summaryData;
   int activeUnits = 0;
@@ -380,18 +379,18 @@ class _SprinklerPageState extends State<SprinklerPage> {
                         apiService: api,
                         imagePath: "assets/sprinkler.png",
                         fallbackIcon: Icons.analytics_rounded,
-                      ), "Trends"),
-                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const SprinklerInspectionPage(), "Scan"),
-                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const SprinklerMaintenancePage(), "Service"),
-                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const SprinklerAlertsPage(), "Critical"),
+                      ), "Trends", _loadData),
+                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const SprinklerInspectionPage(), "Scan", _loadData),
+                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const SprinklerMaintenancePage(), "Service", _loadData),
+                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const SprinklerAlertsPage(), "Critical", _loadData),
                       _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(
                         title: "sprinklers Health",
                         shortName: "sprinklers",
                         apiService: api,
                         imagePath: "assets/sprinkler.png",
                         fallbackIcon: Icons.health_and_safety_rounded,
-                      ), "Score"),
-                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const SprinklerReportsPage(), "Logs"),
+                      ), "Score", _loadData),
+                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const SprinklerReportsPage(), "Logs", _loadData),
                     ],
                   ),
                 );
@@ -410,8 +409,9 @@ class _ActionCard extends StatefulWidget {
   final Color color;
   final Widget page;
   final String? subtitle;
+  final VoidCallback? onReturn;
 
-  const _ActionCard(this.title, this.imagePath, this.color, this.page, [this.subtitle]);
+  const _ActionCard(this.title, this.imagePath, this.color, this.page, [this.subtitle, this.onReturn]);
 
   @override
   State<_ActionCard> createState() => _ActionCardState();
@@ -480,7 +480,10 @@ class _ActionCardState extends State<_ActionCard> {
         onTapDown: (_) => setState(() => _scale = 0.94),
         onTapUp: (_) => setState(() => _scale = 1.0),
         onTapCancel: () => setState(() => _scale = 1.0),
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => widget.page)),
+        onTap: () async {
+          await Navigator.push(context, MaterialPageRoute(builder: (_) => widget.page));
+          widget.onReturn?.call();
+        },
         child: AnimatedScale(
           scale: _scale,
           duration: const Duration(milliseconds: 120),

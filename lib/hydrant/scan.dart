@@ -1,4 +1,5 @@
 
+import 'package:fire_new/services/module_api_service.dart';
 import '../utils/edit_helper.dart';
 import '../screens/equipment_history_page.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,6 @@ import 'package:fire_new/guided_capture_wizard.dart';
 
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'checklist.dart';
-import 'services/hydrant_api_service.dart';
 import 'package:fire_new/local_db.dart';
 
 class HydrantScanPage extends StatefulWidget {
@@ -17,7 +17,7 @@ class HydrantScanPage extends StatefulWidget {
 }
 
 class _HydrantScanPageState extends State<HydrantScanPage> {
-  final api = HydrantApiService();
+  final api = ModuleApiService.hydrant;
   final TextEditingController idController = TextEditingController();
 
   List<Map<String, dynamic>> allEquipment = [];

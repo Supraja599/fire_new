@@ -1,8 +1,7 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/widgets/generic_checklist_page.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
-import 'services/api_service.dart';
-
 class SCBAUnitsChecklistPage extends StatelessWidget {
   final Map<String, dynamic>? selectedEquipment;
   final bool fromScan;
@@ -22,6 +21,6 @@ class SCBAUnitsChecklistPage extends StatelessWidget {
     moduleName: 'SCBA Units',
     primaryColor: const Color(0xFF1976D2),
     eventIdPrefix: 'scba_units',
-    fetchChecklist: () => SCBAUnitsApiService().getChecklist(),
+    fetchChecklist: () => ModuleApiService.scbaUnit.getChecklist(),
   );
 }

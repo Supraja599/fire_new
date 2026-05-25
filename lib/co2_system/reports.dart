@@ -1,16 +1,15 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fire_new/common/module_reports_page.dart';
-import 'services/api_service.dart';
-
 class CO2SystemReportsPage extends StatelessWidget {
   const CO2SystemReportsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final api = CO2SystemApiService();
+    final api = ModuleApiService.co2System;
     return ModuleReportsPage(
       moduleName: "CO2 System",
-      moduleCode: CO2SystemApiService.moduleCode,
+      moduleCode: ModuleApiService.co2System.moduleCode,
       getEquipmentList: api.getEquipmentList,
       getEquipmentByQuery: api.getEquipmentByQuery,
     );

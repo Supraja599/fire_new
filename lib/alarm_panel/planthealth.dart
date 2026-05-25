@@ -1,8 +1,7 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../widgets/equipment_list_page.dart';
-import 'services/alarm_panel_api_service.dart';
-
 class AlarmPanelPlantHealthPage extends StatefulWidget {
   const AlarmPanelPlantHealthPage({super.key});
 
@@ -11,7 +10,7 @@ class AlarmPanelPlantHealthPage extends StatefulWidget {
 }
 
 class _AlarmPanelPlantHealthPageState extends State<AlarmPanelPlantHealthPage> {
-  final api = AlarmPanelApiService();
+  final api = ModuleApiService.alarmPanel;
   Map<String, dynamic> summary = {};
   List<Map<String, dynamic>> equipment = [];
   bool isLoading = true;

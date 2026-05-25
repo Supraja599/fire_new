@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'services/api_service.dart';
+import 'package:fire_new/services/module_api_service.dart';
 
 class EyeWashMaintenancePage extends StatefulWidget {
   const EyeWashMaintenancePage({super.key});
@@ -10,7 +10,7 @@ class EyeWashMaintenancePage extends StatefulWidget {
 }
 
 class _EyeWashMaintenancePageState extends State<EyeWashMaintenancePage> {
-  final api = EyeWashApiService();
+  final api = ModuleApiService.eyeWash;
   final List<Map<String, dynamic>> all = [];
 
   List<Map<String, dynamic>> today = [];

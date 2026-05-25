@@ -1,8 +1,7 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/widgets/generic_checklist_page.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
-import 'services/api_service.dart';
-
 class PPECabinetsChecklistPage extends StatelessWidget {
   final Map<String, dynamic>? selectedEquipment;
   final bool fromScan;
@@ -22,6 +21,6 @@ class PPECabinetsChecklistPage extends StatelessWidget {
     moduleName: 'PPE Cabinets',
     primaryColor: const Color(0xFFE65100),
     eventIdPrefix: 'ppe_cabinets',
-    fetchChecklist: () => PPECabinetsApiService().getChecklist(),
+    fetchChecklist: () => ModuleApiService.ppeCabinet.getChecklist(),
   );
 }

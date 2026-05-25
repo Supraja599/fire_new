@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class FireBlanketsMaintenancePage extends StatefulWidget {
   const FireBlanketsMaintenancePage({super.key});
@@ -10,7 +9,7 @@ class FireBlanketsMaintenancePage extends StatefulWidget {
 }
 
 class _FireBlanketsMaintenancePageState extends State<FireBlanketsMaintenancePage> {
-  final api = FireBlanketsApiService();
+  final api = ModuleApiService.fireBlanket;
   final List<Map<String, dynamic>> all = [];
 
   List<Map<String, dynamic>> today = [];

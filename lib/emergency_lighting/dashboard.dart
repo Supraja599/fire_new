@@ -11,7 +11,7 @@ import 'maintaince.dart';
 import 'planthealth.dart';
 import 'reports.dart';
 import 'inspection.dart';
-import 'services/api_service.dart';
+import 'package:fire_new/services/module_api_service.dart';
 
 class EmergencyLightingDashboard extends StatefulWidget {
   const EmergencyLightingDashboard({super.key});
@@ -22,7 +22,7 @@ class EmergencyLightingDashboard extends StatefulWidget {
 class _EmergencyLightingDashboardState extends State<EmergencyLightingDashboard> {
   static const Color primary = Color(0xFF1976D2);
   static const Color accent = Color(0xFFBBDEFB);
-  final api = EmergencyLightingApiService();
+  final api = ModuleApiService.emergencyLight;
   int total = 0, active = 0, health = 0;
   bool isLoading = true;
   Map<String, dynamic>? summaryData;
@@ -370,18 +370,18 @@ class _EmergencyLightingDashboardState extends State<EmergencyLightingDashboard>
                         apiService: api,
                         imagePath: "assets/emergency_lighting.png",
                         fallbackIcon: Icons.analytics_rounded,
-                      ), "Trends"),
-                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const EmergencyLightingInspectionPage(), "Scan"),
-                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const EmergencyLightingMaintenancePage(), "Service"),
-                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const EmergencyLightingAlertsPage(), "Critical"),
+                      ), "Trends", _load),
+                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const EmergencyLightingInspectionPage(), "Scan", _load),
+                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const EmergencyLightingMaintenancePage(), "Service", _load),
+                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const EmergencyLightingAlertsPage(), "Critical", _load),
                       _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(
                         title: "Emergency Lighting Health",
                         shortName: "Emergency Lighting",
                         apiService: api,
                         imagePath: "assets/emergency_lighting.png",
                         fallbackIcon: Icons.health_and_safety_rounded,
-                      ), "Score"),
-                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const EmergencyLightingReportsPage(), "Logs"),
+                      ), "Score", _load),
+                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const EmergencyLightingReportsPage(), "Logs", _load),
                     ],
                   ),
                 );
@@ -400,8 +400,9 @@ class _ActionCard extends StatefulWidget {
   final Color color;
   final Widget page;
   final String? subtitle;
+  final VoidCallback? onReturn;
 
-  const _ActionCard(this.title, this.imagePath, this.color, this.page, [this.subtitle]);
+  const _ActionCard(this.title, this.imagePath, this.color, this.page, [this.subtitle, this.onReturn]);
 
   @override
   State<_ActionCard> createState() => _ActionCardState();
@@ -470,7 +471,10 @@ class _ActionCardState extends State<_ActionCard> {
         onTapDown: (_) => setState(() => _scale = 0.94),
         onTapUp: (_) => setState(() => _scale = 1.0),
         onTapCancel: () => setState(() => _scale = 1.0),
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => widget.page)),
+        onTap: () async {
+          await Navigator.push(context, MaterialPageRoute(builder: (_) => widget.page));
+          widget.onReturn?.call();
+        },
         child: AnimatedScale(
           scale: _scale,
           duration: const Duration(milliseconds: 120),

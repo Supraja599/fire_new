@@ -620,4 +620,165 @@ class LocalDB {
 
     return null;
   }
+
+  static Future<void> updateLocalEquipmentStatusAfterInspection({
+    required String moduleCode,
+    required String equipmentId,
+  }) async {
+    if (kIsWeb) return;
+    try {
+      final db = await database;
+      final target = equipmentId.trim().toLowerCase();
+
+      // 1. Find all matching records in module_records for this moduleCode and equipment
+      final records = await db.query(
+        'module_records',
+        where: 'module_code = ?',
+        whereArgs: [moduleCode],
+      );
+
+      String? oldStatus;
+      Map<String, dynamic>? targetEquipmentData;
+      String? oldRecordType;
+
+      for (final row in records) {
+        final recordType = row['record_type']?.toString();
+        final recordId = row['record_id']?.toString().trim().toLowerCase();
+        
+        // Skip summary or other system record types
+        if (recordType == 'summary' || recordType == 'checklist' || recordType == 'alerts' || recordType == 'single') {
+          continue;
+        }
+
+        final data = jsonDecode(row['data'] as String) as Map<String, dynamic>;
+        final ids = [
+          data['id'],
+          data['sos_code'],
+          data['serial_number'],
+          data['equipment_id'],
+          row['record_id'],
+        ].map((v) => v?.toString().trim().toLowerCase() ?? '');
+
+        if (ids.contains(target)) {
+          targetEquipmentData = data;
+          if (recordType != 'equipment') {
+            oldStatus = data['status']?.toString();
+            oldRecordType = recordType;
+          }
+        }
+      }
+
+      // If we didn't find the old status from the row type, try reading from equipment data
+      if (oldStatus == null && targetEquipmentData != null) {
+        oldStatus = targetEquipmentData['status']?.toString();
+      }
+
+      // Map the old status value to db recordType key if needed
+      String? mappedOldRecordType = oldRecordType;
+      if (mappedOldRecordType == null && oldStatus != null) {
+        final s = oldStatus.toLowerCase();
+        if (s == 'needs-service' || s == 'needs_service') mappedOldRecordType = 'needs_service';
+        else if (s == 'due-inspection' || s == 'due_inspection') mappedOldRecordType = 'due_inspection';
+        else if (s == 'expired') mappedOldRecordType = 'expired';
+        else if (s == 'upcoming') mappedOldRecordType = 'upcoming';
+        else if (s == 'active') mappedOldRecordType = 'active';
+      }
+
+      if (targetEquipmentData != null) {
+        // Update general equipment status in JSON payload
+        targetEquipmentData['status'] = 'active';
+        final updatedJson = jsonEncode(targetEquipmentData);
+        final eqRecordId = (targetEquipmentData['id'] ?? targetEquipmentData['sos_code'] ?? equipmentId).toString();
+
+        await db.transaction((txn) async {
+          // Update the main equipment row (record_type = 'equipment')
+          await txn.insert(
+            'module_records',
+            {
+              'module_code': moduleCode,
+              'record_type': 'equipment',
+              'record_id': eqRecordId,
+              'data': updatedJson,
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+
+          // Delete from old status record type
+          if (mappedOldRecordType != null && mappedOldRecordType != 'active') {
+            await txn.delete(
+              'module_records',
+              where: 'module_code = ? AND record_type = ? AND record_id = ?',
+              whereArgs: [moduleCode, mappedOldRecordType, eqRecordId],
+            );
+          }
+
+          // Insert into active status record type
+          await txn.insert(
+            'module_records',
+            {
+              'module_code': moduleCode,
+              'record_type': 'active',
+              'record_id': eqRecordId,
+              'data': updatedJson,
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+
+          // 2. Update the cached summary map
+          final summaryResult = await txn.query(
+            'module_records',
+            where: 'module_code = ? AND record_type = ? AND record_id = ?',
+            whereArgs: [moduleCode, 'summary', 'single'],
+            limit: 1,
+          );
+
+          if (summaryResult.isNotEmpty) {
+            final summaryData = jsonDecode(summaryResult.first['data'] as String) as Map<String, dynamic>;
+            
+            // Helper to update summary counts safely
+            void adjustCount(String keyPart, int delta) {
+              summaryData.forEach((key, val) {
+                final lowerKey = key.toLowerCase();
+                if (lowerKey.contains(keyPart)) {
+                  if (val is num) {
+                    summaryData[key] = (val.toInt() + delta).clamp(0, 999999);
+                  }
+                }
+              });
+            }
+
+            // Decrement old status count
+            if (mappedOldRecordType != null) {
+              if (mappedOldRecordType == 'needs_service') adjustCount('service', -1);
+              else if (mappedOldRecordType == 'due_inspection') adjustCount('inspection', -1);
+              else if (mappedOldRecordType == 'expired') adjustCount('expired', -1);
+              else if (mappedOldRecordType == 'upcoming') adjustCount('upcoming', -1);
+              else if (mappedOldRecordType == 'active') adjustCount('active', -1);
+            } else {
+              // Fallback: if old status was not identified, assume it was due_inspection
+              adjustCount('inspection', -1);
+            }
+
+            // Increment active count
+            adjustCount('active', 1);
+
+            // Re-save the summary map
+            await txn.insert(
+              'module_records',
+              {
+                'module_code': moduleCode,
+                'record_type': 'summary',
+                'record_id': 'single',
+                'data': jsonEncode(summaryData),
+              },
+              conflictAlgorithm: ConflictAlgorithm.replace,
+            );
+          }
+        });
+      }
+    } catch (e) {
+      print("Error updating local equipment status: $e");
+    }
+  }
 }
+

@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class SignageAlertsPage extends StatefulWidget {
   const SignageAlertsPage({super.key});
@@ -10,7 +9,7 @@ class SignageAlertsPage extends StatefulWidget {
 }
 
 class _SignageAlertsPageState extends State<SignageAlertsPage> {
-  final api = SignageApiService();
+  final api = ModuleApiService.signage;
 
   List<Map<String, dynamic>> alerts = [];
   bool isLoading = true;

@@ -1,13 +1,13 @@
-﻿
+
+import 'package:fire_new/services/module_api_service.dart';
+import 'package:fire_new/services/apiservice.dart';
 import '../utils/edit_helper.dart';
 import '../screens/equipment_history_page.dart';
-import 'package:fire_new/services/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
 
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'checklist.dart';
-import 'services/apiservice.dart';
 import 'package:fire_new/local_db.dart';
 
 class HoseReelInspectionPage extends StatefulWidget {
@@ -19,7 +19,7 @@ class HoseReelInspectionPage extends StatefulWidget {
 }
 
 class _HoseReelInspectionPageState extends State<HoseReelInspectionPage> {
-  final api = HoseReelApiService();
+  final api = ModuleApiService.hoseReel;
   final TextEditingController idController = TextEditingController();
 
   List<Map<String, dynamic>> allEquipment = [];

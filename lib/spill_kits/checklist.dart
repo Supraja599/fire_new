@@ -1,8 +1,7 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/widgets/generic_checklist_page.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
-import 'services/api_service.dart';
-
 class SpillKitsChecklistPage extends StatelessWidget {
   final Map<String, dynamic>? selectedEquipment;
   final bool fromScan;
@@ -22,6 +21,6 @@ class SpillKitsChecklistPage extends StatelessWidget {
     moduleName: 'Spill Kits',
     primaryColor: const Color(0xFF33691E),
     eventIdPrefix: 'spill_kits',
-    fetchChecklist: () => SpillKitsApiService().getChecklist(),
+    fetchChecklist: () => ModuleApiService.spillKit.getChecklist(),
   );
 }

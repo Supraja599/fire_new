@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class CO2SystemMaintenancePage extends StatefulWidget {
   const CO2SystemMaintenancePage({super.key});
@@ -10,7 +9,7 @@ class CO2SystemMaintenancePage extends StatefulWidget {
 }
 
 class _CO2SystemMaintenancePageState extends State<CO2SystemMaintenancePage> {
-  final api = CO2SystemApiService();
+  final api = ModuleApiService.co2System;
   final List<Map<String, dynamic>> all = [];
 
   List<Map<String, dynamic>> today = [];

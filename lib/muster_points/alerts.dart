@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class MusterPointsAlertsPage extends StatefulWidget {
   const MusterPointsAlertsPage({super.key});
@@ -10,7 +9,7 @@ class MusterPointsAlertsPage extends StatefulWidget {
 }
 
 class _MusterPointsAlertsPageState extends State<MusterPointsAlertsPage> {
-  final api = MusterPointsApiService();
+  final api = ModuleApiService.musterPoint;
 
   List<Map<String, dynamic>> alerts = [];
   bool isLoading = true;

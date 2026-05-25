@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class PPECabinetsMaintenancePage extends StatefulWidget {
   const PPECabinetsMaintenancePage({super.key});
@@ -10,7 +9,7 @@ class PPECabinetsMaintenancePage extends StatefulWidget {
 }
 
 class _PPECabinetsMaintenancePageState extends State<PPECabinetsMaintenancePage> {
-  final api = PPECabinetsApiService();
+  final api = ModuleApiService.ppeCabinet;
   final List<Map<String, dynamic>> all = [];
 
   List<Map<String, dynamic>> today = [];

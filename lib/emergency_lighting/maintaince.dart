@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'services/api_service.dart';
+import 'package:fire_new/services/module_api_service.dart';
 
 class EmergencyLightingMaintenancePage extends StatefulWidget {
   const EmergencyLightingMaintenancePage({super.key});
@@ -10,7 +10,7 @@ class EmergencyLightingMaintenancePage extends StatefulWidget {
 }
 
 class _EmergencyLightingMaintenancePageState extends State<EmergencyLightingMaintenancePage> {
-  final api = EmergencyLightingApiService();
+  final api = ModuleApiService.emergencyLight;
   final List<Map<String, dynamic>> all = [];
 
   List<Map<String, dynamic>> today = [];

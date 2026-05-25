@@ -129,10 +129,38 @@ class _LoginPageState extends State<LoginPage>
       
       if (result != null && result["token"] != null) {
         final box = Hive.box('inspectionBox');
-        box.put('token', result["token"]);
-        box.put('username', username);
-        box.put('role', result["user"]["role"] ?? "User");
-        box.put('modules', result["user"]["modules"] ?? []);
+        
+        // Explicitly set the token in ApiService so headers can be resolved immediately
+        ApiService.token = result["token"];
+        
+        await box.put('token', result["token"]);
+        await box.put('username', username);
+        
+        final role = result["user"]["role"] ?? "User";
+        final userId = result["user"]["id"]?.toString() ?? '';
+        await box.put('role', role);
+        await box.put('userId', userId);
+        
+        // Fetch assigned modules from /admin/users/{id} immediately on login
+        List<Map<String, dynamic>> userModules = [];
+        if (userId.isNotEmpty) {
+          try {
+            final userProfile = await ApiService.getAdminUser(userId);
+            if (userProfile != null && userProfile["modules"] is List) {
+              userModules = List<Map<String, dynamic>>.from(userProfile["modules"]);
+            }
+          } catch (e) {
+            print("Error fetching user modules on login: $e");
+          }
+        }
+        // Fallback: use modules from the login response if getAdminUser returned nothing
+        if (userModules.isEmpty) {
+          final loginModules = result["user"]["modules"];
+          if (loginModules is List) {
+            userModules = List<Map<String, dynamic>>.from(loginModules);
+          }
+        }
+        await box.put('modules', userModules);
 
         if (mounted) {
           Navigator.pushReplacement(

@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/hydrant_api_service.dart';
 
 class HydrantAlertsPage extends StatefulWidget {
   const HydrantAlertsPage({super.key});
@@ -10,7 +9,7 @@ class HydrantAlertsPage extends StatefulWidget {
 }
 
 class _HydrantAlertsPageState extends State<HydrantAlertsPage> {
-  final api = HydrantApiService();
+  final api = ModuleApiService.hydrant;
   String? selectedSeverity;
   List<Map<String, dynamic>> alerts = [];
   bool isLoading = true;

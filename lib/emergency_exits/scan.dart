@@ -1,4 +1,5 @@
 
+import 'package:fire_new/services/module_api_service.dart';
 import '../utils/edit_helper.dart';
 import '../screens/equipment_history_page.dart';
 import 'dart:convert';
@@ -8,8 +9,6 @@ import 'package:fire_new/guided_capture_wizard.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../local_db.dart';
 import 'checklist.dart';
-import 'services/api_service.dart';
-
 class EmergencyExitsScanPage extends StatefulWidget {
   const EmergencyExitsScanPage({super.key});
   @override
@@ -18,7 +17,7 @@ class EmergencyExitsScanPage extends StatefulWidget {
 
 class _EmergencyExitsScanPageState extends State<EmergencyExitsScanPage> {
   final TextEditingController idController = TextEditingController();
-  final api = EmergencyExitsApiService();
+  final api = ModuleApiService.emergencyExit;
 
   Map<String, dynamic>? item;
   bool loading = false;
@@ -72,7 +71,7 @@ class _EmergencyExitsScanPageState extends State<EmergencyExitsScanPage> {
     EditHelper.editDetails(
       context: context,
       item: item!,
-      moduleCode: EmergencyExitsApiService.moduleCode,
+      moduleCode: ModuleApiService.emergencyExit.moduleCode,
       equipmentId: (item!["sos_code"] ?? item!["equipment_id"] ?? item!["id"] ?? "").toString(),
       onSaved: () => setState(() {}),
     );

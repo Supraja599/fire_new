@@ -1,7 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:fire_new/widgets/generic_checklist_page.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
-import 'services/api_service.dart';
+import 'package:fire_new/services/module_api_service.dart';
 
 class PASystemChecklistPage extends StatelessWidget {
   final Map<String, dynamic>? selectedEquipment;
@@ -22,6 +22,6 @@ class PASystemChecklistPage extends StatelessWidget {
     moduleName: 'PA System',
     primaryColor: const Color(0xFF1976D2),
     eventIdPrefix: 'pa_system',
-    fetchChecklist: () => PASystemApiService().getChecklist(),
+    fetchChecklist: () => ModuleApiService.paSystem.getChecklist(),
   );
 }

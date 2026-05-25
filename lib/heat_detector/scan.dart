@@ -1,4 +1,5 @@
 
+import 'package:fire_new/services/module_api_service.dart';
 import '../utils/edit_helper.dart';
 import '../screens/equipment_history_page.dart';
 import 'package:flutter/material.dart';
@@ -7,8 +8,6 @@ import 'package:fire_new/guided_capture_wizard.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../local_db.dart';
 import 'checklist.dart';
-import 'services/api_service.dart';
-
 class HeatDetectorScanPage extends StatefulWidget {
   const HeatDetectorScanPage({super.key});
   @override
@@ -17,7 +16,7 @@ class HeatDetectorScanPage extends StatefulWidget {
 
 class _HeatDetectorScanPageState extends State<HeatDetectorScanPage> {
   final TextEditingController idController = TextEditingController();
-  final api = HeatDetectorApiService();
+  final api = ModuleApiService.heatDetector;
   Map<String, dynamic>? item;
   bool loading = false;
   bool showScanner = true;
@@ -52,7 +51,7 @@ class _HeatDetectorScanPageState extends State<HeatDetectorScanPage> {
     EditHelper.editDetails(
       context: context,
       item: item!,
-      moduleCode: HeatDetectorApiService.moduleCode,
+      moduleCode: ModuleApiService.heatDetector.moduleCode,
       equipmentId: (item!["sos_code"] ?? item!["equipment_id"] ?? item!["id"] ?? "").toString(),
       onSaved: () => setState(() {}),
     );

@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class CODetectorAlertsPage extends StatefulWidget {
   const CODetectorAlertsPage({super.key});
@@ -10,7 +9,7 @@ class CODetectorAlertsPage extends StatefulWidget {
 }
 
 class _CODetectorAlertsPageState extends State<CODetectorAlertsPage> {
-  final api = CODetectorApiService();
+  final api = ModuleApiService.coDetector;
 
   List<Map<String, dynamic>> alerts = [];
   bool isLoading = true;

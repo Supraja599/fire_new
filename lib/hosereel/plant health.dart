@@ -1,8 +1,7 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../widgets/equipment_list_page.dart';
-
-import 'services/apiservice.dart';
 
 class HoseReelPlantHealthPage extends StatefulWidget {
   const HoseReelPlantHealthPage({super.key});
@@ -12,7 +11,7 @@ class HoseReelPlantHealthPage extends StatefulWidget {
 }
 
 class _HoseReelPlantHealthPageState extends State<HoseReelPlantHealthPage> {
-  final api = HoseReelApiService();
+  final api = ModuleApiService.hoseReel;
 
   int active = 0;
   int service = 0;

@@ -7,7 +7,7 @@ import 'package:fire_new/guided_capture_wizard.dart';
 
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'checklist.dart';
-import 'services/api_service.dart';
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/local_db.dart';
 
 class PASystemInspectionPage extends StatefulWidget {
@@ -19,7 +19,7 @@ class PASystemInspectionPage extends StatefulWidget {
 }
 
 class _PASystemInspectionPageState extends State<PASystemInspectionPage> {
-  final api = PASystemApiService();
+  final api = ModuleApiService.paSystem;
   final TextEditingController idController = TextEditingController();
 
   List<Map<String, dynamic>> allEquipment = [];

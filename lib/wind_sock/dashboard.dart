@@ -1,4 +1,5 @@
 ﻿import 'package:fire_new/widgets/generic_plant_health_page.dart';
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:flutter/material.dart';
@@ -11,8 +12,6 @@ import 'maintaince.dart';
 import 'planthealth.dart';
 import 'reports.dart';
 import 'inspection.dart';
-import 'services/api_service.dart';
-
 class WindSockDashboard extends StatefulWidget {
   const WindSockDashboard({super.key});
   @override
@@ -22,7 +21,7 @@ class WindSockDashboard extends StatefulWidget {
 class _WindSockDashboardState extends State<WindSockDashboard> {
   static const Color primary = Color(0xFF1976D2);
   static const Color accent = Color(0xFFBBDEFB);
-  final api = WindSockApiService();
+  final api = ModuleApiService.windSock;
   int total = 0, active = 0, health = 0;
   bool isLoading = true;
   Map<String, dynamic>? summaryData;
@@ -397,6 +396,7 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                           fallbackIcon: Icons.analytics_rounded,
                         ),
                         "Trends",
+                        _load,
                       ),
                       _ActionCard(
                         "Inspection",
@@ -404,6 +404,7 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                         const Color(0xFFD32F2F),
                         const WindSockInspectionPage(),
                         "Scan",
+                        _load,
                       ),
                       _ActionCard(
                         "Maintenance",
@@ -411,6 +412,7 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                         const Color(0xFFD32F2F),
                         const WindSockMaintenancePage(),
                         "Service",
+                        _load,
                       ),
                       _ActionCard(
                         "Alerts",
@@ -418,6 +420,7 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                         const Color(0xFFD32F2F),
                         const WindSockAlertsPage(),
                         "Critical",
+                        _load,
                       ),
                       _ActionCard(
                         "Plant Health",
@@ -431,6 +434,7 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                           fallbackIcon: Icons.health_and_safety_rounded,
                         ),
                         "Score",
+                        _load,
                       ),
                       _ActionCard(
                         "Reports",
@@ -438,6 +442,7 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                         const Color(0xFFD32F2F),
                         const WindSockReportsPage(),
                         "Logs",
+                        _load,
                       ),
                     ],
                   ),
@@ -459,12 +464,14 @@ class _ActionCard extends StatefulWidget {
   final Widget page;
   final String? subtitle;
 
+  final VoidCallback? onReturn;
   const _ActionCard(
     this.title,
     this.imagePath,
     this.color,
     this.page, [
     this.subtitle,
+    this.onReturn,
   ]);
 
   @override
@@ -536,10 +543,10 @@ class _ActionCardState extends State<_ActionCard> {
         onTapDown: (_) => setState(() => _scale = 0.94),
         onTapUp: (_) => setState(() => _scale = 1.0),
         onTapCancel: () => setState(() => _scale = 1.0),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => widget.page),
-        ),
+        onTap: () async {
+          await Navigator.push(context, MaterialPageRoute(builder: (_) => widget.page));
+          widget.onReturn?.call();
+        },
         child: AnimatedScale(
           scale: _scale,
           duration: const Duration(milliseconds: 120),

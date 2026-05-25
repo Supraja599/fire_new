@@ -1,4 +1,5 @@
 
+import 'package:fire_new/services/module_api_service.dart';
 import '../utils/edit_helper.dart';
 import '../screens/equipment_history_page.dart';
 import 'package:flutter/material.dart';
@@ -7,8 +8,6 @@ import 'package:fire_new/guided_capture_wizard.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../local_db.dart';
 import 'checklist.dart';
-import 'services/api_service.dart';
-
 class SpillKitsScanPage extends StatefulWidget {
   const SpillKitsScanPage({super.key});
   @override
@@ -17,7 +16,7 @@ class SpillKitsScanPage extends StatefulWidget {
 
 class _SpillKitsScanPageState extends State<SpillKitsScanPage> {
   final TextEditingController idController = TextEditingController();
-  final api = SpillKitsApiService();
+  final api = ModuleApiService.spillKit;
   Map<String, dynamic>? item;
   bool loading = false;
   bool showScanner = true;
@@ -52,7 +51,7 @@ class _SpillKitsScanPageState extends State<SpillKitsScanPage> {
     EditHelper.editDetails(
       context: context,
       item: item!,
-      moduleCode: SpillKitsApiService.moduleCode,
+      moduleCode: ModuleApiService.spillKit.moduleCode,
       equipmentId: (item!["sos_code"] ?? item!["equipment_id"] ?? item!["id"] ?? "").toString(),
       onSaved: () => setState(() {}),
     );

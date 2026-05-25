@@ -1,8 +1,7 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/widgets/generic_checklist_page.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
-import 'services/fire_trolley_api_service.dart';
-
 class FireTrolleyChecklistPage extends StatelessWidget {
   final Map<String, dynamic>? selectedEquipment;
   final bool fromScan;
@@ -22,6 +21,6 @@ class FireTrolleyChecklistPage extends StatelessWidget {
     moduleName: 'Fire Trolley',
     primaryColor: const Color(0xFFD84315),
     eventIdPrefix: 'fire_trolley',
-    fetchChecklist: () => FireTrolleyApiService().getChecklist(),
+    fetchChecklist: () => ModuleApiService.fireTrolley.getChecklist(),
   );
 }

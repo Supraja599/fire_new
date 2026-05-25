@@ -370,12 +370,12 @@ class _DashboardPageState extends State<DashboardPage> {
                             mainAxisSpacing: 10,
                             childAspectRatio: aspectRatio,
                             children: [
-                              _ActionCard("Analytics", "assets/dashboard_icons/analytics.png", const Color(0xFFD32F2F), const AnalyticsPage(), "Trends"),
-                              _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const InspectionPage(), "Scan"),
-                              _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const MaintenancePage(), "Service"),
-                              _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const AlertsPage(), "Critical"),
-                              _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), const PlantHealthPage(), "Score"),
-                              _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const ReportsPage(), "Logs"),
+                              _ActionCard("Analytics", "assets/dashboard_icons/analytics.png", const Color(0xFFD32F2F), const AnalyticsPage(), "Trends", _load),
+                              _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const InspectionPage(), "Scan", _load),
+                              _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const MaintenancePage(), "Service", _load),
+                              _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const AlertsPage(), "Critical", _load),
+                              _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), const PlantHealthPage(), "Score", _load),
+                              _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const ReportsPage(), "Logs", _load),
                             ],
                           ),
                         );
@@ -398,8 +398,9 @@ class _ActionCard extends StatefulWidget {
   final Color color;
   final Widget page;
   final String? subtitle;
+  final VoidCallback? onReturn;
 
-  const _ActionCard(this.title, this.imagePath, this.color, this.page, [this.subtitle]);
+  const _ActionCard(this.title, this.imagePath, this.color, this.page, [this.subtitle, this.onReturn]);
 
   @override
   State<_ActionCard> createState() => _ActionCardState();
@@ -468,7 +469,10 @@ class _ActionCardState extends State<_ActionCard> {
         onTapDown: (_) => setState(() => _scale = 0.94),
         onTapUp: (_) => setState(() => _scale = 1.0),
         onTapCancel: () => setState(() => _scale = 1.0),
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => widget.page)),
+        onTap: () async {
+          await Navigator.push(context, MaterialPageRoute(builder: (_) => widget.page));
+          widget.onReturn?.call();
+        },
         child: AnimatedScale(
           scale: _scale,
           duration: const Duration(milliseconds: 120),

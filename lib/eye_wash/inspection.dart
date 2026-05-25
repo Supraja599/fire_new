@@ -7,7 +7,7 @@ import 'package:fire_new/guided_capture_wizard.dart';
 
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'checklist.dart';
-import 'services/api_service.dart';
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/local_db.dart';
 
 class EyeWashInspectionPage extends StatefulWidget {
@@ -19,7 +19,7 @@ class EyeWashInspectionPage extends StatefulWidget {
 }
 
 class _EyeWashInspectionPageState extends State<EyeWashInspectionPage> {
-  final api = EyeWashApiService();
+  final api = ModuleApiService.eyeWash;
   final TextEditingController idController = TextEditingController();
 
   List<Map<String, dynamic>> allEquipment = [];

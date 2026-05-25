@@ -1,8 +1,7 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../widgets/equipment_list_page.dart';
-
-import 'services/sprinkler_api_service.dart';
 
 class SprinklerPlantHealthPage extends StatefulWidget {
   const SprinklerPlantHealthPage({super.key});
@@ -12,7 +11,7 @@ class SprinklerPlantHealthPage extends StatefulWidget {
 }
 
 class _SprinklerPlantHealthPageState extends State<SprinklerPlantHealthPage> {
-  final api = SprinklerApiService();
+  final api = ModuleApiService.sprinkler;
 
   int active = 0;
   int service = 0;

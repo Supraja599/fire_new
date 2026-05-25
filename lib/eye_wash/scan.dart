@@ -7,7 +7,7 @@ import 'package:fire_new/guided_capture_wizard.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../local_db.dart';
 import 'checklist.dart';
-import 'services/api_service.dart';
+import 'package:fire_new/services/module_api_service.dart';
 
 class EyeWashScanPage extends StatefulWidget {
   const EyeWashScanPage({super.key});
@@ -17,7 +17,7 @@ class EyeWashScanPage extends StatefulWidget {
 
 class _EyeWashScanPageState extends State<EyeWashScanPage> {
   final TextEditingController idController = TextEditingController();
-  final api = EyeWashApiService();
+  final api = ModuleApiService.eyeWash;
   Map<String, dynamic>? item;
   bool loading = false;
   bool showScanner = true;
@@ -52,7 +52,7 @@ class _EyeWashScanPageState extends State<EyeWashScanPage> {
     EditHelper.editDetails(
       context: context,
       item: item!,
-      moduleCode: EyeWashApiService.moduleCode,
+      moduleCode: api.moduleCode,
       equipmentId: (item!["sos_code"] ?? item!["equipment_id"] ?? item!["id"] ?? "").toString(),
       onSaved: () => setState(() {}),
     );

@@ -1,16 +1,15 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fire_new/common/module_reports_page.dart';
-import 'services/api_service.dart';
-
 class SpillKitsReportsPage extends StatelessWidget {
   const SpillKitsReportsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final api = SpillKitsApiService();
+    final api = ModuleApiService.spillKit;
     return ModuleReportsPage(
       moduleName: "Spill Kits",
-      moduleCode: SpillKitsApiService.moduleCode,
+      moduleCode: ModuleApiService.spillKit.moduleCode,
       getEquipmentList: api.getEquipmentList,
       getEquipmentByQuery: api.getEquipmentByQuery,
     );

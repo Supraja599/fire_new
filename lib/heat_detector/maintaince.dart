@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class HeatDetectorMaintenancePage extends StatefulWidget {
   const HeatDetectorMaintenancePage({super.key});
@@ -10,7 +9,7 @@ class HeatDetectorMaintenancePage extends StatefulWidget {
 }
 
 class _HeatDetectorMaintenancePageState extends State<HeatDetectorMaintenancePage> {
-  final api = HeatDetectorApiService();
+  final api = ModuleApiService.heatDetector;
   final List<Map<String, dynamic>> all = [];
 
   List<Map<String, dynamic>> today = [];

@@ -1,8 +1,7 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/widgets/generic_checklist_page.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
-import 'services/apiservice.dart';
-
 class HoseReelChecklistPage extends StatelessWidget {
   final Map<String, dynamic>? selectedEquipment;
   final bool fromScan;
@@ -22,6 +21,6 @@ class HoseReelChecklistPage extends StatelessWidget {
     moduleName: 'Hose Reel',
     primaryColor: const Color(0xFF00838F),
     eventIdPrefix: 'hosereel',
-    fetchChecklist: () => HoseReelApiService().getChecklist(),
+    fetchChecklist: () => ModuleApiService.hoseReel.getChecklist(),
   );
 }

@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class WindSockAlertsPage extends StatefulWidget {
   const WindSockAlertsPage({super.key});
@@ -10,7 +9,7 @@ class WindSockAlertsPage extends StatefulWidget {
 }
 
 class _WindSockAlertsPageState extends State<WindSockAlertsPage> {
-  final api = WindSockApiService();
+  final api = ModuleApiService.windSock;
 
   List<Map<String, dynamic>> alerts = [];
   bool isLoading = true;

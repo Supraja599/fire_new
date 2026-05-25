@@ -1,4 +1,5 @@
 ﻿import 'package:fire_new/widgets/generic_plant_health_page.dart';
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:flutter/material.dart';
@@ -11,8 +12,6 @@ import 'maintaince.dart';
 import 'planthealth.dart';
 import 'reports.dart';
 import 'inspection.dart';
-import 'services/api_service.dart';
-
 class SCBAUnitsDashboard extends StatefulWidget {
   const SCBAUnitsDashboard({super.key});
   @override
@@ -22,7 +21,7 @@ class SCBAUnitsDashboard extends StatefulWidget {
 class _SCBAUnitsDashboardState extends State<SCBAUnitsDashboard> {
   static const Color primary = Color(0xFF1976D2);
   static const Color accent = Color(0xFFBBDEFB);
-  final api = SCBAUnitsApiService();
+  final api = ModuleApiService.scbaUnit;
   int total = 0, active = 0, health = 0;
   bool isLoading = true;
   Map<String, dynamic>? summaryData;
@@ -370,18 +369,18 @@ class _SCBAUnitsDashboardState extends State<SCBAUnitsDashboard> {
                         apiService: api,
                         imagePath: "assets/scba_unit.png",
                         fallbackIcon: Icons.analytics_rounded,
-                      ), "Trends"),
-                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const SCBAUnitsInspectionPage(), "Scan"),
-                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const SCBAUnitsMaintenancePage(), "Service"),
-                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const SCBAUnitsAlertsPage(), "Critical"),
+                      ), "Trends", _load),
+                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const SCBAUnitsInspectionPage(), "Scan", _load),
+                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const SCBAUnitsMaintenancePage(), "Service", _load),
+                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const SCBAUnitsAlertsPage(), "Critical", _load),
                       _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(
                         title: "Scba Units Health",
                         shortName: "Scba Units",
                         apiService: api,
                         imagePath: "assets/scba_unit.png",
                         fallbackIcon: Icons.health_and_safety_rounded,
-                      ), "Score"),
-                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const SCBAUnitsReportsPage(), "Logs"),
+                      ), "Score", _load),
+                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const SCBAUnitsReportsPage(), "Logs", _load),
                     ],
                   ),
                 );
@@ -400,8 +399,9 @@ class _ActionCard extends StatefulWidget {
   final Color color;
   final Widget page;
   final String? subtitle;
+  final VoidCallback? onReturn;
 
-  const _ActionCard(this.title, this.imagePath, this.color, this.page, [this.subtitle]);
+  const _ActionCard(this.title, this.imagePath, this.color, this.page, [this.subtitle, this.onReturn]);
 
   @override
   State<_ActionCard> createState() => _ActionCardState();
@@ -470,7 +470,10 @@ class _ActionCardState extends State<_ActionCard> {
         onTapDown: (_) => setState(() => _scale = 0.94),
         onTapUp: (_) => setState(() => _scale = 1.0),
         onTapCancel: () => setState(() => _scale = 1.0),
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => widget.page)),
+        onTap: () async {
+          await Navigator.push(context, MaterialPageRoute(builder: (_) => widget.page));
+          widget.onReturn?.call();
+        },
         child: AnimatedScale(
           scale: _scale,
           duration: const Duration(milliseconds: 120),

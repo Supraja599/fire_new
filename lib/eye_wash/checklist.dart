@@ -1,7 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:fire_new/widgets/generic_checklist_page.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
-import 'services/api_service.dart';
+import 'package:fire_new/services/module_api_service.dart';
 
 class EyeWashChecklistPage extends StatelessWidget {
   final Map<String, dynamic>? selectedEquipment;
@@ -22,6 +22,6 @@ class EyeWashChecklistPage extends StatelessWidget {
     moduleName: 'Eye Wash',
     primaryColor: const Color(0xFF00838F),
     eventIdPrefix: 'eye_wash',
-    fetchChecklist: () => EyeWashApiService().getChecklist(),
+    fetchChecklist: () => ModuleApiService.eyeWash.getChecklist(),
   );
 }

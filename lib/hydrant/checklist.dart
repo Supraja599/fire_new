@@ -1,8 +1,7 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/widgets/generic_checklist_page.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
-import 'services/hydrant_api_service.dart';
-
 class HydrantChecklistPage extends StatelessWidget {
   final Map<String, dynamic>? selectedEquipment;
   final bool fromScan;
@@ -22,6 +21,6 @@ class HydrantChecklistPage extends StatelessWidget {
     moduleName: 'Hydrant',
     primaryColor: const Color(0xFFC62828),
     eventIdPrefix: 'hydrant',
-    fetchChecklist: () => HydrantApiService().getChecklist(),
+    fetchChecklist: () => ModuleApiService.hydrant.getChecklist(),
   );
 }

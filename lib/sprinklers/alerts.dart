@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/sprinkler_api_service.dart';
 
 class SprinklerAlertsPage extends StatefulWidget {
   const SprinklerAlertsPage({super.key});
@@ -10,7 +9,7 @@ class SprinklerAlertsPage extends StatefulWidget {
 }
 
 class _SprinklerAlertsPageState extends State<SprinklerAlertsPage> {
-  final api = SprinklerApiService();
+  final api = ModuleApiService.sprinkler;
   final List<Map<String, dynamic>> all = [];
 
   Map<DateTime, List<Map<String, dynamic>>> grouped = {};

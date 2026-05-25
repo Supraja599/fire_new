@@ -1,8 +1,7 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../widgets/equipment_list_page.dart';
-
-import 'services/hydrant_api_service.dart';
 
 class HydrantPlantHealthPage extends StatefulWidget {
   const HydrantPlantHealthPage({super.key});
@@ -12,7 +11,7 @@ class HydrantPlantHealthPage extends StatefulWidget {
 }
 
 class _HydrantPlantHealthPageState extends State<HydrantPlantHealthPage> {
-  final api = HydrantApiService();
+  final api = ModuleApiService.hydrant;
 
   int active = 0;
   int service = 0;

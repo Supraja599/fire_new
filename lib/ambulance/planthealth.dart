@@ -1,8 +1,7 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../widgets/equipment_list_page.dart';
-import 'services/api_service.dart';
-
 class AmbulancePlantHealthPage extends StatefulWidget {
   const AmbulancePlantHealthPage({super.key});
   @override
@@ -10,7 +9,7 @@ class AmbulancePlantHealthPage extends StatefulWidget {
 }
 
 class _AmbulancePlantHealthPageState extends State<AmbulancePlantHealthPage> {
-  final api = AmbulanceApiService();
+  final api = ModuleApiService.ambulance;
   int active = 0, service = 0, inspect = 0, expired = 0;
   List<Map<String, dynamic>> equipment = [];
   bool isLoading = true;

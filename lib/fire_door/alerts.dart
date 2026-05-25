@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class FireDoorAlertsPage extends StatefulWidget {
   const FireDoorAlertsPage({super.key});
@@ -10,7 +9,7 @@ class FireDoorAlertsPage extends StatefulWidget {
 }
 
 class _FireDoorAlertsPageState extends State<FireDoorAlertsPage> {
-  final api = FireDoorApiService();
+  final api = ModuleApiService.fireDoor;
 
   List<Map<String, dynamic>> alerts = [];
   bool isLoading = true;

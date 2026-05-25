@@ -4,6 +4,7 @@ import 'package:fire_new/common/report_utils.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
+import 'package:hive/hive.dart';
 import 'services/apiservice.dart';
 import 'local_db.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -66,6 +67,25 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
 
   Future<void> _prefillLatestInspection() async {
     try {
+      final box = Hive.isBoxOpen('inspectionBox') ? Hive.box<dynamic>('inspectionBox') : null;
+      if (box != null) {
+        final hiveEqId = box.get('last_equipment_id_fire_extinguisher')?.toString() ??
+                         box.get('last_equipment_id')?.toString();
+        final hiveInspector = box.get('last_inspector_name_fire_extinguisher')?.toString() ??
+                             box.get('last_inspector_name')?.toString();
+        if (hiveEqId != null && hiveEqId.isNotEmpty) {
+          if (mounted) {
+            setState(() {
+              sosController.text = hiveEqId;
+              if (hiveInspector != null && hiveInspector.isNotEmpty) {
+                inspectorNameController.text = hiveInspector;
+              }
+            });
+          }
+          return;
+        }
+      }
+
       // Search ALL modules, not just fire_extinguisher
       final pendingList = await LocalDB.getAllModuleInspections();
       if (pendingList.isNotEmpty) {

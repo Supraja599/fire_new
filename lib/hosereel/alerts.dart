@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/apiservice.dart';
 
 class HoseReelAlertsPage extends StatefulWidget {
   const HoseReelAlertsPage({super.key});
@@ -10,7 +9,7 @@ class HoseReelAlertsPage extends StatefulWidget {
 }
 
 class _HoseReelAlertsPageState extends State<HoseReelAlertsPage> {
-  final api = HoseReelApiService();
+  final api = ModuleApiService.hoseReel;
 
   List<Map<String, dynamic>> alerts = [];
   bool isLoading = true;

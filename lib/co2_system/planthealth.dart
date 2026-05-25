@@ -1,8 +1,7 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../widgets/equipment_list_page.dart';
-import 'services/api_service.dart';
-
 class CO2SystemPlantHealthPage extends StatefulWidget {
   const CO2SystemPlantHealthPage({super.key});
   @override
@@ -10,7 +9,7 @@ class CO2SystemPlantHealthPage extends StatefulWidget {
 }
 
 class _CO2SystemPlantHealthPageState extends State<CO2SystemPlantHealthPage> {
-  final api = CO2SystemApiService();
+  final api = ModuleApiService.co2System;
   int active = 0, service = 0, inspect = 0, expired = 0;
   List<Map<String, dynamic>> equipment = [];
   bool isLoading = true;

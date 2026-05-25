@@ -43,32 +43,8 @@ import 'co_detector/dashboard.dart';
 import 'fire_door/dashboard.dart';
 
 // Import API services for health fetching
-import 'services/apiservice.dart'; // Extinguishers
-import 'hydrant/services/hydrant_api_service.dart';
-import 'hosereel/services/apiservice.dart';
-import 'sprinklers/services/sprinkler_api_service.dart';
-import 'alarm_panel/services/alarm_panel_api_service.dart';
-import 'smoke_detector/services/smoke_detector_api_service.dart';
-import 'fire_trolley/services/fire_trolley_api_service.dart';
-import 'emergency_exits/services/api_service.dart';
-import 'emergency_lighting/services/api_service.dart';
-import 'pa_system/services/api_service.dart';
-import 'wind_sock/services/api_service.dart';
-import 'scba_units/services/api_service.dart';
-import 'ambulance/services/api_service.dart';
-import 'first_aid/services/api_service.dart';
-import 'emergency_shower/services/api_service.dart';
-import 'eye_wash/services/api_service.dart';
-import 'spill_kits/services/api_service.dart';
-import 'ppe_cabinets/services/api_service.dart';
-import 'co2_system/services/api_service.dart';
-import 'signage/services/api_service.dart';
-import 'emergency_comm/services/api_service.dart';
-import 'fire_blankets/services/api_service.dart';
-import 'muster_points/services/api_service.dart';
-import 'heat_detector/services/api_service.dart';
-import 'co_detector/services/api_service.dart';
-import 'fire_door/services/api_service.dart';
+import 'services/apiservice.dart';
+import 'services/module_api_service.dart';
 
 class IconsPage extends StatefulWidget {
   const IconsPage({super.key});
@@ -363,247 +339,38 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
 
     for (var m in assignedModulesData) {
       if (m is Map) {
-        assignedCodes.add(m['code']?.toString() ?? '');
-        assignedIds.add(int.tryParse(m['id']?.toString() ?? '0') ?? 0);
-        assignedCodes.add(m['module_code']?.toString() ?? '');
-        assignedIds.add(int.tryParse(m['module_id']?.toString() ?? '0') ?? 0);
+        final code = m['code']?.toString().isNotEmpty == true
+            ? m['code'].toString()
+            : m['module_code']?.toString();
+        if (code != null && code.isNotEmpty) assignedCodes.add(code);
+        final idStr = m['id']?.toString().isNotEmpty == true
+            ? m['id'].toString()
+            : m['module_id']?.toString();
+        final id = int.tryParse(idStr ?? '0') ?? 0;
+        if (id > 0) assignedIds.add(id);
       } else {
-        assignedCodes.add(m.toString());
-        assignedIds.add(int.tryParse(m.toString()) ?? 0);
+        final s = m.toString();
+        final id = int.tryParse(s) ?? 0;
+        if (id > 0) {
+          assignedIds.add(id);
+        } else if (s.isNotEmpty) {
+          assignedCodes.add(s);
+        }
       }
     }
 
-    final allModules = [
-      ModuleItem(
-        name: 'Extinguishers',
-        image: 'assets/extinguisher.png',
-        moduleCode: 'fire_extinguisher',
-        moduleId: 30,
-        page: const DashboardPage(),
-        fetchSummary: () => ApiService.getSummary(),
-      ),
-      ModuleItem(
-        name: 'Hose Reels',
-        image: 'assets/hosereel.png',
-        moduleCode: 'hose_reel',
-        moduleId: 33,
-        page: const hose.Dashboard(),
-        fetchSummary: () => HoseReelApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Sprinklers',
-        image: 'assets/sprinkler.png',
-        moduleCode: 'sprinkler',
-        moduleId: 31,
-        page: const SprinklerPage(),
-        fetchSummary: () => SprinklerApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Hydrants',
-        image: 'assets/firehydrant.png',
-        moduleCode: 'hydrant',
-        moduleId: 34,
-        page: const HydrantDashboardPage(),
-        fetchSummary: () => HydrantApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Alarm Panels',
-        image: 'assets/alarm_panel.png',
-        moduleCode: 'fire_alarm',
-        moduleId: 35,
-        page: const AlarmPanelDashboard(),
-        fetchSummary: () => AlarmPanelApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Smoke Det.',
-        image: 'assets/smoke_detector.png',
-        moduleCode: 'smoke_detector',
-        moduleId: 36,
-        page: const SmokeDetectorDashboard(),
-        fetchSummary: () => SmokeDetectorApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Fire Trolley',
-        image: 'assets/fire_trolley.png',
-        moduleCode: 'fire_trolley',
-        moduleId:
-            42, // Suppression system is 42 in spec, but fire_trolley is not in standard list. Let's map it logically.
-        // Wait, the spec has 30 to 54.
-        // 42 suppression_system.
-        // Let's use the codes from the spec.
-        page: const FireTrolleyDashboard(),
-        fetchSummary: () => FireTrolleyApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Exits',
-        image: 'assets/emergency_exit.png',
-        moduleCode: 'exit_sign',
-        moduleId: 39,
-        page: const EmergencyExitsDashboard(),
-        fetchSummary: () => EmergencyExitsApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Ambulance',
-        image: 'assets/ambulance.png',
-        moduleCode: 'ambulance',
-        moduleId: 0, // Not in spec
-        page: const AmbulanceDashboard(),
-        fetchSummary: () => AmbulanceApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Lighting',
-        image: 'assets/emergency_lighting.png',
-        moduleCode: 'emergency_light',
-        moduleId: 38,
-        page: const EmergencyLightingDashboard(),
-        fetchSummary: () => EmergencyLightingApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'PA System',
-        image: 'assets/pa_system.png',
-        moduleCode: 'pa_system',
-        moduleId: 44,
-        page: const PASystemDashboard(),
-        fetchSummary: () => PASystemApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Wind Sock',
-        image: 'assets/wind_sock.png',
-        moduleCode: 'wind_sock',
-        moduleId: 0, // Not in spec, using 0 as placeholder
-        page: const WindSockDashboard(),
-        fetchSummary: () => WindSockApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'SCBA Units',
-        image: 'assets/scba_unit.png',
-        moduleCode: 'scba_unit',
-        moduleId: 0, // Not in spec
-        page: const SCBAUnitsDashboard(),
-        fetchSummary: () => SCBAUnitsApiService().getSummary(),
-      ),
-      // ModuleItem(
-      //   name: 'Ambulance',
-      //   image: 'assets/ambulance.png',
-      //   moduleCode: 'ambulance',
-      //   moduleId: 0, // Not in spec
-      //   page: const AmbulanceDashboard(),
-      //   fetchSummary: () => AmbulanceApiService().getSummary(),
-      // ),
-      ModuleItem(
-        name: 'First Aid',
-        image: 'assets/first_aid.png',
-        moduleCode: 'first_aid_kit',
-        moduleId: 45,
-        page: const FirstAidDashboard(),
-        fetchSummary: () => FirstAidApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Shower',
-        image: 'assets/emergency_shower.png',
-        moduleCode: 'safety_shower',
-        moduleId: 47,
-        page: const EmergencyShowerDashboard(),
-        fetchSummary: () => EmergencyShowerApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Eye Wash',
-        image: 'assets/eye_wash.png',
-        moduleCode: 'eyewash_station',
-        moduleId: 46,
-        page: const EyeWashDashboard(),
-        fetchSummary: () => EyeWashApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Spill Kits',
-        image: 'assets/spill_kits.png',
-        moduleCode: 'spill_kit',
-        moduleId: 48,
-        page: const SpillKitsDashboard(),
-        fetchSummary: () => SpillKitsApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'PPE Cabs',
-        image: 'assets/ppe_cabinets.png',
-        moduleCode: 'ppe_station',
-        moduleId: 49,
-        page: const PPECabinetsDashboard(),
-        fetchSummary: () => PPECabinetsApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'CO2 System',
-        image: 'assets/co2_system.png',
-        moduleCode: 'suppression_system',
-        moduleId: 42,
-        page: const CO2SystemDashboard(),
-        fetchSummary: () => CO2SystemApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Signage',
-        image: 'assets/signage.png',
-        moduleCode: 'signage',
-        moduleId: 0, // Not in spec
-        page: const SignageDashboard(),
-        fetchSummary: () => SignageApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Comm.',
-        image: 'assets/emergency_comm.png',
-        moduleCode: 'emergency_comm',
-        moduleId: 0, // Not in spec
-        page: const EmergencyCommDashboard(),
-        fetchSummary: () => EmergencyCommApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Blankets',
-        image: 'assets/fire_blankets.png',
-        moduleCode: 'fire_blanket',
-        moduleId: 41,
-        page: const FireBlanketsDashboard(),
-        fetchSummary: () => FireBlanketsApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Muster Pt.',
-        image: 'assets/muster_points.png',
-        moduleCode: 'muster_point',
-        moduleId: 0, // Not in spec
-        page: const MusterPointsDashboard(),
-        fetchSummary: () => MusterPointsApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Heat Det.',
-        image: 'assets/heat_detector.png',
-        moduleCode: 'heat_detector',
-        moduleId: 37,
-        page: const HeatDetectorDashboard(),
-        fetchSummary: () => HeatDetectorApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'CO Detector',
-        image: 'assets/co_detector.png',
-        moduleCode: 'co_detector',
-        moduleId: 40,
-        page: const CODetectorDashboard(),
-        fetchSummary: () => CODetectorApiService().getSummary(),
-      ),
-      ModuleItem(
-        name: 'Fire Door',
-        image: 'assets/fire_door.png',
-        moduleCode: 'fire_door',
-        moduleId: 43,
-        page: const FireDoorDashboard(),
-        fetchSummary: () => FireDoorApiService().getSummary(),
-      ),
-    ];
+    final allModules = _buildAllModulesList();
 
-    // Filter modules based on role
-    // Updated: Both superadmin and admin see everything by default for easier development
+    // Filter modules based on role and assignments
+    bool shouldFilter = true;
     if (role == 'superadmin' || role == 'admin') {
-      print("✅ Full access granted for role: $role");
-      modules = allModules;
-    } else {
-      print("🔒 Restricted access: Filtering modules for $role");
-      // Match by Code OR by ID
+      if (assignedModulesData.isEmpty) {
+        shouldFilter = false;
+      }
+    }
+
+    if (shouldFilter) {
+      print("🔒 Filtering modules for $role based on assignments");
       modules = allModules
           .where(
             (m) =>
@@ -611,13 +378,13 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                 assignedIds.contains(m.moduleId),
           )
           .toList();
-
-      print(
-        "🎯 Found ${modules.length} matching modules for your assignments.",
-      );
+    } else {
+      print("✅ Full access granted for role: $role");
+      modules = allModules;
     }
 
     _loadHealthData();
+    _fetchDynamicModules();
   }
 
   @override
@@ -637,8 +404,9 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       globalData = await ApiService.getGlobalDashboard();
     } catch (_) {}
 
-    // 2. Map global data to modules if available
+    // 2. Map global data to modules if available (health data only — do NOT change which modules are shown)
     final List<dynamic> globalModules = globalData["modules"] ?? [];
+
     final List<ModuleItem> modulesNeedingFetch = [];
 
     // Step A: Resolve immediate local/global maps without network triggers
@@ -757,6 +525,278 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
     } else {
       mod.status = 'green';
     }
+  }
+
+  Future<void> _fetchDynamicModules() async {
+    final box = Hive.box('inspectionBox');
+    final String role = box.get('role', defaultValue: 'user').toString().toLowerCase().trim();
+    final String userId = box.get('userId', defaultValue: '').toString();
+    
+    if (userId.isEmpty) {
+      return;
+    }
+    
+    try {
+      final userProfile = await ApiService.getAdminUser(userId);
+      if (userProfile != null && mounted) {
+        final updatedModules = List<Map<String, dynamic>>.from(userProfile["modules"] ?? []);
+        
+        // Save to Hive cache
+        await box.put('modules', updatedModules);
+        
+        final Set<String> assignedCodes = {};
+        final Set<int> assignedIds = {};
+        for (var m in updatedModules) {
+          final code = m['code']?.toString().isNotEmpty == true
+              ? m['code'].toString()
+              : m['module_code']?.toString();
+          if (code != null && code.isNotEmpty) assignedCodes.add(code);
+          final idStr = m['id']?.toString().isNotEmpty == true
+              ? m['id'].toString()
+              : m['module_id']?.toString();
+          final id = int.tryParse(idStr ?? '0') ?? 0;
+          if (id > 0) assignedIds.add(id);
+        }
+        
+        final allModules = _buildAllModulesList();
+        
+        bool shouldFilter = true;
+        if (role == 'superadmin' || role == 'admin') {
+          if (updatedModules.isEmpty) {
+            shouldFilter = false;
+          }
+        }
+        
+        setState(() {
+          if (shouldFilter) {
+            modules = allModules.where((m) =>
+              assignedCodes.contains(m.moduleCode) ||
+              assignedIds.contains(m.moduleId)
+            ).toList();
+          } else {
+            modules = allModules;
+          }
+        });
+        
+        // Reload health scores for newly fetched modules
+        _loadHealthData();
+      }
+    } catch (e) {
+      print("Error fetching dynamic modules on load: $e");
+    }
+  }
+
+  List<ModuleItem> _buildAllModulesList() {
+    return [
+      ModuleItem(
+        name: 'Extinguishers',
+        image: 'assets/extinguisher.png',
+        moduleCode: 'fire_extinguisher',
+        moduleId: 30,
+        page: const DashboardPage(),
+        fetchSummary: () => ModuleApiService.extinguisher.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Hose Reels',
+        image: 'assets/hosereel.png',
+        moduleCode: 'hose_reel',
+        moduleId: 33,
+        page: const hose.Dashboard(),
+        fetchSummary: () => ModuleApiService.hoseReel.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Sprinklers',
+        image: 'assets/sprinkler.png',
+        moduleCode: 'sprinkler',
+        moduleId: 31,
+        page: const SprinklerPage(),
+        fetchSummary: () => ModuleApiService.sprinkler.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Hydrants',
+        image: 'assets/firehydrant.png',
+        moduleCode: 'hydrant',
+        moduleId: 34,
+        page: const HydrantDashboardPage(),
+        fetchSummary: () => ModuleApiService.hydrant.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Alarm Panels',
+        image: 'assets/alarm_panel.png',
+        moduleCode: 'fire_alarm',
+        moduleId: 35,
+        page: const AlarmPanelDashboard(),
+        fetchSummary: () => ModuleApiService.alarmPanel.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Smoke Det.',
+        image: 'assets/smoke_detector.png',
+        moduleCode: 'smoke_detector',
+        moduleId: 36,
+        page: const SmokeDetectorDashboard(),
+        fetchSummary: () => ModuleApiService.smokeDetector.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Fire Trolley',
+        image: 'assets/fire_trolley.png',
+        moduleCode: 'fire_trolley',
+        moduleId: 55,
+        page: const FireTrolleyDashboard(),
+        fetchSummary: () => ModuleApiService.fireTrolley.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Exits',
+        image: 'assets/emergency_exit.png',
+        moduleCode: 'exit_sign',
+        moduleId: 39,
+        page: const EmergencyExitsDashboard(),
+        fetchSummary: () => ModuleApiService.emergencyExit.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Ambulance',
+        image: 'assets/ambulance.png',
+        moduleCode: 'ambulance',
+        moduleId: 58,
+        page: const AmbulanceDashboard(),
+        fetchSummary: () => ModuleApiService.ambulance.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Lighting',
+        image: 'assets/emergency_lighting.png',
+        moduleCode: 'emergency_light',
+        moduleId: 38,
+        page: const EmergencyLightingDashboard(),
+        fetchSummary: () => ModuleApiService.emergencyLight.getSummary(),
+      ),
+      ModuleItem(
+        name: 'PA System',
+        image: 'assets/pa_system.png',
+        moduleCode: 'pa_system',
+        moduleId: 44,
+        page: const PASystemDashboard(),
+        fetchSummary: () => ModuleApiService.paSystem.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Wind Sock',
+        image: 'assets/wind_sock.png',
+        moduleCode: 'wind_sock',
+        moduleId: 56,
+        page: const WindSockDashboard(),
+        fetchSummary: () => ModuleApiService.windSock.getSummary(),
+      ),
+      ModuleItem(
+        name: 'SCBA Units',
+        image: 'assets/scba_unit.png',
+        moduleCode: 'scba_unit',
+        moduleId: 57,
+        page: const SCBAUnitsDashboard(),
+        fetchSummary: () => ModuleApiService.scbaUnit.getSummary(),
+      ),
+      ModuleItem(
+        name: 'First Aid',
+        image: 'assets/first_aid.png',
+        moduleCode: 'first_aid_kit',
+        moduleId: 45,
+        page: const FirstAidDashboard(),
+        fetchSummary: () => ModuleApiService.firstAid.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Shower',
+        image: 'assets/emergency_shower.png',
+        moduleCode: 'safety_shower',
+        moduleId: 47,
+        page: const EmergencyShowerDashboard(),
+        fetchSummary: () => ModuleApiService.safetyShower.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Eye Wash',
+        image: 'assets/eye_wash.png',
+        moduleCode: 'eyewash_station',
+        moduleId: 46,
+        page: const EyeWashDashboard(),
+        fetchSummary: () => ModuleApiService.eyeWash.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Spill Kits',
+        image: 'assets/spill_kits.png',
+        moduleCode: 'spill_kit',
+        moduleId: 48,
+        page: const SpillKitsDashboard(),
+        fetchSummary: () => ModuleApiService.spillKit.getSummary(),
+      ),
+      ModuleItem(
+        name: 'PPE Cabs',
+        image: 'assets/ppe_cabinets.png',
+        moduleCode: 'ppe_station',
+        moduleId: 49,
+        page: const PPECabinetsDashboard(),
+        fetchSummary: () => ModuleApiService.ppeCabinet.getSummary(),
+      ),
+      ModuleItem(
+        name: 'CO2 System',
+        image: 'assets/co2_system.png',
+        moduleCode: 'suppression_system',
+        moduleId: 42,
+        page: const CO2SystemDashboard(),
+        fetchSummary: () => ModuleApiService.co2System.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Signage',
+        image: 'assets/signage.png',
+        moduleCode: 'signage',
+        moduleId: 62,
+        page: const SignageDashboard(),
+        fetchSummary: () => ModuleApiService.signage.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Comm.',
+        image: 'assets/emergency_comm.png',
+        moduleCode: 'emergency_comm',
+        moduleId: 61,
+        page: const EmergencyCommDashboard(),
+        fetchSummary: () => ModuleApiService.emergencyComm.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Blankets',
+        image: 'assets/fire_blankets.png',
+        moduleCode: 'fire_blanket',
+        moduleId: 41,
+        page: const FireBlanketsDashboard(),
+        fetchSummary: () => ModuleApiService.fireBlanket.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Muster Pt.',
+        image: 'assets/muster_points.png',
+        moduleCode: 'muster_point',
+        moduleId: 59,
+        page: const MusterPointsDashboard(),
+        fetchSummary: () => ModuleApiService.musterPoint.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Heat Det.',
+        image: 'assets/heat_detector.png',
+        moduleCode: 'heat_detector',
+        moduleId: 37,
+        page: const HeatDetectorDashboard(),
+        fetchSummary: () => ModuleApiService.heatDetector.getSummary(),
+      ),
+      ModuleItem(
+        name: 'CO Detector',
+        image: 'assets/co_detector.png',
+        moduleCode: 'co_detector',
+        moduleId: 40,
+        page: const CODetectorDashboard(),
+        fetchSummary: () => ModuleApiService.coDetector.getSummary(),
+      ),
+      ModuleItem(
+        name: 'Fire Door',
+        image: 'assets/fire_door.png',
+        moduleCode: 'fire_door',
+        moduleId: 43,
+        page: const FireDoorDashboard(),
+        fetchSummary: () => ModuleApiService.fireDoor.getSummary(),
+      ),
+    ];
   }
 
   Future<void> _updatePendingCount() async {

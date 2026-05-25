@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/hydrant_api_service.dart';
 
 class HydrantMaintenancePage extends StatefulWidget {
   const HydrantMaintenancePage({super.key});
@@ -10,7 +9,7 @@ class HydrantMaintenancePage extends StatefulWidget {
 }
 
 class _HydrantMaintenancePageState extends State<HydrantMaintenancePage> {
-  final api = HydrantApiService();
+  final api = ModuleApiService.hydrant;
   List<Map<String, dynamic>> records = [];
   bool isLoading = true;
 

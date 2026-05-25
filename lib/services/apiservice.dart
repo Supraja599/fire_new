@@ -58,7 +58,7 @@ class ApiService {
   // =========================================================
   // 📋 FIRE EXTINGUISHER CHECKLIST API
   // =========================================================
-  static const String checklistUrl = "$baseUrl/modules/30/checklists";
+  static const String checklistUrl = "$baseUrl/checklists/fire_extinguisher";
 
   static Future<List<Map<String, dynamic>>> getFireChecklist() async {
     try {
@@ -68,6 +68,7 @@ class ApiService {
       if (decoded is List) return List<Map<String, dynamic>>.from(decoded);
       if (decoded is Map && decoded["items"] is List) return List<Map<String, dynamic>>.from(decoded["items"]);
       if (decoded is Map && decoded["data"] is List) return List<Map<String, dynamic>>.from(decoded["data"]);
+      if (decoded is Map && decoded["checklists"] is List) return List<Map<String, dynamic>>.from(decoded["checklists"]);
       return [];
     } catch (e) {
       print("CHECKLIST GET ERROR: $e");
@@ -567,6 +568,100 @@ class ApiService {
     } catch (e) {
       print("GET USER NAV ACCESS ERROR: $e");
       return [];
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getAdminModules() async {
+    try {
+      final url = Uri.parse("$baseUrl/admin/modules");
+      final res = await http.get(url, headers: headers).timeout(const Duration(seconds: 10));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded is List) {
+          return List<Map<String, dynamic>>.from(decoded);
+        } else if (decoded is Map && decoded["modules"] is List) {
+          return List<Map<String, dynamic>>.from(decoded["modules"]);
+        } else if (decoded is Map && decoded["data"] is List) {
+          return List<Map<String, dynamic>>.from(decoded["data"]);
+        }
+      }
+      return [];
+    } catch (e) {
+      print("GET ADMIN MODULES ERROR: $e");
+      return [];
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getUserModules(String userId) async {
+    try {
+      final url = Uri.parse("$baseUrl/admin/users/$userId/modules");
+      final res = await http.get(url, headers: headers).timeout(const Duration(seconds: 10));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded is List) {
+          return List<Map<String, dynamic>>.from(decoded);
+        } else if (decoded is Map && decoded["modules"] is List) {
+          return List<Map<String, dynamic>>.from(decoded["modules"]);
+        } else if (decoded is Map && decoded["data"] is List) {
+          return List<Map<String, dynamic>>.from(decoded["data"]);
+        }
+      }
+      return [];
+    } catch (e) {
+      print("GET USER MODULES ERROR: $e");
+      return [];
+    }
+  }
+
+  static Future<bool> assignUserModule(String userId, int moduleId, String accessLevel) async {
+    try {
+      final url = Uri.parse("$baseUrl/admin/users/$userId/modules");
+      final res = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode({
+          "module_id": moduleId,
+          "access_level": accessLevel,
+        }),
+      ).timeout(const Duration(seconds: 10));
+      return res.statusCode == 200 || res.statusCode == 201;
+    } catch (e) {
+      print("ASSIGN USER MODULE ERROR: $e");
+      return false;
+    }
+  }
+
+  static Future<bool> deleteUserModule(String userId, int moduleId) async {
+    try {
+      final url = Uri.parse("$baseUrl/admin/users/$userId/modules/$moduleId");
+      final res = await http.delete(url, headers: headers).timeout(const Duration(seconds: 10));
+      return res.statusCode == 200 || res.statusCode == 204;
+    } catch (e) {
+      print("DELETE USER MODULE ERROR: $e");
+      return false;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getAdminUser(String userId) async {
+    try {
+      final url = Uri.parse("$baseUrl/admin/users/$userId");
+      final res = await http.get(url, headers: headers).timeout(const Duration(seconds: 10));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded is Map<String, dynamic>) {
+          if (decoded.containsKey("user")) {
+            return decoded["user"] as Map<String, dynamic>;
+          }
+          if (decoded.containsKey("data")) {
+            return decoded["data"] as Map<String, dynamic>;
+          }
+          return decoded;
+        }
+      }
+      return null;
+    } catch (e) {
+      print("GET ADMIN USER ERROR: $e");
+      return null;
     }
   }
 }

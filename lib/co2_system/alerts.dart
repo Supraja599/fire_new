@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class CO2SystemAlertsPage extends StatefulWidget {
   const CO2SystemAlertsPage({super.key});
@@ -10,7 +9,7 @@ class CO2SystemAlertsPage extends StatefulWidget {
 }
 
 class _CO2SystemAlertsPageState extends State<CO2SystemAlertsPage> {
-  final api = CO2SystemApiService();
+  final api = ModuleApiService.co2System;
 
   List<Map<String, dynamic>> alerts = [];
   bool isLoading = true;

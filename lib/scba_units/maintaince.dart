@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class SCBAUnitsMaintenancePage extends StatefulWidget {
   const SCBAUnitsMaintenancePage({super.key});
@@ -10,7 +9,7 @@ class SCBAUnitsMaintenancePage extends StatefulWidget {
 }
 
 class _SCBAUnitsMaintenancePageState extends State<SCBAUnitsMaintenancePage> {
-  final api = SCBAUnitsApiService();
+  final api = ModuleApiService.scbaUnit;
   final List<Map<String, dynamic>> all = [];
 
   List<Map<String, dynamic>> today = [];

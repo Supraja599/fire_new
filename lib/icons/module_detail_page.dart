@@ -1,10 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fire_new/alarm_panel/services/alarm_panel_api_service.dart';
-import 'package:fire_new/hosereel/services/apiservice.dart';
-import 'package:fire_new/hydrant/services/hydrant_api_service.dart';
-import 'package:fire_new/sprinklers/services/sprinkler_api_service.dart';
-import 'package:fire_new/smoke_detector/services/smoke_detector_api_service.dart';
-import 'package:fire_new/fire_trolley/services/fire_trolley_api_service.dart';
 
 class ModuleDetailPage extends StatefulWidget {
   final String title;

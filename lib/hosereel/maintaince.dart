@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/apiservice.dart';
 
 class HoseReelMaintenancePage extends StatefulWidget {
   const HoseReelMaintenancePage({super.key});
@@ -10,7 +9,7 @@ class HoseReelMaintenancePage extends StatefulWidget {
 }
 
 class _HoseReelMaintenancePageState extends State<HoseReelMaintenancePage> {
-  final api = HoseReelApiService();
+  final api = ModuleApiService.hoseReel;
   final List<Map<String, dynamic>> all = [];
 
   List<Map<String, dynamic>> today = [];

@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-import 'services/alarm_panel_api_service.dart';
-
 class AlarmPanelAlertsPage extends StatefulWidget {
   const AlarmPanelAlertsPage({super.key});
 
@@ -9,7 +8,7 @@ class AlarmPanelAlertsPage extends StatefulWidget {
 }
 
 class _AlarmPanelAlertsPageState extends State<AlarmPanelAlertsPage> {
-  final api = AlarmPanelApiService();
+  final api = ModuleApiService.alarmPanel;
   List<Map<String, dynamic>> alerts = [];
   bool isLoading = true;
 

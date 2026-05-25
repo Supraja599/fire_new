@@ -1,4 +1,5 @@
 
+import 'package:fire_new/services/module_api_service.dart';
 import '../utils/edit_helper.dart';
 import '../screens/equipment_history_page.dart';
 import 'package:fire_new/services/apiservice.dart';
@@ -7,7 +8,6 @@ import 'package:fire_new/guided_capture_wizard.dart';
 
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'checklist.dart';
-import 'services/fire_trolley_api_service.dart';
 import 'package:fire_new/local_db.dart';
 
 class FireTrolleyInspectionPage extends StatefulWidget {
@@ -19,7 +19,7 @@ class FireTrolleyInspectionPage extends StatefulWidget {
 }
 
 class _FireTrolleyInspectionPageState extends State<FireTrolleyInspectionPage> {
-  final api = FireTrolleyApiService();
+  final api = ModuleApiService.fireTrolley;
   final TextEditingController idController = TextEditingController();
 
   List<Map<String, dynamic>> allEquipment = [];

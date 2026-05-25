@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class SCBAUnitsAlertsPage extends StatefulWidget {
   const SCBAUnitsAlertsPage({super.key});
@@ -10,7 +9,7 @@ class SCBAUnitsAlertsPage extends StatefulWidget {
 }
 
 class _SCBAUnitsAlertsPageState extends State<SCBAUnitsAlertsPage> {
-  final api = SCBAUnitsApiService();
+  final api = ModuleApiService.scbaUnit;
 
   List<Map<String, dynamic>> alerts = [];
   bool isLoading = true;

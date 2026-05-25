@@ -1,6 +1,5 @@
+import 'package:fire_new/services/module_api_service.dart';
 import 'package:flutter/material.dart';
-
-import 'services/api_service.dart';
 
 class WindSockMaintenancePage extends StatefulWidget {
   const WindSockMaintenancePage({super.key});
@@ -10,7 +9,7 @@ class WindSockMaintenancePage extends StatefulWidget {
 }
 
 class _WindSockMaintenancePageState extends State<WindSockMaintenancePage> {
-  final api = WindSockApiService();
+  final api = ModuleApiService.windSock;
   final List<Map<String, dynamic>> all = [];
 
   List<Map<String, dynamic>> today = [];

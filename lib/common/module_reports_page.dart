@@ -8,6 +8,7 @@ import 'package:excel/excel.dart' hide Border;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:hive/hive.dart';
 import 'package:fire_new/common/report_utils.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
 import 'package:fire_new/local_db.dart';
@@ -80,6 +81,23 @@ class _ModuleReportsPageState extends State<ModuleReportsPage>
 
   Future<void> _prefillLatestInspection() async {
     try {
+      final box = Hive.isBoxOpen('inspectionBox') ? Hive.box<dynamic>('inspectionBox') : null;
+      if (box != null) {
+        final hiveEqId = box.get('last_equipment_id_${widget.moduleCode}')?.toString() ??
+                         box.get('last_equipment_id')?.toString();
+        final hiveInspector = box.get('last_inspector_name_${widget.moduleCode}')?.toString() ??
+                             box.get('last_inspector_name')?.toString();
+        if (hiveEqId != null && hiveEqId.isNotEmpty) {
+          setState(() {
+            sosController.text = hiveEqId;
+            if (hiveInspector != null && hiveInspector.isNotEmpty) {
+              inspectorNameController.text = hiveInspector;
+            }
+          });
+          return;
+        }
+      }
+
       final list = await LocalDB.getAllModuleInspections(moduleCode: widget.moduleCode);
       if (list.isNotEmpty && mounted) {
         final last = list.last;
