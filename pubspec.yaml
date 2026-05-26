@@ -54,6 +54,7 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.21
   path: ^1.9.0
   connectivity_plus: ^6.0.5
+  get_it: ^7.6.0
 
 
 
@@ -107,7 +108,6 @@ flutter:
     - assets/check-list.png
     - assets/ehs.png
     - assets/123.png
-    - assets/11.png
     - assets/extinguisher.png
     - assets/alarm_panel.png
     - assets/smoke_detector.png
@@ -120,11 +120,6 @@ flutter:
     - assets/hosereel4.png
     - assets/hosereel5.png
     - assets/firehydrant.png
-    - assets/s1.png
-    - assets/s2.png
-    - assets/s3.png
-    - assets/s4.png
-    - assets/s5.png
     - assets/emergency_exit.png
     - assets/emergency_lighting.png
     - assets/pa_system.png

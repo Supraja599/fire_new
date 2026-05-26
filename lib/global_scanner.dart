@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:fire_new/local_db.dart';
 import 'package:fire_new/services/apiservice.dart';
+import 'package:fire_new/services/equipment_repository.dart';
+import 'package:fire_new/services/service_locator.dart';
 import 'dart:ui';
 
 // Import all 26 inspection pages
@@ -76,35 +78,16 @@ class _GlobalScannerPageState extends State<GlobalScannerPage> with SingleTicker
     });
 
     try {
-      // 1. Check local SQLite DB first (legacy extinguishers & other module equipment)
-      final localMatch = await LocalDB.findEquipmentModuleAndData(searchId);
-      if (localMatch != null) {
-        final moduleCode = localMatch['module_code']?.toString();
-        if (moduleCode != null) {
-          _navigateToModule(moduleCode, searchId);
-          return;
-        }
-      }
-
-      // 2. Fetch from cloud API globally
-      final apiMatch = await ApiService.searchAny(searchId);
-      if (apiMatch != null) {
-        final moduleCode = apiMatch['module_code']?.toString() ?? 'fire_extinguisher';
-        // Cache locally for offline availability next time
-        if (moduleCode == 'fire_extinguisher') {
-          await LocalDB.insert(searchId, apiMatch);
-        } else {
-          await LocalDB.saveSingleModuleRecord(
-            moduleCode: moduleCode,
-            recordType: 'equipment',
-            item: apiMatch,
-          );
-        }
+      // Fetch via Repository Layer (Online-first with local DB fallback)
+      final match = await locator<EquipmentRepository>().getEquipment(searchId);
+      
+      if (match != null) {
+        final moduleCode = match['module_code']?.toString() ?? 'fire_extinguisher';
         _navigateToModule(moduleCode, searchId);
         return;
       }
 
-      // 3. Not found anywhere
+      // Not found anywhere
       setState(() {
         isLoading = false;
         errorMessage = "Equipment not found. Please verify the ID or try again.";

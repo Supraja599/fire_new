@@ -1,16 +1,19 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class LocalDB {
   static Database? _db;
 
+  @visibleForTesting
+  static set database(Database? db) => _db = db;
+
   static Future<Database> get database async {
+    if (_db != null) return _db!;
     if (kIsWeb) {
       throw UnsupportedError("sqflite (LocalDB) is not supported on Web. Please run on Android or Windows.");
     }
-    if (_db != null) return _db!;
     _db = await _initDB();
     return _db!;
   }
@@ -160,7 +163,19 @@ class LocalDB {
     // 2. Try module_records table (all other modules)
     final trimmed = id.trim().toLowerCase();
     
-    // Search in ALL records (active, needs_service, equipment, etc.)
+    // FAST PATH: Direct query by record_id (indexed primary key search)
+    final fastResult = await db.query(
+      'module_records',
+      where: 'record_id = ?',
+      whereArgs: [trimmed],
+      limit: 1,
+    );
+
+    if (fastResult.isNotEmpty) {
+      return jsonDecode(fastResult.first['data'] as String);
+    }
+
+    // SLOW PATH (Fallback): Scan only if direct ID lookup misses
     final moduleResult = await db.query('module_records');
 
     for (final row in moduleResult) {
@@ -596,6 +611,22 @@ class LocalDB {
     }
 
     // 2. Try module_records table (all other modules)
+    // FAST PATH: Direct query by record_id using indexed primary key search
+    final fastResult = await db.query(
+      'module_records',
+      where: "record_type = 'equipment' AND record_id = ?",
+      whereArgs: [trimmed],
+      limit: 1,
+    );
+
+    if (fastResult.isNotEmpty) {
+      return {
+        'module_code': fastResult.first['module_code'],
+        'data': jsonDecode(fastResult.first['data'] as String),
+      };
+    }
+
+    // SLOW PATH (Fallback): Scan only if direct ID lookup misses
     final moduleResult = await db.query(
       'module_records',
       where: "record_type = 'equipment'",

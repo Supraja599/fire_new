@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:hive/hive.dart';
 import '../services/location_service.dart';
-import '../services/apiservice.dart';
-import '../local_db.dart';
+import '../services/equipment_repository.dart';
+import '../services/service_locator.dart';
 import '../guided_capture_wizard.dart';
 
 /// Unified checklist widget used by all 26 modules.
@@ -354,24 +354,15 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
       }
     } catch (_) {}
 
-    await LocalDB.queueModuleInspection(
-      eventId:     "${widget.eventIdPrefix}-${DateTime.now().millisecondsSinceEpoch}",
-      moduleCode:  widget.moduleCode,
-      equipmentId: id,
-      payload: {
-        "inspector_name": inspector,
-        "remarks":        _remarksCtrl.text.trim(),
-        "answers":        payloadAnswers,
-        "images":         _capturedImages ?? [],
-      },
-    );
-    await LocalDB.updateLocalEquipmentStatusAfterInspection(
+    await locator<EquipmentRepository>().submitInspection(
+      eventId: "${widget.eventIdPrefix}-${DateTime.now().millisecondsSinceEpoch}",
       moduleCode: widget.moduleCode,
       equipmentId: id,
+      inspectorName: inspector,
+      remarks: _remarksCtrl.text.trim(),
+      answers: payloadAnswers,
+      images: _capturedImages ?? [],
     );
-    // Fire-and-forget: push all unsynced inspections to backend in background.
-    // Offline-safe — silently ignored if no network.
-    ApiService.syncPendingModuleInspections().catchError((_) {});
     if (!mounted) return;
     setState(() => _saving = false);
     ScaffoldMessenger.of(context).showSnackBar(

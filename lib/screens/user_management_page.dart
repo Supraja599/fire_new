@@ -786,6 +786,7 @@ class _UserNavAccessSheetContentState extends State<_UserNavAccessSheetContent> 
                   Expanded(
                     child: DropdownButtonFormField<int>(
                       value: _selectedModuleId,
+                      isExpanded: true,
                       dropdownColor: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
                       style: TextStyle(color: widget.isDark ? Colors.white : Colors.black87),
                       decoration: InputDecoration(
@@ -810,7 +811,13 @@ class _UserNavAccessSheetContentState extends State<_UserNavAccessSheetContent> 
                             children: [
                               Icon(_getModuleIcon(mCode), color: Colors.red.shade700, size: 18),
                               const SizedBox(width: 10),
-                              Text(friendly, style: const TextStyle(fontSize: 14)),
+                              Expanded(
+                                child: Text(
+                                  friendly,
+                                  style: const TextStyle(fontSize: 14),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                             ],
                           ),
                         );

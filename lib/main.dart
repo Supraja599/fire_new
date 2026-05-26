@@ -8,9 +8,26 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'services/apiservice.dart';
 import 'sync_service.dart';
 import 'local_db.dart';
+import 'services/service_locator.dart';
+import 'services/error_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Setup Dependency Injection Locator
+  setupServiceLocator();
+
+  // Route Flutter Framework errors to global handler
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    AppExceptionHandler.handleError(details.exception, stackTrace: details.stack);
+  };
+
+  // Route asynchronous errors to global handler
+  PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+    AppExceptionHandler.handleError(error, stackTrace: stack);
+    return true;
+  };
 
   await Hive.initFlutter();
   final box = await Hive.openBox('inspectionBox');
@@ -35,6 +52,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: AppExceptionHandler.navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'SOS Emergency Platform',
       theme: ThemeData(
@@ -176,44 +194,8 @@ class _LoginPageState extends State<LoginPage>
         }
       }
     } catch (e) {
-      final errStr = e.toString().toLowerCase();
-      final isNetworkError = errStr.contains('socket') ||
-          errStr.contains('handshake') ||
-          errStr.contains('timeout') ||
-          errStr.contains('clientexception') ||
-          errStr.contains('network') ||
-          errStr.contains('failed host lookup');
-
       if (mounted) {
-        if (isNetworkError) {
-          showDialog(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: const Row(
-                children: [
-                  Icon(Icons.wifi_off_rounded, color: Colors.red, size: 28),
-                  SizedBox(width: 10),
-                  Text("No Connection", style: TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-              content: const Text(
-                "Could not connect to the server. Please check your internet connection and try again.",
-                style: TextStyle(fontSize: 14),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text("OK", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error: ${e.toString()}")),
-          );
-        }
+        AppExceptionHandler.handleError(e, context: context);
       }
     } finally {
       if (mounted) setState(() => isLoading = false);

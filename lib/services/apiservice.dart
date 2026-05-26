@@ -133,6 +133,38 @@ class ApiService {
     }
   }
 
+  static Future<Map<String, dynamic>?> searchAnyOnline(String input) async {
+    final id = normalize(input);
+    // 1. Try generic equipment endpoint first
+    final url = "$baseUrl/equipment/$id";
+    final res = await http.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 5));
+    
+    if (res.statusCode == 200) {
+      final decoded = jsonDecode(res.body);
+      if (decoded is Map<String, dynamic>) {
+        final data = decoded.containsKey("item") ? decoded["item"] : (decoded.containsKey("data") ? decoded["data"] : decoded);
+        if (data is Map<String, dynamic>) {
+          return data;
+        }
+      }
+    }
+
+    // 2. Fallback to legacy extinguishers endpoint
+    final extUrl = "$baseUrl/extinguishers/$id";
+    final extRes = await http.get(Uri.parse(extUrl), headers: headers).timeout(const Duration(seconds: 5));
+    if (extRes.statusCode == 200) {
+      final decoded = jsonDecode(extRes.body);
+      if (decoded is Map && decoded.containsKey("item")) {
+        return Map<String, dynamic>.from(decoded["item"]);
+      }
+      if (decoded is Map) {
+        return Map<String, dynamic>.from(decoded);
+      }
+    }
+
+    return null;
+  }
+
   // =========================================================
   // 📊 COMMON GET LIST HANDLER
   // =========================================================
