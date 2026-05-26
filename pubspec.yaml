@@ -98,49 +98,49 @@ flutter:
 
 
   assets:
-    - assets/instructions_front.png
-    - assets/instructions_scan.png
-    - assets/instructions_valve.png
-    - assets/instructions_surroundings.png
-    - assets/instructions_gauge_universal.png
-    - assets/instructions_surroundings_universal.png
-    - assets/scan.png
-    - assets/check-list.png
-    - assets/ehs.png
-    - assets/123.png
-    - assets/extinguisher.png
-    - assets/alarm_panel.png
-    - assets/smoke_detector.png
-    - assets/fire_trolley.png
-    - assets/sprinkler.png
+    - assets/instructions_front.webp
+    - assets/instructions_scan.webp
+    - assets/instructions_valve.webp
+    - assets/instructions_surroundings.webp
+    - assets/instructions_gauge_universal.webp
+    - assets/instructions_surroundings_universal.webp
+    - assets/scan.webp
+    - assets/check-list.webp
+    - assets/ehs.webp
+    - assets/123.webp
+    - assets/extinguisher.webp
+    - assets/alarm_panel.webp
+    - assets/smoke_detector.webp
+    - assets/fire_trolley.webp
+    - assets/sprinkler.webp
 
-    - assets/hosereel.png
-    - assets/hosereel2.png
-    - assets/hosereel3.png
-    - assets/hosereel4.png
-    - assets/hosereel5.png
-    - assets/firehydrant.png
-    - assets/emergency_exit.png
-    - assets/emergency_lighting.png
-    - assets/pa_system.png
-    - assets/wind_sock.png
-    - assets/scba_unit.png
-    - assets/ambulance.png
-    - assets/first_aid.png
-    - assets/emergency_shower.png
-    - assets/eye_wash.png
-    - assets/spill_kits.png
-    - assets/ppe_cabinets.png
-    - assets/co2_system.png
-    - assets/signage.png
-    - assets/emergency_comm.png
-    - assets/fire_blankets.png
-    - assets/muster_points.png
-    - assets/heat_detector.png
-    - assets/co_detector.png
-    - assets/fire_door.png
+    - assets/hosereel.webp
+    - assets/hosereel2.webp
+    - assets/hosereel3.webp
+    - assets/hosereel4.webp
+    - assets/hosereel5.webp
+    - assets/firehydrant.webp
+    - assets/emergency_exit.webp
+    - assets/emergency_lighting.webp
+    - assets/pa_system.webp
+    - assets/wind_sock.webp
+    - assets/scba_unit.webp
+    - assets/ambulance.webp
+    - assets/first_aid.webp
+    - assets/emergency_shower.webp
+    - assets/eye_wash.webp
+    - assets/spill_kits.webp
+    - assets/ppe_cabinets.webp
+    - assets/co2_system.webp
+    - assets/signage.webp
+    - assets/emergency_comm.webp
+    - assets/fire_blankets.webp
+    - assets/muster_points.webp
+    - assets/heat_detector.webp
+    - assets/co_detector.webp
+    - assets/fire_door.webp
     - assets/dashboard_icons/
-    - assets/eltrive_logo.jpg
+    - assets/eltrive_logo.webp
 
 
   # The following line ensures that the Material Icons font is
