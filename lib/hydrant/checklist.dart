@@ -9,7 +9,7 @@ class HydrantChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/firehydrant.png',
+    equipmentImage: 'assets/firehydrant.webp',
     nextScreen: HydrantChecklistPage(fromScan: false),
   );
 

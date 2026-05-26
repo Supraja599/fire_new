@@ -158,7 +158,7 @@ class _MusterPointsAlertsPageState extends State<MusterPointsAlertsPage> {
                 height: 100,
                 color: color.withOpacity(0.08),
                 child: Image.asset(
-                  'assets/muster_points.png',
+                  'assets/muster_points.webp',
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => Icon(_levelIcon(level), color: color, size: 30),
                 ),

@@ -303,7 +303,7 @@ Widget build(BuildContext context) {
                 } else {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                     selectedEquipment: item,
-                    equipmentImage: 'assets/firehydrant.png',
+                    equipmentImage: 'assets/firehydrant.webp',
                     nextScreen: HydrantChecklistPage(selectedEquipment: item),
                   )));
                 }

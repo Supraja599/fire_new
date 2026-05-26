@@ -9,7 +9,7 @@ class FirstAidChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/first_aid.png',
+    equipmentImage: 'assets/first_aid.webp',
     nextScreen: FirstAidChecklistPage(fromScan: false),
   );
 

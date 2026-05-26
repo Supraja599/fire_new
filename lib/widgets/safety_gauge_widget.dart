@@ -32,14 +32,14 @@ class _SafetyGaugeWidgetState extends State<SafetyGaugeWidget> {
 
   String _getImagePath() {
     final Map<String, String> imageMap = {
-      "Hydrant": "assets/firehydrant.png",
-      "Emergency Exits": "assets/emergency_exit.png",
-      "Sprinklers": "assets/sprinkler.png",
-      "Fire Extinguisher": "assets/extinguisher.png",
-      "Alarm Panel": "assets/alarm_panel.png",
+      "Hydrant": "assets/firehydrant.webp",
+      "Emergency Exits": "assets/emergency_exit.webp",
+      "Sprinklers": "assets/sprinkler.webp",
+      "Fire Extinguisher": "assets/extinguisher.webp",
+      "Alarm Panel": "assets/alarm_panel.webp",
     };
     if (imageMap.containsKey(widget.moduleName)) return imageMap[widget.moduleName]!;
-    return "assets/${widget.moduleName.toLowerCase().replaceAll(' ', '_')}.png";
+    return "assets/${widget.moduleName.toLowerCase().replaceAll(' ', '_')}.webp";
   }
 
   Future<void> _navigateTo(BuildContext context, String title, Color color, Future<List<Map<String, dynamic>>> Function() fetcher) async {

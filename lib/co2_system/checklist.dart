@@ -9,7 +9,7 @@ class CO2SystemChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/co2_system.png',
+    equipmentImage: 'assets/co2_system.webp',
     nextScreen: CO2SystemChecklistPage(fromScan: false),
   );
 

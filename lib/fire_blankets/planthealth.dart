@@ -45,7 +45,7 @@ class _FireBlanketsPlantHealthPageState extends State<FireBlanketsPlantHealthPag
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/fire_blankets.png",
+          imagePath: "assets/fire_blankets.webp",
           fallbackIcon: Icons.medical_services,
         ),
       ),

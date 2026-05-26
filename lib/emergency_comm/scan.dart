@@ -251,7 +251,7 @@ class _EmergencyCommScanPageState extends State<EmergencyCommScanPage> {
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                 selectedEquipment: item,
-                equipmentImage: 'assets/emergency_comm.png',
+                equipmentImage: 'assets/emergency_comm.webp',
                 nextScreen: EmergencyCommChecklistPage(selectedEquipment: item),
               )));
             }

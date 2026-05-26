@@ -158,7 +158,7 @@ class _HeatDetectorAlertsPageState extends State<HeatDetectorAlertsPage> {
                 height: 100,
                 color: color.withOpacity(0.08),
                 child: Image.asset(
-                  'assets/heat_detector.png',
+                  'assets/heat_detector.webp',
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => Icon(_levelIcon(level), color: color, size: 30),
                 ),

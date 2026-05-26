@@ -45,7 +45,7 @@ class _CO2SystemPlantHealthPageState extends State<CO2SystemPlantHealthPage> {
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/co2_system.png",
+          imagePath: "assets/co2_system.webp",
           fallbackIcon: Icons.medical_services,
         ),
       ),
@@ -61,9 +61,9 @@ class _CO2SystemPlantHealthPageState extends State<CO2SystemPlantHealthPage> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(children: [
-          Row(children: [_box("ACTIVE", active, Colors.green, 'assets/co2_system.png', () => _openStatusList("active", "Active CO2System", Colors.green)), const SizedBox(width: 12), _box("SERVICE", service, Colors.orange, 'assets/co2_system.png', () => _openStatusList("needs-service", "Needs Service", Colors.orange))]),
+          Row(children: [_box("ACTIVE", active, Colors.green, 'assets/co2_system.webp', () => _openStatusList("active", "Active CO2System", Colors.green)), const SizedBox(width: 12), _box("SERVICE", service, Colors.orange, 'assets/co2_system.webp', () => _openStatusList("needs-service", "Needs Service", Colors.orange))]),
           const SizedBox(height: 12),
-          Row(children: [_box("INSPECT", inspect, Colors.blue, 'assets/scan.png', () => _openStatusList("due-inspection", "Due Inspection", Colors.blue)), const SizedBox(width: 12), _box("EXPIRED", expired, Colors.red, 'assets/alarm_panel.png', () => _openStatusList("expired", "Expired CO2System", Colors.red))]),
+          Row(children: [_box("INSPECT", inspect, Colors.blue, 'assets/scan.webp', () => _openStatusList("due-inspection", "Due Inspection", Colors.blue)), const SizedBox(width: 12), _box("EXPIRED", expired, Colors.red, 'assets/alarm_panel.webp', () => _openStatusList("expired", "Expired CO2System", Colors.red))]),
           const SizedBox(height: 30),
           Container(
             height: 450, padding: const EdgeInsets.all(25), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(30), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20)]),

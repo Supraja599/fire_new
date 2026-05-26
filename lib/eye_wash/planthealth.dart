@@ -46,7 +46,7 @@ class _EyeWashPlantHealthPageState extends State<EyeWashPlantHealthPage> {
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/eye_wash.png",
+          imagePath: "assets/eye_wash.webp",
           fallbackIcon: Icons.medical_services,
         ),
       ),

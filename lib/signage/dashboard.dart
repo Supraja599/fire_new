@@ -232,9 +232,9 @@ class _SignageDashboardState extends State<SignageDashboard> {
                       ),
                       // 2. RIGHT: The HUGE, BEAUTIFUL Device Asset Image!
                       Hero(
-                        tag: "hero_image_assets/signage.png",
+                        tag: "hero_image_assets/signage.webp",
                         child: Image.asset(
-                          "assets/signage.png",
+                          "assets/signage.webp",
                           width: 130,
                           height: 130, // Exploded size!
                           fit: BoxFit.contain,
@@ -372,25 +372,25 @@ class _SignageDashboardState extends State<SignageDashboard> {
                     mainAxisSpacing: 10,
                     childAspectRatio: aspectRatio,
                     children: [
-                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.png", const Color(0xFFD32F2F), GenericAnalyticsPage(
+                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.webp", const Color(0xFFD32F2F), GenericAnalyticsPage(
                         title: "Signage Analytics",
                         shortName: "Signage",
                         assetLabel: "TOTAL SIGNAGE",
                         apiService: api,
-                        imagePath: "assets/signage.png",
+                        imagePath: "assets/signage.webp",
                         fallbackIcon: Icons.analytics_rounded,
                       ), "Trends", _loadData),
-                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const SignageInspectionPage(), "Scan", _loadData),
-                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const SignageMaintenancePage(), "Service", _loadData),
-                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const SignageAlertsPage(), "Critical", _loadData),
-                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(
+                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.webp", const Color(0xFFD32F2F), const SignageInspectionPage(), "Scan", _loadData),
+                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.webp", const Color(0xFFD32F2F), const SignageMaintenancePage(), "Service", _loadData),
+                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.webp", const Color(0xFFD32F2F), const SignageAlertsPage(), "Critical", _loadData),
+                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.webp", const Color(0xFFD32F2F), GenericPlantHealthPage(
                         title: "Signage Health",
                         shortName: "Signage",
                         apiService: api,
-                        imagePath: "assets/signage.png",
+                        imagePath: "assets/signage.webp",
                         fallbackIcon: Icons.health_and_safety_rounded,
                       ), "Score", _loadData),
-                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const SignageReportsPage(), "Logs", _loadData),
+                      _ActionCard("Reports", "assets/dashboard_icons/reports.webp", const Color(0xFFD32F2F), const SignageReportsPage(), "Logs", _loadData),
                     ],
                   ),
                 );

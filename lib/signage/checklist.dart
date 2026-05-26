@@ -9,7 +9,7 @@ class SignageChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/signage.png',
+    equipmentImage: 'assets/signage.webp',
     nextScreen: SignageChecklistPage(fromScan: false),
   );
 

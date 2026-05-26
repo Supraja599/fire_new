@@ -590,7 +590,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
     return [
       ModuleItem(
         name: 'Extinguishers',
-        image: 'assets/extinguisher.png',
+        image: 'assets/extinguisher.webp',
         moduleCode: 'fire_extinguisher',
         moduleId: 30,
         page: const DashboardPage(),
@@ -598,7 +598,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Hose Reels',
-        image: 'assets/hosereel.png',
+        image: 'assets/hosereel.webp',
         moduleCode: 'hose_reel',
         moduleId: 33,
         page: const hose.Dashboard(),
@@ -606,7 +606,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Sprinklers',
-        image: 'assets/sprinkler.png',
+        image: 'assets/sprinkler.webp',
         moduleCode: 'sprinkler',
         moduleId: 31,
         page: const SprinklerPage(),
@@ -614,7 +614,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Hydrants',
-        image: 'assets/firehydrant.png',
+        image: 'assets/firehydrant.webp',
         moduleCode: 'hydrant',
         moduleId: 34,
         page: const HydrantDashboardPage(),
@@ -622,7 +622,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Alarm Panels',
-        image: 'assets/alarm_panel.png',
+        image: 'assets/alarm_panel.webp',
         moduleCode: 'fire_alarm',
         moduleId: 35,
         page: const AlarmPanelDashboard(),
@@ -630,7 +630,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Smoke Det.',
-        image: 'assets/smoke_detector.png',
+        image: 'assets/smoke_detector.webp',
         moduleCode: 'smoke_detector',
         moduleId: 36,
         page: const SmokeDetectorDashboard(),
@@ -638,7 +638,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Fire Trolley',
-        image: 'assets/fire_trolley.png',
+        image: 'assets/fire_trolley.webp',
         moduleCode: 'fire_trolley',
         moduleId: 55,
         page: const FireTrolleyDashboard(),
@@ -646,7 +646,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Exits',
-        image: 'assets/emergency_exit.png',
+        image: 'assets/emergency_exit.webp',
         moduleCode: 'exit_sign',
         moduleId: 39,
         page: const EmergencyExitsDashboard(),
@@ -654,7 +654,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Ambulance',
-        image: 'assets/ambulance.png',
+        image: 'assets/ambulance.webp',
         moduleCode: 'ambulance',
         moduleId: 58,
         page: const AmbulanceDashboard(),
@@ -662,7 +662,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Lighting',
-        image: 'assets/emergency_lighting.png',
+        image: 'assets/emergency_lighting.webp',
         moduleCode: 'emergency_light',
         moduleId: 38,
         page: const EmergencyLightingDashboard(),
@@ -670,7 +670,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'PA System',
-        image: 'assets/pa_system.png',
+        image: 'assets/pa_system.webp',
         moduleCode: 'pa_system',
         moduleId: 44,
         page: const PASystemDashboard(),
@@ -678,7 +678,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Wind Sock',
-        image: 'assets/wind_sock.png',
+        image: 'assets/wind_sock.webp',
         moduleCode: 'wind_sock',
         moduleId: 56,
         page: const WindSockDashboard(),
@@ -686,7 +686,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'SCBA Units',
-        image: 'assets/scba_unit.png',
+        image: 'assets/scba_unit.webp',
         moduleCode: 'scba_unit',
         moduleId: 57,
         page: const SCBAUnitsDashboard(),
@@ -694,7 +694,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'First Aid',
-        image: 'assets/first_aid.png',
+        image: 'assets/first_aid.webp',
         moduleCode: 'first_aid_kit',
         moduleId: 45,
         page: const FirstAidDashboard(),
@@ -702,7 +702,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Shower',
-        image: 'assets/emergency_shower.png',
+        image: 'assets/emergency_shower.webp',
         moduleCode: 'safety_shower',
         moduleId: 47,
         page: const EmergencyShowerDashboard(),
@@ -710,7 +710,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Eye Wash',
-        image: 'assets/eye_wash.png',
+        image: 'assets/eye_wash.webp',
         moduleCode: 'eyewash_station',
         moduleId: 46,
         page: const EyeWashDashboard(),
@@ -718,7 +718,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Spill Kits',
-        image: 'assets/spill_kits.png',
+        image: 'assets/spill_kits.webp',
         moduleCode: 'spill_kit',
         moduleId: 48,
         page: const SpillKitsDashboard(),
@@ -726,7 +726,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'PPE Cabs',
-        image: 'assets/ppe_cabinets.png',
+        image: 'assets/ppe_cabinets.webp',
         moduleCode: 'ppe_station',
         moduleId: 49,
         page: const PPECabinetsDashboard(),
@@ -734,7 +734,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'CO2 System',
-        image: 'assets/co2_system.png',
+        image: 'assets/co2_system.webp',
         moduleCode: 'suppression_system',
         moduleId: 42,
         page: const CO2SystemDashboard(),
@@ -742,7 +742,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Signage',
-        image: 'assets/signage.png',
+        image: 'assets/signage.webp',
         moduleCode: 'signage',
         moduleId: 62,
         page: const SignageDashboard(),
@@ -750,7 +750,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Comm.',
-        image: 'assets/emergency_comm.png',
+        image: 'assets/emergency_comm.webp',
         moduleCode: 'emergency_comm',
         moduleId: 61,
         page: const EmergencyCommDashboard(),
@@ -758,7 +758,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Blankets',
-        image: 'assets/fire_blankets.png',
+        image: 'assets/fire_blankets.webp',
         moduleCode: 'fire_blanket',
         moduleId: 41,
         page: const FireBlanketsDashboard(),
@@ -766,7 +766,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Muster Pt.',
-        image: 'assets/muster_points.png',
+        image: 'assets/muster_points.webp',
         moduleCode: 'muster_point',
         moduleId: 59,
         page: const MusterPointsDashboard(),
@@ -774,7 +774,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Heat Det.',
-        image: 'assets/heat_detector.png',
+        image: 'assets/heat_detector.webp',
         moduleCode: 'heat_detector',
         moduleId: 37,
         page: const HeatDetectorDashboard(),
@@ -782,7 +782,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'CO Detector',
-        image: 'assets/co_detector.png',
+        image: 'assets/co_detector.webp',
         moduleCode: 'co_detector',
         moduleId: 40,
         page: const CODetectorDashboard(),
@@ -790,7 +790,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
       ),
       ModuleItem(
         name: 'Fire Door',
-        image: 'assets/fire_door.png',
+        image: 'assets/fire_door.webp',
         moduleCode: 'fire_door',
         moduleId: 43,
         page: const FireDoorDashboard(),
@@ -885,7 +885,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                 child: Opacity(
                   opacity: isDark ? 0.03 : 0.07,
                   child: Image.asset(
-                    'assets/eltrive_logo.jpg',
+                    'assets/eltrive_logo.webp',
                     width: 260,
                     fit: BoxFit.contain,
                   ),
@@ -924,7 +924,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                               ),
                               child: ClipOval(
                                 child: Image.asset(
-                                  'assets/eltrive_logo.jpg',
+                                  'assets/eltrive_logo.webp',
                                   height: 32,
                                   width: 32,
                                   fit: BoxFit.cover,
@@ -1140,7 +1140,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                                   ),
                                   child: ClipOval(
                                     child: Image.asset(
-                                      'assets/eltrive_logo.jpg',
+                                      'assets/eltrive_logo.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),

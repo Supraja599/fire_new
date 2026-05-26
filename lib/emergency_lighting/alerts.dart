@@ -159,7 +159,7 @@ class _EmergencyLightingAlertsPageState extends State<EmergencyLightingAlertsPag
                 height: 100,
                 color: color.withOpacity(0.08),
                 child: Image.asset(
-                  'assets/emergency_lighting.png',
+                  'assets/emergency_lighting.webp',
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => Icon(_levelIcon(level), color: color, size: 30),
                 ),

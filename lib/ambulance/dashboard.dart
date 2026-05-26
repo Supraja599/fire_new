@@ -226,9 +226,9 @@ class _AmbulanceDashboardState extends State<AmbulanceDashboard> {
                       ),
                       // 2. RIGHT: The HUGE, BEAUTIFUL Device Asset Image!
                       Hero(
-                        tag: "hero_image_assets/ambulance.png",
+                        tag: "hero_image_assets/ambulance.webp",
                         child: Image.asset(
-                          "assets/ambulance.png",
+                          "assets/ambulance.webp",
                           width: 130,
                           height: 130, // Exploded size!
                           fit: BoxFit.contain,
@@ -366,25 +366,25 @@ class _AmbulanceDashboardState extends State<AmbulanceDashboard> {
                     mainAxisSpacing: 10,
                     childAspectRatio: aspectRatio,
                     children: [
-                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.png", const Color(0xFFD32F2F), GenericAnalyticsPage(
+                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.webp", const Color(0xFFD32F2F), GenericAnalyticsPage(
                         title: "Ambulance Analytics",
                         shortName: "Ambulance",
                         assetLabel: "TOTAL AMBULANCE",
                         apiService: api,
-                        imagePath: "assets/ambulance.png",
+                        imagePath: "assets/ambulance.webp",
                         fallbackIcon: Icons.analytics_rounded,
                       ), "Trends", _loadData),
-                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const AmbulanceInspectionPage(), "Scan", _loadData),
-                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const AmbulanceMaintenancePage(), "Service", _loadData),
-                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const AmbulanceAlertsPage(), "Critical", _loadData),
-                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(
+                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.webp", const Color(0xFFD32F2F), const AmbulanceInspectionPage(), "Scan", _loadData),
+                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.webp", const Color(0xFFD32F2F), const AmbulanceMaintenancePage(), "Service", _loadData),
+                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.webp", const Color(0xFFD32F2F), const AmbulanceAlertsPage(), "Critical", _loadData),
+                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.webp", const Color(0xFFD32F2F), GenericPlantHealthPage(
                         title: "Ambulance Health",
                         shortName: "Ambulance",
                         apiService: api,
-                        imagePath: "assets/ambulance.png",
+                        imagePath: "assets/ambulance.webp",
                         fallbackIcon: Icons.health_and_safety_rounded,
                       ), "Score", _loadData),
-                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const AmbulanceReportsPage(), "Logs", _loadData),
+                      _ActionCard("Reports", "assets/dashboard_icons/reports.webp", const Color(0xFFD32F2F), const AmbulanceReportsPage(), "Logs", _loadData),
                     ],
                   ),
                 );

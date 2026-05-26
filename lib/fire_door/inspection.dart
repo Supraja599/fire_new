@@ -303,7 +303,7 @@ Widget build(BuildContext context) {
                 } else {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                     selectedEquipment: item,
-                    equipmentImage: 'assets/fire_door.png',
+                    equipmentImage: 'assets/fire_door.webp',
                     nextScreen: FireDoorChecklistPage(selectedEquipment: item),
                   )));
                 }

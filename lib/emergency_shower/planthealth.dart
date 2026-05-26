@@ -45,7 +45,7 @@ class _EmergencyShowerPlantHealthPageState extends State<EmergencyShowerPlantHea
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/emergency_shower.png",
+          imagePath: "assets/emergency_shower.webp",
           fallbackIcon: Icons.medical_services,
         ),
       ),

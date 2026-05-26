@@ -11,7 +11,7 @@ class ChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/extinguisher.png',
+    equipmentImage: 'assets/extinguisher.webp',
     nextScreen: const ChecklistPage(fromScan: false),
   );
 

@@ -45,7 +45,7 @@ class _AmbulancePlantHealthPageState extends State<AmbulancePlantHealthPage> {
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/ambulance.png",
+          imagePath: "assets/ambulance.webp",
           fallbackIcon: Icons.medical_services,
         ),
       ),

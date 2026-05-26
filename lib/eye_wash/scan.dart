@@ -252,7 +252,7 @@ class _EyeWashScanPageState extends State<EyeWashScanPage> {
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                 selectedEquipment: item,
-                equipmentImage: 'assets/eye_wash.png',
+                equipmentImage: 'assets/eye_wash.webp',
                 nextScreen: EyeWashChecklistPage(selectedEquipment: item),
               )));
             }

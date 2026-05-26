@@ -81,7 +81,7 @@ class _SprinklerPlantHealthPageState extends State<SprinklerPlantHealthPage> {
           title: title,
           color: color,
           items: list,
-          imagePath: 'assets/sprinkler.png',
+          imagePath: 'assets/sprinkler.webp',
           fallbackIcon: Icons.water_drop,
         ),
       ),

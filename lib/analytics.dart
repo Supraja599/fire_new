@@ -267,7 +267,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           title: "$label ${"Extinguisher"}",
           items: list,
           color: color,
-          imagePath: "assets/extinguisher.png",
+          imagePath: "assets/extinguisher.webp",
           fallbackIcon: Icons.fire_extinguisher,
         ),
       ),
@@ -446,7 +446,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                             children: [
                               // Dynamically load the 3D Asset thumbnail inside the Ring center!
                               Image.asset(
-                                "assets/extinguisher.png",
+                                "assets/extinguisher.webp",
                                 width: 56, // Increased from 45
                                 height: 56, // Increased from 45
                                 fit: BoxFit.contain,
@@ -508,7 +508,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Image.asset(
-                              "assets/extinguisher.png",
+                              "assets/extinguisher.webp",
                               width: 38,
                               height: 38,
                               fit: BoxFit.contain,

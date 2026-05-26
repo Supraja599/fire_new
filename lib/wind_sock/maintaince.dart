@@ -182,7 +182,7 @@ class _WindSockMaintenancePageState extends State<WindSockMaintenancePage> {
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/wind_sock.png',
+                              'assets/wind_sock.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -236,7 +236,7 @@ class _WindSockMaintenancePageState extends State<WindSockMaintenancePage> {
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/wind_sock.png',
+                                      'assets/wind_sock.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -357,7 +357,7 @@ class _WindSockMaintenancePageState extends State<WindSockMaintenancePage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/wind_sock.png',
+                    'assets/wind_sock.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

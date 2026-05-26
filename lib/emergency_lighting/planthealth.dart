@@ -46,7 +46,7 @@ class _EmergencyLightingPlantHealthPageState extends State<EmergencyLightingPlan
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/emergency_lighting.png",
+          imagePath: "assets/emergency_lighting.webp",
           fallbackIcon: Icons.lightbulb,
         ),
       ),

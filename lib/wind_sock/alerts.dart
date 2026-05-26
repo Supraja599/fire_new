@@ -158,7 +158,7 @@ class _WindSockAlertsPageState extends State<WindSockAlertsPage> {
                 height: 100,
                 color: color.withOpacity(0.08),
                 child: Image.asset(
-                  'assets/wind_sock.png',
+                  'assets/wind_sock.webp',
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => Icon(_levelIcon(level), color: color, size: 30),
                 ),

@@ -45,7 +45,7 @@ class _FirstAidPlantHealthPageState extends State<FirstAidPlantHealthPage> {
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/first_aid.png",
+          imagePath: "assets/first_aid.webp",
           fallbackIcon: Icons.medical_services,
         ),
       ),

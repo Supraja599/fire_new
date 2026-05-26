@@ -10,7 +10,7 @@ class EmergencyLightingChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/emergency_lighting.png',
+    equipmentImage: 'assets/emergency_lighting.webp',
     nextScreen: EmergencyLightingChecklistPage(fromScan: false),
   );
 

@@ -9,7 +9,7 @@ class CODetectorChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/co_detector.png',
+    equipmentImage: 'assets/co_detector.webp',
     nextScreen: CODetectorChecklistPage(fromScan: false),
   );
 

@@ -251,7 +251,7 @@ class _EmergencyShowerScanPageState extends State<EmergencyShowerScanPage> {
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                 selectedEquipment: item,
-                equipmentImage: 'assets/emergency_shower.png',
+                equipmentImage: 'assets/emergency_shower.webp',
                 nextScreen: EmergencyShowerChecklistPage(selectedEquipment: item),
               )));
             }

@@ -45,7 +45,7 @@ class _PPECabinetsPlantHealthPageState extends State<PPECabinetsPlantHealthPage>
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/ppe_cabinets.png",
+          imagePath: "assets/ppe_cabinets.webp",
           fallbackIcon: Icons.medical_services,
         ),
       ),

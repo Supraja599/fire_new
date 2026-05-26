@@ -11,7 +11,7 @@ class AnalyticsPage extends StatelessWidget {
       shortName: "Alarm Panel",
       assetLabel: "TOTAL ALARM PANEL",
       apiService: ModuleApiService.alarmPanel,
-      imagePath: "assets/alarm_panel.png",
+      imagePath: "assets/alarm_panel.webp",
       fallbackIcon: Icons.analytics_rounded,
     );
   }

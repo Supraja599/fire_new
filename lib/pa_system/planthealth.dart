@@ -46,7 +46,7 @@ class _PASystemPlantHealthPageState extends State<PASystemPlantHealthPage> {
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/pa_system.png",
+          imagePath: "assets/pa_system.webp",
           fallbackIcon: Icons.volume_up,
         ),
       ),

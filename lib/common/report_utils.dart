@@ -8,32 +8,32 @@ import 'package:fire_new/local_db.dart';
 
 /// Asset path for each module's equipment image, shown in the PDF report.
 const Map<String, String> _moduleAssetPaths = {
-  'fire_extinguisher': 'assets/extinguisher.png',
-  'hose_reel':         'assets/hosereel.png',
-  'fire_alarm':        'assets/alarm_panel.png',
-  'smoke_detector':    'assets/smoke_detector.png',
-  'heat_detector':     'assets/heat_detector.png',
-  'co_detector':       'assets/co_detector.png',
-  'suppression_system':'assets/co2_system.png',
-  'safety_shower':     'assets/emergency_shower.png',
-  'eyewash_station':   'assets/eye_wash.png',
-  'fire_blanket':      'assets/fire_blankets.png',
-  'ppe_station':       'assets/ppe_cabinets.png',
-  'spill_kit':         'assets/spill_kits.png',
-  'fire_trolley':      'assets/fire_trolley.png',
-  'ambulance':         'assets/ambulance.png',
-  'hydrant':           'assets/firehydrant.png',
-  'sprinkler':         'assets/sprinkler.png',
-  'fire_door':         'assets/fire_door.png',
-  'exit_sign':         'assets/emergency_exit.png',
-  'signage':           'assets/signage.png',
-  'muster_point':      'assets/muster_points.png',
-  'emergency_light':   'assets/emergency_lighting.png',
-  'scba_unit':         'assets/scba_unit.png',
-  'first_aid_kit':     'assets/first_aid.png',
-  'emergency_comm':    'assets/emergency_comm.png',
-  'pa_system':         'assets/pa_system.png',
-  'wind_sock':         'assets/wind_sock.png',
+  'fire_extinguisher': 'assets/extinguisher.webp',
+  'hose_reel':         'assets/hosereel.webp',
+  'fire_alarm':        'assets/alarm_panel.webp',
+  'smoke_detector':    'assets/smoke_detector.webp',
+  'heat_detector':     'assets/heat_detector.webp',
+  'co_detector':       'assets/co_detector.webp',
+  'suppression_system':'assets/co2_system.webp',
+  'safety_shower':     'assets/emergency_shower.webp',
+  'eyewash_station':   'assets/eye_wash.webp',
+  'fire_blanket':      'assets/fire_blankets.webp',
+  'ppe_station':       'assets/ppe_cabinets.webp',
+  'spill_kit':         'assets/spill_kits.webp',
+  'fire_trolley':      'assets/fire_trolley.webp',
+  'ambulance':         'assets/ambulance.webp',
+  'hydrant':           'assets/firehydrant.webp',
+  'sprinkler':         'assets/sprinkler.webp',
+  'fire_door':         'assets/fire_door.webp',
+  'exit_sign':         'assets/emergency_exit.webp',
+  'signage':           'assets/signage.webp',
+  'muster_point':      'assets/muster_points.webp',
+  'emergency_light':   'assets/emergency_lighting.webp',
+  'scba_unit':         'assets/scba_unit.webp',
+  'first_aid_kit':     'assets/first_aid.webp',
+  'emergency_comm':    'assets/emergency_comm.webp',
+  'pa_system':         'assets/pa_system.webp',
+  'wind_sock':         'assets/wind_sock.webp',
 };
 
 /// Ensures that the selected value for a DropdownButton is present in the list of items.
@@ -197,7 +197,7 @@ Future<pw.Document> buildSingleInspectionReportPDF({
   }
   if (equipmentImage == null) {
     try {
-      final bytes = await rootBundle.load('assets/extinguisher.png');
+      final bytes = await rootBundle.load('assets/extinguisher.webp');
       equipmentImage = pw.MemoryImage(bytes.buffer.asUint8List());
     } catch (_) {}
   }

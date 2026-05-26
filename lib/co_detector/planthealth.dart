@@ -45,7 +45,7 @@ class _CODetectorPlantHealthPageState extends State<CODetectorPlantHealthPage> {
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/co_detector.png",
+          imagePath: "assets/co_detector.webp",
           fallbackIcon: Icons.medical_services,
         ),
       ),

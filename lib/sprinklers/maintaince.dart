@@ -198,7 +198,7 @@ class _SprinklerMaintenancePageState extends State<SprinklerMaintenancePage> {
                               height: 60,
                               color: color.withValues(alpha: 0.1),
                               child: Image.asset(
-                                'assets/sprinkler.png',
+                                'assets/sprinkler.webp',
                                 fit: BoxFit.contain,
                                 errorBuilder: (c, e, s) =>
                                     Icon(Icons.water_drop, color: color, size: 30),
@@ -301,7 +301,7 @@ class _SprinklerMaintenancePageState extends State<SprinklerMaintenancePage> {
                   color: color.withValues(alpha: 0.12),
                 ),
                 child: Image.asset(
-                  'assets/sprinkler.png',
+                  'assets/sprinkler.webp',
                   height: 65,
                   errorBuilder: (c, e, s) => Icon(Icons.water_drop, size: 65, color: color),
                 ),

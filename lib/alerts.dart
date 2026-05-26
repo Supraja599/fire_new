@@ -186,7 +186,7 @@ class _AlertsPageState extends State<AlertsPage> {
                 height: 100,
                 color: color.withOpacity(0.08),
                 child: Image.asset(
-                  'assets/extinguisher.png',
+                  'assets/extinguisher.webp',
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => Icon(levelIcon(p.level), color: color, size: 30),
                 ),

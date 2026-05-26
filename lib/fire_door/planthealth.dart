@@ -45,7 +45,7 @@ class _FireDoorPlantHealthPageState extends State<FireDoorPlantHealthPage> {
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/fire_door.png",
+          imagePath: "assets/fire_door.webp",
           fallbackIcon: Icons.medical_services,
         ),
       ),

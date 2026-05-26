@@ -190,7 +190,7 @@ class _HydrantPlantHealthPageState extends State<HydrantPlantHealthPage> {
                       return bucket.contains(status.toLowerCase());
                     })
                     .toList(),
-                imagePath: 'assets/firehydrant.png',
+                imagePath: 'assets/firehydrant.webp',
                 fallbackIcon: Icons.fire_hydrant_alt,
               ),
             ),

@@ -9,7 +9,7 @@ class HoseReelChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/hosereel.png',
+    equipmentImage: 'assets/hosereel.webp',
     nextScreen: HoseReelChecklistPage(fromScan: false),
   );
 

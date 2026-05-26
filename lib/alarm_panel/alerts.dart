@@ -102,7 +102,7 @@ class _AlarmPanelAlertsPageState extends State<AlarmPanelAlertsPage> {
                               width: 60,
                               height: 60,
                               color: color.withOpacity(0.1),
-                              child: Image.asset('assets/alarm_panel.png', errorBuilder: (c, e, s) => Icon(Icons.warning_amber_rounded, color: color, size: 35)),
+                              child: Image.asset('assets/alarm_panel.webp', errorBuilder: (c, e, s) => Icon(Icons.warning_amber_rounded, color: color, size: 35)),
                             ),
                           ),
                           const SizedBox(width: 15),
@@ -141,7 +141,7 @@ class _AlarmPanelAlertsPageState extends State<AlarmPanelAlertsPage> {
           Container(
             padding: const EdgeInsets.all(40),
             decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.05), blurRadius: 30)]),
-            child: Image.asset('assets/alarm_panel.png', width: 120, height: 120, color: Colors.grey.withOpacity(0.3), colorBlendMode: BlendMode.modulate),
+            child: Image.asset('assets/alarm_panel.webp', width: 120, height: 120, color: Colors.grey.withOpacity(0.3), colorBlendMode: BlendMode.modulate),
           ),
           const SizedBox(height: 30),
           const Text("SYSTEM SECURE", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.blueGrey, letterSpacing: 2)),

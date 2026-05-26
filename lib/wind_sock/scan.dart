@@ -251,7 +251,7 @@ class _WindSockScanPageState extends State<WindSockScanPage> {
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                 selectedEquipment: item,
-                equipmentImage: 'assets/wind_sock.png',
+                equipmentImage: 'assets/wind_sock.webp',
                 nextScreen: WindSockChecklistPage(selectedEquipment: item),
               )));
             }

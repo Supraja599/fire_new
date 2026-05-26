@@ -45,7 +45,7 @@ class _SignagePlantHealthPageState extends State<SignagePlantHealthPage> {
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/signage.png",
+          imagePath: "assets/signage.webp",
           fallbackIcon: Icons.medical_services,
         ),
       ),

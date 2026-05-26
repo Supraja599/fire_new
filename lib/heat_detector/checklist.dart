@@ -9,7 +9,7 @@ class HeatDetectorChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/heat_detector.png',
+    equipmentImage: 'assets/heat_detector.webp',
     nextScreen: HeatDetectorChecklistPage(fromScan: false),
   );
 

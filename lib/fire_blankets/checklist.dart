@@ -9,7 +9,7 @@ class FireBlanketsChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/fire_blankets.png',
+    equipmentImage: 'assets/fire_blankets.webp',
     nextScreen: FireBlanketsChecklistPage(fromScan: false),
   );
 

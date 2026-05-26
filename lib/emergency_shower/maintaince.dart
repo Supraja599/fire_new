@@ -182,7 +182,7 @@ class _EmergencyShowerMaintenancePageState extends State<EmergencyShowerMaintena
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/emergency_shower.png',
+                              'assets/emergency_shower.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -236,7 +236,7 @@ class _EmergencyShowerMaintenancePageState extends State<EmergencyShowerMaintena
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/emergency_shower.png',
+                                      'assets/emergency_shower.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -357,7 +357,7 @@ class _EmergencyShowerMaintenancePageState extends State<EmergencyShowerMaintena
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/emergency_shower.png',
+                    'assets/emergency_shower.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

@@ -87,7 +87,7 @@ class _SmokeDetectorAlertsPageState extends State<SmokeDetectorAlertsPage> {
                               width: 60,
                               height: 60,
                               color: color.withOpacity(0.1),
-                              child: Image.asset('assets/smoke_detector.png', errorBuilder: (c, e, s) => Icon(Icons.warning_amber_rounded, color: color, size: 35)),
+                              child: Image.asset('assets/smoke_detector.webp', errorBuilder: (c, e, s) => Icon(Icons.warning_amber_rounded, color: color, size: 35)),
                             ),
                           ),
                           const SizedBox(width: 15),
@@ -126,7 +126,7 @@ class _SmokeDetectorAlertsPageState extends State<SmokeDetectorAlertsPage> {
           Container(
             padding: const EdgeInsets.all(40),
             decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.05), blurRadius: 30)]),
-            child: Image.asset('assets/smoke_detector.png', width: 120, height: 120, color: Colors.grey.withOpacity(0.3), colorBlendMode: BlendMode.modulate),
+            child: Image.asset('assets/smoke_detector.webp', width: 120, height: 120, color: Colors.grey.withOpacity(0.3), colorBlendMode: BlendMode.modulate),
           ),
           const SizedBox(height: 30),
           const Text("ALL CLEAR", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.blueGrey, letterSpacing: 2)),

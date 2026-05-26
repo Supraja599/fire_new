@@ -226,9 +226,9 @@ class _FireExtinguisherDashboardState extends State<FireExtinguisherDashboard> {
                       ),
                       // 2. RIGHT: The HUGE, BEAUTIFUL Device Asset Image!
                       Hero(
-                        tag: "hero_image_assets/extinguisher.png",
+                        tag: "hero_image_assets/extinguisher.webp",
                         child: Image.asset(
-                          "assets/extinguisher.png",
+                          "assets/extinguisher.webp",
                           width: 130,
                           height: 130, // Exploded size!
                           fit: BoxFit.contain,
@@ -368,25 +368,25 @@ class _FireExtinguisherDashboardState extends State<FireExtinguisherDashboard> {
                     mainAxisSpacing: 10,
                     childAspectRatio: aspectRatio,
                     children: [
-                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.png", const Color(0xFFD32F2F), GenericAnalyticsPage(
+                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.webp", const Color(0xFFD32F2F), GenericAnalyticsPage(
                         title: "Fire Extinguisher Analytics",
                         shortName: "Fire Extinguisher",
                         assetLabel: "TOTAL FIRE EXTINGUISHER",
                         apiService: api,
-                        imagePath: "assets/extinguisher.png",
+                        imagePath: "assets/extinguisher.webp",
                         fallbackIcon: Icons.analytics_rounded,
                       ), "Trends", _load),
-                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const InspectionPage(), "Scan", _load),
-                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const MaintenancePage(), "Service", _load),
-                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const AlertsPage(), "Critical", _load),
-                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(
+                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.webp", const Color(0xFFD32F2F), const InspectionPage(), "Scan", _load),
+                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.webp", const Color(0xFFD32F2F), const MaintenancePage(), "Service", _load),
+                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.webp", const Color(0xFFD32F2F), const AlertsPage(), "Critical", _load),
+                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.webp", const Color(0xFFD32F2F), GenericPlantHealthPage(
                         title: "Fire Extinguisher Health",
                         shortName: "Fire Extinguisher",
                         apiService: api,
-                        imagePath: "assets/extinguisher.png",
+                        imagePath: "assets/extinguisher.webp",
                         fallbackIcon: Icons.health_and_safety_rounded,
                       ), "Score", _load),
-                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const ReportsPage(), "Logs", _load),
+                      _ActionCard("Reports", "assets/dashboard_icons/reports.webp", const Color(0xFFD32F2F), const ReportsPage(), "Logs", _load),
                     ],
                   ),
                 );

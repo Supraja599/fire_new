@@ -9,7 +9,7 @@ class SmokeDetectorChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/smoke_detector.png',
+    equipmentImage: 'assets/smoke_detector.webp',
     nextScreen: SmokeDetectorChecklistPage(fromScan: false),
   );
 

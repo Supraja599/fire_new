@@ -45,7 +45,7 @@ class _WindSockPlantHealthPageState extends State<WindSockPlantHealthPage> {
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/wind_sock.png",
+          imagePath: "assets/wind_sock.webp",
           fallbackIcon: Icons.flag,
         ),
       ),

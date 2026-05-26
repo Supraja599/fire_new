@@ -9,7 +9,7 @@ class AlarmPanelChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/alarm_panel.png',
+    equipmentImage: 'assets/alarm_panel.webp',
     nextScreen: AlarmPanelChecklistPage(fromScan: false),
   );
 

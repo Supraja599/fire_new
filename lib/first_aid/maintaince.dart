@@ -182,7 +182,7 @@ class _FirstAidMaintenancePageState extends State<FirstAidMaintenancePage> {
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/first_aid.png',
+                              'assets/first_aid.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -236,7 +236,7 @@ class _FirstAidMaintenancePageState extends State<FirstAidMaintenancePage> {
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/first_aid.png',
+                                      'assets/first_aid.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -357,7 +357,7 @@ class _FirstAidMaintenancePageState extends State<FirstAidMaintenancePage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/first_aid.png',
+                    'assets/first_aid.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

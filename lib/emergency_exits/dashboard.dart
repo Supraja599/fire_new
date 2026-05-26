@@ -222,9 +222,9 @@ class _EmergencyExitsDashboardState extends State<EmergencyExitsDashboard> {
                       ),
                       // 2. RIGHT: The HUGE, BEAUTIFUL Device Asset Image!
                       Hero(
-                        tag: "hero_image_assets/emergency_exit.png",
+                        tag: "hero_image_assets/emergency_exit.webp",
                         child: Image.asset(
-                          "assets/emergency_exit.png",
+                          "assets/emergency_exit.webp",
                           width: 130,
                           height: 130, // Exploded size!
                           fit: BoxFit.contain,
@@ -362,25 +362,25 @@ class _EmergencyExitsDashboardState extends State<EmergencyExitsDashboard> {
                     mainAxisSpacing: 10,
                     childAspectRatio: aspectRatio,
                     children: [
-                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.png", const Color(0xFFD32F2F), GenericAnalyticsPage(
+                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.webp", const Color(0xFFD32F2F), GenericAnalyticsPage(
                         title: "Emergency Exits Analytics",
                         shortName: "Emergency Exits",
                         assetLabel: "TOTAL EMERGENCY EXITS",
                         apiService: api,
-                        imagePath: "assets/emergency_exit.png",
+                        imagePath: "assets/emergency_exit.webp",
                         fallbackIcon: Icons.analytics_rounded,
                       ), "Trends", _load),
-                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const EmergencyExitsInspectionPage(), "Scan", _load),
-                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const EmergencyExitsMaintenancePage(), "Service", _load),
-                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const EmergencyExitsAlertsPage(), "Critical", _load),
-                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(
+                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.webp", const Color(0xFFD32F2F), const EmergencyExitsInspectionPage(), "Scan", _load),
+                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.webp", const Color(0xFFD32F2F), const EmergencyExitsMaintenancePage(), "Service", _load),
+                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.webp", const Color(0xFFD32F2F), const EmergencyExitsAlertsPage(), "Critical", _load),
+                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.webp", const Color(0xFFD32F2F), GenericPlantHealthPage(
                         title: "Emergency Exits Health",
                         shortName: "Emergency Exits",
                         apiService: api,
-                        imagePath: "assets/emergency_exit.png",
+                        imagePath: "assets/emergency_exit.webp",
                         fallbackIcon: Icons.health_and_safety_rounded,
                       ), "Score", _load),
-                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const EmergencyExitsReportsPage(), "Logs", _load),
+                      _ActionCard("Reports", "assets/dashboard_icons/reports.webp", const Color(0xFFD32F2F), const EmergencyExitsReportsPage(), "Logs", _load),
                     ],
                   ),
                 );

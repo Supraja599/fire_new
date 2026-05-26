@@ -303,7 +303,7 @@ Widget build(BuildContext context) {
                 } else {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                     selectedEquipment: item,
-                    equipmentImage: 'assets/signage.png',
+                    equipmentImage: 'assets/signage.webp',
                     nextScreen: SignageChecklistPage(selectedEquipment: item),
                   )));
                 }

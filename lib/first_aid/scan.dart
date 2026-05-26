@@ -251,7 +251,7 @@ class _FirstAidScanPageState extends State<FirstAidScanPage> {
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                 selectedEquipment: item,
-                equipmentImage: 'assets/first_aid.png',
+                equipmentImage: 'assets/first_aid.webp',
                 nextScreen: FirstAidChecklistPage(selectedEquipment: item),
               )));
             }

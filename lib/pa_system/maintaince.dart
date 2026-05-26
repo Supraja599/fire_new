@@ -183,7 +183,7 @@ class _PASystemMaintenancePageState extends State<PASystemMaintenancePage> {
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/pa_system.png',
+                              'assets/pa_system.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -237,7 +237,7 @@ class _PASystemMaintenancePageState extends State<PASystemMaintenancePage> {
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/pa_system.png',
+                                      'assets/pa_system.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -358,7 +358,7 @@ class _PASystemMaintenancePageState extends State<PASystemMaintenancePage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/pa_system.png',
+                    'assets/pa_system.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

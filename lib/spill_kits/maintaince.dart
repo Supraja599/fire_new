@@ -182,7 +182,7 @@ class _SpillKitsMaintenancePageState extends State<SpillKitsMaintenancePage> {
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/spill_kits.png',
+                              'assets/spill_kits.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -236,7 +236,7 @@ class _SpillKitsMaintenancePageState extends State<SpillKitsMaintenancePage> {
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/spill_kits.png',
+                                      'assets/spill_kits.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -357,7 +357,7 @@ class _SpillKitsMaintenancePageState extends State<SpillKitsMaintenancePage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/spill_kits.png',
+                    'assets/spill_kits.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

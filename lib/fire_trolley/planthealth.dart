@@ -56,7 +56,7 @@ class _FireTrolleyPlantHealthPageState extends State<FireTrolleyPlantHealthPage>
           title: title,
           color: color,
           items: list,
-          imagePath: 'assets/fire_trolley.png',
+          imagePath: 'assets/fire_trolley.webp',
           fallbackIcon: Icons.trolley,
         ),
       ),

@@ -9,7 +9,7 @@ class SprinklerChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/sprinkler.png',
+    equipmentImage: 'assets/sprinkler.webp',
     nextScreen: SprinklerChecklistPage(fromScan: false),
   );
 

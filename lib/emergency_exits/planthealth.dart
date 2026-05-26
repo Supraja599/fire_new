@@ -45,7 +45,7 @@ class _EmergencyExitsPlantHealthPageState extends State<EmergencyExitsPlantHealt
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/emergency_exit.png",
+          imagePath: "assets/emergency_exit.webp",
           fallbackIcon: Icons.door_front_door,
         ),
       ),

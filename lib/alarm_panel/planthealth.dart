@@ -56,7 +56,7 @@ class _AlarmPanelPlantHealthPageState extends State<AlarmPanelPlantHealthPage> {
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/alarm_panel.png",
+          imagePath: "assets/alarm_panel.webp",
           fallbackIcon: Icons.developer_board,
         ),
       ),

@@ -43,7 +43,7 @@ class StepInstruction {
     required this.shortLabel,
     required this.icon,
     required this.bulletPoints,
-    this.referenceAsset = 'assets/extinguisher.png',
+    this.referenceAsset = 'assets/extinguisher.webp',
   });
 }
 
@@ -130,7 +130,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
   void initState() {
     super.initState();
 
-    final String img = widget.equipmentImage ?? 'assets/extinguisher.png';
+    final String img = widget.equipmentImage ?? 'assets/extinguisher.webp';
     final bool isHoseReel = img.contains('hosereel');
     final String moduleKey = widget.moduleCode?.toLowerCase().trim() ?? '';
 
@@ -331,7 +331,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
         subtitle: "Secure $_eqName registry identification",
         shortLabel: "BARCODE",
         icon: Icons.qr_code_scanner,
-        referenceAsset: 'assets/instructions_scan.png',
+        referenceAsset: 'assets/instructions_scan.webp',
         bulletPoints: [
           "Position camera extremely close to $_eqName ID tag.",
           "Hold steady to prevent text motion blur.",
@@ -347,8 +347,8 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
         // Hose Reel    → dedicated hose reel detail image
         // All others   → universal gauge/component reference image
         referenceAsset: isExtOrHose
-            ? (isHoseReel ? 'assets/hosereel3.png' : 'assets/instructions_valve.png')
-            : 'assets/instructions_gauge_universal.png',
+            ? (isHoseReel ? 'assets/hosereel3.webp' : 'assets/instructions_valve.webp')
+            : 'assets/instructions_gauge_universal.webp',
         bulletPoints: view3Bullets,
       ),
       StepInstruction(
@@ -358,8 +358,8 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
         icon: Icons.view_in_ar,
         // Universal surroundings reference for every module
         referenceAsset: isExtOrHose
-            ? 'assets/instructions_surroundings.png'
-            : 'assets/instructions_surroundings_universal.png',
+            ? 'assets/instructions_surroundings.webp'
+            : 'assets/instructions_surroundings_universal.webp',
         bulletPoints: [
           "Step back to include the $_eqName wall mount/boundary.",
           "Verify zero obstructions/storage blocks access.",
@@ -576,7 +576,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
     final telemetry = _telemetryCache[_currentStepIndex];
 
     final String asset = activeStep.referenceAsset;
-    final bool isSpecialized = asset.contains('hosereel3') || asset.contains('s2') || asset.contains('s3') || asset.contains('scan.png');
+    final bool isSpecialized = asset.contains('hosereel3') || asset.contains('s2') || asset.contains('s3') || asset.contains('scan.webp');
 
     if (!isSpecialized) {
       if (_currentStepIndex == 1) {

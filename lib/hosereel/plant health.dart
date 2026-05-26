@@ -83,7 +83,7 @@ class _HoseReelPlantHealthPageState extends State<HoseReelPlantHealthPage> {
           title: title,
           color: color,
           items: list,
-          imagePath: 'assets/hosereel.png',
+          imagePath: 'assets/hosereel.webp',
           fallbackIcon: Icons.fire_hydrant_alt,
         ),
       ),

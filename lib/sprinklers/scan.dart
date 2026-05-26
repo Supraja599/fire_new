@@ -366,7 +366,7 @@ Widget build(BuildContext context) {
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                 selectedEquipment: item,
-                equipmentImage: 'assets/sprinkler.png',
+                equipmentImage: 'assets/sprinkler.webp',
                 nextScreen: SprinklerChecklistPage(selectedEquipment: item),
               )));
             }

@@ -182,7 +182,7 @@ class _CODetectorMaintenancePageState extends State<CODetectorMaintenancePage> {
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/co_detector.png',
+                              'assets/co_detector.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -236,7 +236,7 @@ class _CODetectorMaintenancePageState extends State<CODetectorMaintenancePage> {
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/co_detector.png',
+                                      'assets/co_detector.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -357,7 +357,7 @@ class _CODetectorMaintenancePageState extends State<CODetectorMaintenancePage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/co_detector.png',
+                    'assets/co_detector.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

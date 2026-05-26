@@ -251,7 +251,7 @@ class _FireBlanketsScanPageState extends State<FireBlanketsScanPage> {
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                 selectedEquipment: item,
-                equipmentImage: 'assets/fire_blankets.png',
+                equipmentImage: 'assets/fire_blankets.webp',
                 nextScreen: FireBlanketsChecklistPage(selectedEquipment: item),
               )));
             }

@@ -183,7 +183,7 @@ class _EmergencyLightingMaintenancePageState extends State<EmergencyLightingMain
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/emergency_lighting.png',
+                              'assets/emergency_lighting.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -237,7 +237,7 @@ class _EmergencyLightingMaintenancePageState extends State<EmergencyLightingMain
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/emergency_lighting.png',
+                                      'assets/emergency_lighting.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -358,7 +358,7 @@ class _EmergencyLightingMaintenancePageState extends State<EmergencyLightingMain
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/emergency_lighting.png',
+                    'assets/emergency_lighting.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

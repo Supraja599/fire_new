@@ -182,7 +182,7 @@ class _PPECabinetsMaintenancePageState extends State<PPECabinetsMaintenancePage>
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/ppe_cabinets.png',
+                              'assets/ppe_cabinets.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -236,7 +236,7 @@ class _PPECabinetsMaintenancePageState extends State<PPECabinetsMaintenancePage>
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/ppe_cabinets.png',
+                                      'assets/ppe_cabinets.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -357,7 +357,7 @@ class _PPECabinetsMaintenancePageState extends State<PPECabinetsMaintenancePage>
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/ppe_cabinets.png',
+                    'assets/ppe_cabinets.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

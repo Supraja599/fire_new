@@ -114,7 +114,7 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
           title: title,
           items: list,
           color: color,
-          imagePath: 'assets/extinguisher.png',
+          imagePath: 'assets/extinguisher.webp',
           fallbackIcon: Icons.fire_extinguisher,
         ),
       ),

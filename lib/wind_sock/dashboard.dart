@@ -231,9 +231,9 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                       ),
                       // 2. RIGHT: The HUGE, BEAUTIFUL Device Asset Image!
                       Hero(
-                        tag: "hero_image_assets/wind_sock.png",
+                        tag: "hero_image_assets/wind_sock.webp",
                         child: Image.asset(
-                          "assets/wind_sock.png",
+                          "assets/wind_sock.webp",
                           width: 130,
                           height: 130, // Exploded size!
                           fit: BoxFit.contain,
@@ -385,14 +385,14 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                     children: [
                       _ActionCard(
                         "Analytics",
-                        "assets/dashboard_icons/analytics.png",
+                        "assets/dashboard_icons/analytics.webp",
                         const Color(0xFFD32F2F),
                         GenericAnalyticsPage(
                           title: "Wind Sock Analytics",
                           shortName: "Wind Sock",
                           assetLabel: "TOTAL WIND SOCK",
                           apiService: api,
-                          imagePath: "assets/wind_sock.png",
+                          imagePath: "assets/wind_sock.webp",
                           fallbackIcon: Icons.analytics_rounded,
                         ),
                         "Trends",
@@ -400,7 +400,7 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                       ),
                       _ActionCard(
                         "Inspection",
-                        "assets/dashboard_icons/inspection.png",
+                        "assets/dashboard_icons/inspection.webp",
                         const Color(0xFFD32F2F),
                         const WindSockInspectionPage(),
                         "Scan",
@@ -408,7 +408,7 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                       ),
                       _ActionCard(
                         "Maintenance",
-                        "assets/dashboard_icons/maintenance.png",
+                        "assets/dashboard_icons/maintenance.webp",
                         const Color(0xFFD32F2F),
                         const WindSockMaintenancePage(),
                         "Service",
@@ -416,7 +416,7 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                       ),
                       _ActionCard(
                         "Alerts",
-                        "assets/dashboard_icons/alerts.png",
+                        "assets/dashboard_icons/alerts.webp",
                         const Color(0xFFD32F2F),
                         const WindSockAlertsPage(),
                         "Critical",
@@ -424,13 +424,13 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                       ),
                       _ActionCard(
                         "Plant Health",
-                        "assets/dashboard_icons/plant_health.png",
+                        "assets/dashboard_icons/plant_health.webp",
                         const Color(0xFFD32F2F),
                         GenericPlantHealthPage(
                           title: "Wind Sock Health",
                           shortName: "Wind Sock",
                           apiService: api,
-                          imagePath: "assets/wind_sock.png",
+                          imagePath: "assets/wind_sock.webp",
                           fallbackIcon: Icons.health_and_safety_rounded,
                         ),
                         "Score",
@@ -438,7 +438,7 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                       ),
                       _ActionCard(
                         "Reports",
-                        "assets/dashboard_icons/reports.png",
+                        "assets/dashboard_icons/reports.webp",
                         const Color(0xFFD32F2F),
                         const WindSockReportsPage(),
                         "Logs",

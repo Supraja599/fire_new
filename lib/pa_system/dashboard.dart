@@ -232,9 +232,9 @@ class _PASystemDashboardState extends State<PASystemDashboard> {
                       ),
                       // 2. RIGHT: The HUGE, BEAUTIFUL Device Asset Image!
                       Hero(
-                        tag: "hero_image_assets/pa_system.png",
+                        tag: "hero_image_assets/pa_system.webp",
                         child: Image.asset(
-                          "assets/pa_system.png",
+                          "assets/pa_system.webp",
                           width: 130,
                           height: 130, // Exploded size!
                           fit: BoxFit.contain,
@@ -372,25 +372,25 @@ class _PASystemDashboardState extends State<PASystemDashboard> {
                     mainAxisSpacing: 10,
                     childAspectRatio: aspectRatio,
                     children: [
-                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.png", const Color(0xFFD32F2F), GenericAnalyticsPage(
+                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.webp", const Color(0xFFD32F2F), GenericAnalyticsPage(
                         title: "Pa System Analytics",
                         shortName: "Pa System",
                         assetLabel: "TOTAL PA SYSTEM",
                         apiService: api,
-                        imagePath: "assets/pa_system.png",
+                        imagePath: "assets/pa_system.webp",
                         fallbackIcon: Icons.analytics_rounded,
                       ), "Trends", _loadData),
-                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const PASystemInspectionPage(), "Scan", _loadData),
-                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const PASystemMaintenancePage(), "Service", _loadData),
-                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const PASystemAlertsPage(), "Critical", _loadData),
-                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(
+                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.webp", const Color(0xFFD32F2F), const PASystemInspectionPage(), "Scan", _loadData),
+                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.webp", const Color(0xFFD32F2F), const PASystemMaintenancePage(), "Service", _loadData),
+                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.webp", const Color(0xFFD32F2F), const PASystemAlertsPage(), "Critical", _loadData),
+                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.webp", const Color(0xFFD32F2F), GenericPlantHealthPage(
                         title: "Pa System Health",
                         shortName: "Pa System",
                         apiService: api,
-                        imagePath: "assets/pa_system.png",
+                        imagePath: "assets/pa_system.webp",
                         fallbackIcon: Icons.health_and_safety_rounded,
                       ), "Score", _loadData),
-                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const PASystemReportsPage(), "Logs", _loadData),
+                      _ActionCard("Reports", "assets/dashboard_icons/reports.webp", const Color(0xFFD32F2F), const PASystemReportsPage(), "Logs", _loadData),
                     ],
                   ),
                 );

@@ -183,7 +183,7 @@ class _EyeWashMaintenancePageState extends State<EyeWashMaintenancePage> {
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/eye_wash.png',
+                              'assets/eye_wash.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -237,7 +237,7 @@ class _EyeWashMaintenancePageState extends State<EyeWashMaintenancePage> {
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/eye_wash.png',
+                                      'assets/eye_wash.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -358,7 +358,7 @@ class _EyeWashMaintenancePageState extends State<EyeWashMaintenancePage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/eye_wash.png',
+                    'assets/eye_wash.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

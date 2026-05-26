@@ -10,7 +10,7 @@ class EyeWashChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/eye_wash.png',
+    equipmentImage: 'assets/eye_wash.webp',
     nextScreen: EyeWashChecklistPage(fromScan: false),
   );
 

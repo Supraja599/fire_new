@@ -53,7 +53,7 @@ class _SmokeDetectorPlantHealthPageState extends State<SmokeDetectorPlantHealthP
           title: title,
           color: color,
           items: list,
-          imagePath: 'assets/smoke_detector.png',
+          imagePath: 'assets/smoke_detector.webp',
           fallbackIcon: Icons.smoke_free,
         ),
       ),

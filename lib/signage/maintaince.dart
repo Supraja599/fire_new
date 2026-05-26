@@ -182,7 +182,7 @@ class _SignageMaintenancePageState extends State<SignageMaintenancePage> {
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/signage.png',
+                              'assets/signage.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -236,7 +236,7 @@ class _SignageMaintenancePageState extends State<SignageMaintenancePage> {
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/signage.png',
+                                      'assets/signage.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -357,7 +357,7 @@ class _SignageMaintenancePageState extends State<SignageMaintenancePage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/signage.png',
+                    'assets/signage.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

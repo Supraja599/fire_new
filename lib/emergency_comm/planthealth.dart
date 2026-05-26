@@ -45,7 +45,7 @@ class _EmergencyCommPlantHealthPageState extends State<EmergencyCommPlantHealthP
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/emergency_comm.png",
+          imagePath: "assets/emergency_comm.webp",
           fallbackIcon: Icons.medical_services,
         ),
       ),

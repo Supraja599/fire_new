@@ -158,7 +158,7 @@ class _FireDoorAlertsPageState extends State<FireDoorAlertsPage> {
                 height: 100,
                 color: color.withOpacity(0.08),
                 child: Image.asset(
-                  'assets/fire_door.png',
+                  'assets/fire_door.webp',
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => Icon(_levelIcon(level), color: color, size: 30),
                 ),

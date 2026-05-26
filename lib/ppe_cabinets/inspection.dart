@@ -303,7 +303,7 @@ Widget build(BuildContext context) {
                 } else {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                     selectedEquipment: item,
-                    equipmentImage: 'assets/ppe_cabinets.png',
+                    equipmentImage: 'assets/ppe_cabinets.webp',
                     nextScreen: PPECabinetsChecklistPage(selectedEquipment: item),
                   )));
                 }

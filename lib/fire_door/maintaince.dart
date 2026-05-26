@@ -182,7 +182,7 @@ class _FireDoorMaintenancePageState extends State<FireDoorMaintenancePage> {
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/fire_door.png',
+                              'assets/fire_door.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -236,7 +236,7 @@ class _FireDoorMaintenancePageState extends State<FireDoorMaintenancePage> {
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/fire_door.png',
+                                      'assets/fire_door.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -357,7 +357,7 @@ class _FireDoorMaintenancePageState extends State<FireDoorMaintenancePage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/fire_door.png',
+                    'assets/fire_door.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

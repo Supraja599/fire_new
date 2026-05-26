@@ -187,7 +187,7 @@ class _SprinklerAlertsPageState extends State<SprinklerAlertsPage> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Image.asset(
-                                  'assets/sprinkler.png',
+                                  'assets/sprinkler.webp',
                                   width: 45,
                                   height: 45,
                                   fit: BoxFit.contain,
@@ -254,7 +254,7 @@ class _SprinklerAlertsPageState extends State<SprinklerAlertsPage> {
                   shape: BoxShape.circle,
                 ),
                 child: Image.asset(
-                  'assets/sprinkler.png',
+                  'assets/sprinkler.webp',
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => const Icon(Icons.water_drop, size: 40, color: Colors.red),
                 ),

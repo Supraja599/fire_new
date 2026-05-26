@@ -182,7 +182,7 @@ class _EmergencyCommMaintenancePageState extends State<EmergencyCommMaintenanceP
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/emergency_comm.png',
+                              'assets/emergency_comm.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -236,7 +236,7 @@ class _EmergencyCommMaintenancePageState extends State<EmergencyCommMaintenanceP
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/emergency_comm.png',
+                                      'assets/emergency_comm.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -357,7 +357,7 @@ class _EmergencyCommMaintenancePageState extends State<EmergencyCommMaintenanceP
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/emergency_comm.png',
+                    'assets/emergency_comm.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

@@ -225,9 +225,9 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
                       ),
                       // 2. RIGHT: The HUGE, BEAUTIFUL Device Asset Image!
                       Hero(
-                        tag: "hero_image_assets/fire_trolley.png",
+                        tag: "hero_image_assets/fire_trolley.webp",
                         child: Image.asset(
-                          "assets/fire_trolley.png",
+                          "assets/fire_trolley.webp",
                           width: 130,
                           height: 130, // Exploded size!
                           fit: BoxFit.contain,
@@ -365,25 +365,25 @@ class _FireTrolleyDashboardState extends State<FireTrolleyDashboard> {
                     mainAxisSpacing: 10,
                     childAspectRatio: aspectRatio,
                     children: [
-                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.png", const Color(0xFFD32F2F), GenericAnalyticsPage(
+                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.webp", const Color(0xFFD32F2F), GenericAnalyticsPage(
                         title: "Fire Trolley Analytics",
                         shortName: "Fire Trolley",
                         assetLabel: "TOTAL FIRE TROLLEY",
                         apiService: api,
-                        imagePath: "assets/fire_trolley.png",
+                        imagePath: "assets/fire_trolley.webp",
                         fallbackIcon: Icons.analytics_rounded,
                       ), "Trends", _loadData),
-                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const FireTrolleyInspectionPage(), "Scan", _loadData),
-                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const FireTrolleyMaintenancePage(), "Service", _loadData),
-                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const FireTrolleyAlertsPage(), "Critical", _loadData),
-                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(
+                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.webp", const Color(0xFFD32F2F), const FireTrolleyInspectionPage(), "Scan", _loadData),
+                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.webp", const Color(0xFFD32F2F), const FireTrolleyMaintenancePage(), "Service", _loadData),
+                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.webp", const Color(0xFFD32F2F), const FireTrolleyAlertsPage(), "Critical", _loadData),
+                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.webp", const Color(0xFFD32F2F), GenericPlantHealthPage(
                         title: "Fire Trolley Health",
                         shortName: "Fire Trolley",
                         apiService: api,
-                        imagePath: "assets/fire_trolley.png",
+                        imagePath: "assets/fire_trolley.webp",
                         fallbackIcon: Icons.health_and_safety_rounded,
                       ), "Score", _loadData),
-                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const FireTrolleyReportsPage(), "Logs", _loadData),
+                      _ActionCard("Reports", "assets/dashboard_icons/reports.webp", const Color(0xFFD32F2F), const FireTrolleyReportsPage(), "Logs", _loadData),
                     ],
                   ),
                 );

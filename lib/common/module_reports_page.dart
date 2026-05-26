@@ -230,7 +230,7 @@ class _ModuleReportsPageState extends State<ModuleReportsPage>
 
       pw.MemoryImage? logoImage;
       try {
-        final bytes = await rootBundle.load('assets/eltrive_logo.jpg');
+        final bytes = await rootBundle.load('assets/eltrive_logo.webp');
         logoImage = pw.MemoryImage(bytes.buffer.asUint8List());
       } catch (_) {}
 
@@ -345,7 +345,7 @@ class _ModuleReportsPageState extends State<ModuleReportsPage>
 
       pw.MemoryImage? logoImage;
       try {
-        final bytes = await rootBundle.load('assets/eltrive_logo.jpg');
+        final bytes = await rootBundle.load('assets/eltrive_logo.webp');
         logoImage = pw.MemoryImage(bytes.buffer.asUint8List());
       } catch (_) {}
 

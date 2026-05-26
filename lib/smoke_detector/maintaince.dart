@@ -90,7 +90,7 @@ class _SmokeDetectorMaintenancePageState extends State<SmokeDetectorMaintenanceP
                             width: 80,
                             height: 90,
                             color: Colors.orange.withOpacity(0.08),
-                            child: Image.asset('assets/smoke_detector.png', fit: BoxFit.contain, errorBuilder: (c, e, s) => const Icon(Icons.build, color: Colors.orange, size: 30)),
+                            child: Image.asset('assets/smoke_detector.webp', fit: BoxFit.contain, errorBuilder: (c, e, s) => const Icon(Icons.build, color: Colors.orange, size: 30)),
                           ),
                         ),
                         Expanded(

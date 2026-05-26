@@ -252,7 +252,7 @@ class _PASystemScanPageState extends State<PASystemScanPage> {
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                 selectedEquipment: item,
-                equipmentImage: 'assets/pa_system.png',
+                equipmentImage: 'assets/pa_system.webp',
                 nextScreen: PASystemChecklistPage(selectedEquipment: item),
               )));
             }

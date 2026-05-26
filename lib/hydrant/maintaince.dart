@@ -111,7 +111,7 @@ class _HydrantMaintenancePageState extends State<HydrantMaintenancePage> {
                             height: 108,
                             color: color.withValues(alpha: 0.08),
                             child: Image.asset(
-                              'assets/firehydrant.png',
+                              'assets/firehydrant.webp',
                               fit: BoxFit.contain,
                             ),
                           ),

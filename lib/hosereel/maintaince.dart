@@ -182,7 +182,7 @@ class _HoseReelMaintenancePageState extends State<HoseReelMaintenancePage> {
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/hosereel.png',
+                              'assets/hosereel.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -236,7 +236,7 @@ class _HoseReelMaintenancePageState extends State<HoseReelMaintenancePage> {
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/hosereel.png',
+                                      'assets/hosereel.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -357,7 +357,7 @@ class _HoseReelMaintenancePageState extends State<HoseReelMaintenancePage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/hosereel.png',
+                    'assets/hosereel.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

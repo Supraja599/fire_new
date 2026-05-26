@@ -251,7 +251,7 @@ class _CODetectorScanPageState extends State<CODetectorScanPage> {
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                 selectedEquipment: item,
-                equipmentImage: 'assets/co_detector.png',
+                equipmentImage: 'assets/co_detector.webp',
                 nextScreen: CODetectorChecklistPage(selectedEquipment: item),
               )));
             }

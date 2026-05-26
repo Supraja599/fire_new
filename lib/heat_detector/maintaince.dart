@@ -182,7 +182,7 @@ class _HeatDetectorMaintenancePageState extends State<HeatDetectorMaintenancePag
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/heat_detector.png',
+                              'assets/heat_detector.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -236,7 +236,7 @@ class _HeatDetectorMaintenancePageState extends State<HeatDetectorMaintenancePag
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/heat_detector.png',
+                                      'assets/heat_detector.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -357,7 +357,7 @@ class _HeatDetectorMaintenancePageState extends State<HeatDetectorMaintenancePag
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/heat_detector.png',
+                    'assets/heat_detector.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

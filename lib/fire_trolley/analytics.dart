@@ -11,7 +11,7 @@ class AnalyticsPage extends StatelessWidget {
       shortName: "Fire Trolley",
       assetLabel: "TOTAL FIRE TROLLEY",
       apiService: ModuleApiService.fireTrolley,
-      imagePath: "assets/fire_trolley.png",
+      imagePath: "assets/fire_trolley.webp",
       fallbackIcon: Icons.analytics_rounded,
     );
   }

@@ -9,7 +9,7 @@ class SpillKitsChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/spill_kits.png',
+    equipmentImage: 'assets/spill_kits.webp',
     nextScreen: SpillKitsChecklistPage(fromScan: false),
   );
 

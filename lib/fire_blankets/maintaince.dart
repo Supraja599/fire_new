@@ -182,7 +182,7 @@ class _FireBlanketsMaintenancePageState extends State<FireBlanketsMaintenancePag
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/fire_blankets.png',
+                              'assets/fire_blankets.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -236,7 +236,7 @@ class _FireBlanketsMaintenancePageState extends State<FireBlanketsMaintenancePag
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/fire_blankets.png',
+                                      'assets/fire_blankets.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -357,7 +357,7 @@ class _FireBlanketsMaintenancePageState extends State<FireBlanketsMaintenancePag
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/fire_blankets.png',
+                    'assets/fire_blankets.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

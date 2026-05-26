@@ -158,7 +158,7 @@ class _SpillKitsAlertsPageState extends State<SpillKitsAlertsPage> {
                 height: 100,
                 color: color.withOpacity(0.08),
                 child: Image.asset(
-                  'assets/spill_kits.png',
+                  'assets/spill_kits.webp',
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => Icon(_levelIcon(level), color: color, size: 30),
                 ),

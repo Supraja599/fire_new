@@ -226,9 +226,9 @@ class _FireDoorDashboardState extends State<FireDoorDashboard> {
                       ),
                       // 2. RIGHT: The HUGE, BEAUTIFUL Device Asset Image!
                       Hero(
-                        tag: "hero_image_assets/fire_door.png",
+                        tag: "hero_image_assets/fire_door.webp",
                         child: Image.asset(
-                          "assets/fire_door.png",
+                          "assets/fire_door.webp",
                           width: 130,
                           height: 130, // Exploded size!
                           fit: BoxFit.contain,
@@ -366,25 +366,25 @@ class _FireDoorDashboardState extends State<FireDoorDashboard> {
                     mainAxisSpacing: 10,
                     childAspectRatio: aspectRatio,
                     children: [
-                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.png", const Color(0xFFD32F2F), GenericAnalyticsPage(
+                      _ActionCard("Analytics", "assets/dashboard_icons/analytics.webp", const Color(0xFFD32F2F), GenericAnalyticsPage(
                         title: "Fire Door Analytics",
                         shortName: "Fire Door",
                         assetLabel: "TOTAL FIRE DOOR",
                         apiService: api,
-                        imagePath: "assets/fire_door.png",
+                        imagePath: "assets/fire_door.webp",
                         fallbackIcon: Icons.analytics_rounded,
                       ), "Trends", _loadData),
-                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const FireDoorInspectionPage(), "Scan", _loadData),
-                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const FireDoorMaintenancePage(), "Service", _loadData),
-                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const FireDoorAlertsPage(), "Critical", _loadData),
-                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), GenericPlantHealthPage(
+                      _ActionCard("Inspection", "assets/dashboard_icons/inspection.webp", const Color(0xFFD32F2F), const FireDoorInspectionPage(), "Scan", _loadData),
+                      _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.webp", const Color(0xFFD32F2F), const FireDoorMaintenancePage(), "Service", _loadData),
+                      _ActionCard("Alerts", "assets/dashboard_icons/alerts.webp", const Color(0xFFD32F2F), const FireDoorAlertsPage(), "Critical", _loadData),
+                      _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.webp", const Color(0xFFD32F2F), GenericPlantHealthPage(
                         title: "Fire Door Health",
                         shortName: "Fire Door",
                         apiService: api,
-                        imagePath: "assets/fire_door.png",
+                        imagePath: "assets/fire_door.webp",
                         fallbackIcon: Icons.health_and_safety_rounded,
                       ), "Score", _loadData),
-                      _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const FireDoorReportsPage(), "Logs", _loadData),
+                      _ActionCard("Reports", "assets/dashboard_icons/reports.webp", const Color(0xFFD32F2F), const FireDoorReportsPage(), "Logs", _loadData),
                     ],
                   ),
                 );

@@ -34,7 +34,7 @@ class FireTrolleyMaintenancePage extends StatelessWidget {
                     height: 108,
                     color: color.withOpacity(0.08),
                     child: Image.asset(
-                      'assets/fire_trolley.png',
+                      'assets/fire_trolley.webp',
                       fit: BoxFit.contain,
                       errorBuilder: (c, e, s) => Icon(Icons.shopping_cart, color: color, size: 40),
                     ),

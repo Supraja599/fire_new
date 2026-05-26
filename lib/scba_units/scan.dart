@@ -251,7 +251,7 @@ class _SCBAUnitsScanPageState extends State<SCBAUnitsScanPage> {
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                 selectedEquipment: item,
-                equipmentImage: 'assets/scba_unit.png',
+                equipmentImage: 'assets/scba_unit.webp',
                 nextScreen: SCBAUnitsChecklistPage(selectedEquipment: item),
               )));
             }

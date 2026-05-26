@@ -182,7 +182,7 @@ class _CO2SystemMaintenancePageState extends State<CO2SystemMaintenancePage> {
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/co2_system.png',
+                              'assets/co2_system.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -236,7 +236,7 @@ class _CO2SystemMaintenancePageState extends State<CO2SystemMaintenancePage> {
                                     height: 108,
                                     color: color.withOpacity(0.08),
                                     child: Image.asset(
-                                      'assets/co2_system.png',
+                                      'assets/co2_system.webp',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -357,7 +357,7 @@ class _CO2SystemMaintenancePageState extends State<CO2SystemMaintenancePage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.asset(
-                    'assets/co2_system.png',
+                    'assets/co2_system.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

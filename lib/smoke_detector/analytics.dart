@@ -11,7 +11,7 @@ class AnalyticsPage extends StatelessWidget {
       shortName: "Smoke Detector",
       assetLabel: "TOTAL SMOKE DETECTOR",
       apiService: ModuleApiService.smokeDetector,
-      imagePath: "assets/smoke_detector.png",
+      imagePath: "assets/smoke_detector.webp",
       fallbackIcon: Icons.analytics_rounded,
     );
   }

@@ -45,7 +45,7 @@ class _SpillKitsPlantHealthPageState extends State<SpillKitsPlantHealthPage> {
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/spill_kits.png",
+          imagePath: "assets/spill_kits.webp",
           fallbackIcon: Icons.medical_services,
         ),
       ),

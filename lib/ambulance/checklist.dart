@@ -9,7 +9,7 @@ class AmbulanceChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/ambulance.png',
+    equipmentImage: 'assets/ambulance.webp',
     nextScreen: AmbulanceChecklistPage(fromScan: false),
   );
 

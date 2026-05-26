@@ -303,7 +303,7 @@ Widget build(BuildContext context) {
                 } else {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                     selectedEquipment: item,
-                    equipmentImage: 'assets/heat_detector.png',
+                    equipmentImage: 'assets/heat_detector.webp',
                     nextScreen: HeatDetectorChecklistPage(selectedEquipment: item),
                   )));
                 }

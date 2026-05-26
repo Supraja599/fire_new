@@ -9,7 +9,7 @@ class PPECabinetsChecklistPage extends StatelessWidget {
 
   /// Direct open from dashboard: wrap in 4-image wizard first.
   static Widget direct() => GuidedCaptureWizardPage(
-    equipmentImage: 'assets/ppe_cabinets.png',
+    equipmentImage: 'assets/ppe_cabinets.webp',
     nextScreen: PPECabinetsChecklistPage(fromScan: false),
   );
 

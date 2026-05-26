@@ -70,7 +70,7 @@ class _SmokeDetectorInspectionPageState extends State<SmokeDetectorInspectionPag
     } else {
       Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
         selectedEquipment: item,
-        equipmentImage: 'assets/smoke_detector.png',
+        equipmentImage: 'assets/smoke_detector.webp',
         nextScreen: SmokeDetectorChecklistPage(selectedEquipment: item),
       )));
     }

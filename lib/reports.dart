@@ -158,7 +158,7 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
 
       pw.MemoryImage? logoImage;
       try {
-        final logoBytes = await rootBundle.load('assets/eltrive_logo.jpg');
+        final logoBytes = await rootBundle.load('assets/eltrive_logo.webp');
         logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
       } catch (_) {}
 
@@ -268,7 +268,7 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
 
       pw.MemoryImage? logoImage;
       try {
-        final logoBytes = await rootBundle.load('assets/eltrive_logo.jpg');
+        final logoBytes = await rootBundle.load('assets/eltrive_logo.webp');
         logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
       } catch (_) {}
 

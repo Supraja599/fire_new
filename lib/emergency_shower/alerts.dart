@@ -158,7 +158,7 @@ class _EmergencyShowerAlertsPageState extends State<EmergencyShowerAlertsPage> {
                 height: 100,
                 color: color.withOpacity(0.08),
                 child: Image.asset(
-                  'assets/emergency_shower.png',
+                  'assets/emergency_shower.webp',
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => Icon(_levelIcon(level), color: color, size: 30),
                 ),

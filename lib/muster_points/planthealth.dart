@@ -45,7 +45,7 @@ class _MusterPointsPlantHealthPageState extends State<MusterPointsPlantHealthPag
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/muster_points.png",
+          imagePath: "assets/muster_points.webp",
           fallbackIcon: Icons.medical_services,
         ),
       ),

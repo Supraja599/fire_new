@@ -158,7 +158,7 @@ class _AmbulanceAlertsPageState extends State<AmbulanceAlertsPage> {
                 height: 100,
                 color: color.withOpacity(0.08),
                 child: Image.asset(
-                  'assets/ambulance.png',
+                  'assets/ambulance.webp',
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => Icon(_levelIcon(level), color: color, size: 30),
                 ),

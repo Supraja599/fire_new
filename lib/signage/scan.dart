@@ -251,7 +251,7 @@ class _SignageScanPageState extends State<SignageScanPage> {
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                 selectedEquipment: item,
-                equipmentImage: 'assets/signage.png',
+                equipmentImage: 'assets/signage.webp',
                 nextScreen: SignageChecklistPage(selectedEquipment: item),
               )));
             }

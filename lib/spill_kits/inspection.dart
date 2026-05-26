@@ -303,7 +303,7 @@ Widget build(BuildContext context) {
                 } else {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                     selectedEquipment: item,
-                    equipmentImage: 'assets/spill_kits.png',
+                    equipmentImage: 'assets/spill_kits.webp',
                     nextScreen: SpillKitsChecklistPage(selectedEquipment: item),
                   )));
                 }

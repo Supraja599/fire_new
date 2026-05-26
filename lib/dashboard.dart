@@ -228,9 +228,9 @@ class _DashboardPageState extends State<DashboardPage> {
                               ),
                               // 2. RIGHT: The HUGE, BEAUTIFUL Device Asset Image!
                               Hero(
-                                tag: "hero_image_assets/extinguisher.png",
+                                tag: "hero_image_assets/extinguisher.webp",
                                 child: Image.asset(
-                                  "assets/extinguisher.png",
+                                  "assets/extinguisher.webp",
                                   width: 130,
                                   height: 130, // Exploded size!
                                   fit: BoxFit.contain,
@@ -370,12 +370,12 @@ class _DashboardPageState extends State<DashboardPage> {
                             mainAxisSpacing: 10,
                             childAspectRatio: aspectRatio,
                             children: [
-                              _ActionCard("Analytics", "assets/dashboard_icons/analytics.png", const Color(0xFFD32F2F), const AnalyticsPage(), "Trends", _load),
-                              _ActionCard("Inspection", "assets/dashboard_icons/inspection.png", const Color(0xFFD32F2F), const InspectionPage(), "Scan", _load),
-                              _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.png", const Color(0xFFD32F2F), const MaintenancePage(), "Service", _load),
-                              _ActionCard("Alerts", "assets/dashboard_icons/alerts.png", const Color(0xFFD32F2F), const AlertsPage(), "Critical", _load),
-                              _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.png", const Color(0xFFD32F2F), const PlantHealthPage(), "Score", _load),
-                              _ActionCard("Reports", "assets/dashboard_icons/reports.png", const Color(0xFFD32F2F), const ReportsPage(), "Logs", _load),
+                              _ActionCard("Analytics", "assets/dashboard_icons/analytics.webp", const Color(0xFFD32F2F), const AnalyticsPage(), "Trends", _load),
+                              _ActionCard("Inspection", "assets/dashboard_icons/inspection.webp", const Color(0xFFD32F2F), const InspectionPage(), "Scan", _load),
+                              _ActionCard("Maintenance", "assets/dashboard_icons/maintenance.webp", const Color(0xFFD32F2F), const MaintenancePage(), "Service", _load),
+                              _ActionCard("Alerts", "assets/dashboard_icons/alerts.webp", const Color(0xFFD32F2F), const AlertsPage(), "Critical", _load),
+                              _ActionCard("Plant Health", "assets/dashboard_icons/plant_health.webp", const Color(0xFFD32F2F), const PlantHealthPage(), "Score", _load),
+                              _ActionCard("Reports", "assets/dashboard_icons/reports.webp", const Color(0xFFD32F2F), const ReportsPage(), "Logs", _load),
                             ],
                           ),
                         );

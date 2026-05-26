@@ -45,7 +45,7 @@ class _SCBAUnitsPlantHealthPageState extends State<SCBAUnitsPlantHealthPage> {
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/scba_unit.png",
+          imagePath: "assets/scba_unit.webp",
           fallbackIcon: Icons.air,
         ),
       ),

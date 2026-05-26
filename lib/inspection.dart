@@ -91,7 +91,7 @@ class _InspectionPageState extends State<InspectionPage> {
           builder: (_) => GuidedCaptureWizardPage(
             equipmentId: scannedId,
             selectedEquipment: item,
-            equipmentImage: 'assets/extinguisher.png',
+            equipmentImage: 'assets/extinguisher.webp',
             nextScreen: ChecklistPage(
               equipmentId: scannedId,
               selectedEquipment: item,

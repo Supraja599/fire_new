@@ -45,7 +45,7 @@ class _HeatDetectorPlantHealthPageState extends State<HeatDetectorPlantHealthPag
           title: title,
           color: color,
           items: list,
-          imagePath: "assets/heat_detector.png",
+          imagePath: "assets/heat_detector.webp",
           fallbackIcon: Icons.medical_services,
         ),
       ),

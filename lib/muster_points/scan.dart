@@ -251,7 +251,7 @@ class _MusterPointsScanPageState extends State<MusterPointsScanPage> {
             } else {
               Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                 selectedEquipment: item,
-                equipmentImage: 'assets/muster_points.png',
+                equipmentImage: 'assets/muster_points.webp',
                 nextScreen: MusterPointsChecklistPage(selectedEquipment: item),
               )));
             }

@@ -158,7 +158,7 @@ class _FirstAidAlertsPageState extends State<FirstAidAlertsPage> {
                 height: 100,
                 color: color.withOpacity(0.08),
                 child: Image.asset(
-                  'assets/first_aid.png',
+                  'assets/first_aid.webp',
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => Icon(_levelIcon(level), color: color, size: 30),
                 ),

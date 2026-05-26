@@ -113,7 +113,7 @@ class _MaintenancePageState extends State<MaintenancePage> {
                               shape: BoxShape.circle,
                             ),
                             child: Image.asset(
-                              'assets/extinguisher.png',
+                              'assets/extinguisher.webp',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
@@ -171,7 +171,7 @@ class _MaintenancePageState extends State<MaintenancePage> {
                                     height: 108,
                                     color: color.withValues(alpha: 0.08),
                                     child: Image.asset(
-                                      'assets/extinguisher.png',
+                                      'assets/extinguisher.webp',
                                       fit: BoxFit.contain,
                                       errorBuilder: (context, error, stackTrace) {
                                         return Icon(Icons.fire_extinguisher, color: color, size: 40);

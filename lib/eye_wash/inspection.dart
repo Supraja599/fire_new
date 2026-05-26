@@ -303,7 +303,7 @@ Widget build(BuildContext context) {
                 } else {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => GuidedCaptureWizardPage(
                     selectedEquipment: item,
-                    equipmentImage: 'assets/eye_wash.png',
+                    equipmentImage: 'assets/eye_wash.webp',
                     nextScreen: EyeWashChecklistPage(selectedEquipment: item),
                   )));
                 }

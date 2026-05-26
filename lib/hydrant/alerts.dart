@@ -125,7 +125,7 @@ class _HydrantAlertsPageState extends State<HydrantAlertsPage> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(15),
                                   image: const DecorationImage(
-                                    image: AssetImage('real_fire_hydrant.png'),
+                                    image: AssetImage('real_fire_hydrant.webp'),
                                     fit: BoxFit.cover,
                                   ),
                                 ),

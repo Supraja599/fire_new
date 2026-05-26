@@ -159,7 +159,7 @@ class _EyeWashAlertsPageState extends State<EyeWashAlertsPage> {
                 height: 100,
                 color: color.withOpacity(0.08),
                 child: Image.asset(
-                  'assets/eye_wash.png',
+                  'assets/eye_wash.webp',
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => Icon(_levelIcon(level), color: color, size: 30),
                 ),
