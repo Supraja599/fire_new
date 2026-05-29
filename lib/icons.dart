@@ -518,12 +518,12 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
   }
 
   void _assignModuleStatus(ModuleItem mod) {
-    if (mod.health < 50) {
-      mod.status = 'red';
-    } else if (mod.health < 80) {
+    if (mod.health >= 90) {
+      mod.status = 'green';
+    } else if (mod.health >= 80) {
       mod.status = 'amber';
     } else {
-      mod.status = 'green';
+      mod.status = 'red';
     }
   }
 

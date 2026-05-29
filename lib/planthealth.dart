@@ -137,14 +137,14 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      health >= 80
+                      health >= 90
                           ? const Color(0xFF1E8E3E)
-                          : health >= 50
+                          : health >= 80
                               ? const Color(0xFFFF8F00)
                               : const Color(0xFFD50000),
-                      health >= 80
+                      health >= 90
                           ? const Color(0xFF52B76D)
-                          : health >= 50
+                          : health >= 80
                               ? const Color(0xFFFFB300)
                               : const Color(0xFFFF5252),
                     ],
@@ -157,9 +157,9 @@ class _PlantHealthPageState extends State<PlantHealthPage> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: (health >= 80
+                      color: (health >= 90
                               ? const Color(0xFF1E8E3E)
-                              : health >= 50
+                              : health >= 80
                                   ? const Color(0xFFFF8F00)
                                   : const Color(0xFFD50000))
                           .withOpacity(0.2),

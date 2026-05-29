@@ -141,10 +141,10 @@ class _GenericPlantHealthPageState extends State<GenericPlantHealthPage> {
     // Dynamic brand semantic gradient colors
     Color startColor;
     Color endColor;
-    if (health >= 80) {
+    if (health >= 90) {
       startColor = const Color(0xFF1E8E3E);
       endColor = const Color(0xFF52B76D);
-    } else if (health >= 50) {
+    } else if (health >= 80) {
       startColor = const Color(0xFFFF8F00);
       endColor = const Color(0xFFFFB300);
     } else {

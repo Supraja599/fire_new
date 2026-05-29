@@ -194,9 +194,9 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                                   valueColor: AlwaysStoppedAnimation<Color>(
                                     isLoading
                                         ? Colors.grey
-                                        : (health >= 80
+                                        : (health >= 90
                                               ? const Color(0xFF1E8E3E)
-                                              : (health >= 50
+                                              : (health >= 80
                                                     ? const Color(0xFFFF8F00)
                                                     : const Color(0xFFD50000))),
                                   ),
@@ -257,9 +257,9 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                             Text(
                               isLoading
                                   ? "Accessing systems..."
-                                  : (health >= 80
+                                  : (health >= 90
                                         ? "Optimal Status Standing"
-                                        : (health >= 50
+                                        : (health >= 80
                                               ? "Advisory Maintenance Required"
                                               : "Critical System Attention Required")),
                               style: TextStyle(
@@ -267,9 +267,9 @@ class _WindSockDashboardState extends State<WindSockDashboard> {
                                 fontWeight: FontWeight.w900,
                                 color: isLoading
                                     ? Colors.grey
-                                    : (health >= 80
+                                    : (health >= 90
                                           ? const Color(0xFF1E8E3E)
-                                          : (health >= 50
+                                          : (health >= 80
                                                 ? const Color(0xFFFF8F00)
                                                 : const Color(0xFFD50000))),
                                 letterSpacing: -0.2,

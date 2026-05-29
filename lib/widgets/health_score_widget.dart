@@ -46,9 +46,9 @@ class _HealthScoreWidgetState extends State<HealthScoreWidget> with SingleTicker
     final int h = widget.health;
     
     // 🎨 Determine Semantic Theme Colors
-    final Color themeColor = (h >= 80)
+    final Color themeColor = (h >= 90)
         ? const Color(0xFF1E8E3E) // Vibrant Green
-        : (h >= 50)
+        : (h >= 80)
             ? const Color(0xFFFF8F00) // Vibrant Amber
             : const Color(0xFFD50000); // Cherry Red
 

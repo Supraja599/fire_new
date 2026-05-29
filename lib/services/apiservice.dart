@@ -206,8 +206,8 @@ class ApiService {
 
   /// Maps status string for the icons page based strictly on client-side health thresholds.
   static String getHealthStatus(Map<String, dynamic> s, int health) {
-    if (health >= 80) return "green";
-    if (health >= 50) return "amber";
+    if (health >= 90) return "green";
+    if (health >= 80) return "amber";
     return "red";
   }
 
