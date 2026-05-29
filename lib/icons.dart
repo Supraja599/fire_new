@@ -325,13 +325,14 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
         .toString()
         .toLowerCase()
         .trim();
-    final List<dynamic> assignedModulesData = box.get(
-      'modules',
-      defaultValue: [],
-    );
+    final rawModules = box.get('modules');
+    final bool isAllModules = rawModules == "ALL";
+    final List<dynamic> assignedModulesData = (rawModules is List)
+        ? rawModules
+        : [];
 
     print("🛠️ DEBUG: Current Role is '$role'");
-    print("🛠️ DEBUG: Assigned Modules from API: $assignedModulesData");
+    print("🛠️ DEBUG: Assigned Modules from API: $rawModules");
 
     // Extract both IDs and Codes for maximum compatibility
     final Set<String> assignedCodes = {};
@@ -342,7 +343,9 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
         final code = m['code']?.toString().isNotEmpty == true
             ? m['code'].toString()
             : m['module_code']?.toString();
-        if (code != null && code.isNotEmpty) assignedCodes.add(code);
+        if (code != null && code.isNotEmpty) {
+          assignedCodes.add(LocalDB.normalizeModuleCode(code));
+        }
         final idStr = m['id']?.toString().isNotEmpty == true
             ? m['id'].toString()
             : m['module_id']?.toString();
@@ -354,7 +357,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
         if (id > 0) {
           assignedIds.add(id);
         } else if (s.isNotEmpty) {
-          assignedCodes.add(s);
+          assignedCodes.add(LocalDB.normalizeModuleCode(s));
         }
       }
     }
@@ -363,8 +366,8 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
 
     // Filter modules based on role and assignments
     bool shouldFilter = true;
-    if (role == 'superadmin' || role == 'admin') {
-      if (assignedModulesData.isEmpty) {
+    if (role == 'superadmin' || role == 'admin' || isAllModules) {
+      if (assignedModulesData.isEmpty || isAllModules) {
         shouldFilter = false;
       }
     }
@@ -539,30 +542,48 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
     try {
       final userProfile = await ApiService.getAdminUser(userId);
       if (userProfile != null && mounted) {
-        final updatedModules = List<Map<String, dynamic>>.from(userProfile["modules"] ?? []);
+        final rawModules = userProfile["modules"];
         
         // Save to Hive cache
-        await box.put('modules', updatedModules);
+        await box.put('modules', rawModules);
         
         final Set<String> assignedCodes = {};
         final Set<int> assignedIds = {};
+        
+        final bool isAllModules = rawModules == "ALL";
+        final List<dynamic> updatedModules = (rawModules is List)
+            ? rawModules
+            : [];
+            
         for (var m in updatedModules) {
-          final code = m['code']?.toString().isNotEmpty == true
-              ? m['code'].toString()
-              : m['module_code']?.toString();
-          if (code != null && code.isNotEmpty) assignedCodes.add(code);
-          final idStr = m['id']?.toString().isNotEmpty == true
-              ? m['id'].toString()
-              : m['module_id']?.toString();
-          final id = int.tryParse(idStr ?? '0') ?? 0;
-          if (id > 0) assignedIds.add(id);
+          if (m is Map) {
+            final code = m['code']?.toString().isNotEmpty == true
+                ? m['code'].toString()
+                : m['module_code']?.toString();
+            if (code != null && code.isNotEmpty) {
+              assignedCodes.add(LocalDB.normalizeModuleCode(code));
+            }
+            final idStr = m['id']?.toString().isNotEmpty == true
+                ? m['id'].toString()
+                : m['module_id']?.toString();
+            final id = int.tryParse(idStr ?? '0') ?? 0;
+            if (id > 0) assignedIds.add(id);
+          } else {
+            final s = m.toString();
+            final id = int.tryParse(s) ?? 0;
+            if (id > 0) {
+              assignedIds.add(id);
+            } else if (s.isNotEmpty) {
+              assignedCodes.add(LocalDB.normalizeModuleCode(s));
+            }
+          }
         }
         
         final allModules = _buildAllModulesList();
         
         bool shouldFilter = true;
-        if (role == 'superadmin' || role == 'admin') {
-          if (updatedModules.isEmpty) {
+        if (role == 'superadmin' || role == 'admin' || isAllModules) {
+          if (updatedModules.isEmpty || isAllModules) {
             shouldFilter = false;
           }
         }

@@ -9,6 +9,148 @@ class LocalDB {
   @visibleForTesting
   static set database(Database? db) => _db = db;
 
+  static String normalizeModuleCode(String code) {
+    final c = code.trim().toLowerCase().replaceAll('_', '').replaceAll(' ', '');
+    switch (c) {
+      case 'fireextinguisher':
+      case 'extinguishers':
+      case 'extinguisher':
+        return 'fire_extinguisher';
+      case 'hosereel':
+      case 'hosereels':
+      case 'hose_reel':
+        return 'hose_reel';
+      case 'sprinkler':
+      case 'sprinklers':
+      case 'splinker':
+      case 'splinkers':
+        return 'sprinkler';
+      case 'hydrant':
+      case 'hydrants':
+        return 'hydrant';
+      case 'firealarm':
+      case 'alarmpanel':
+      case 'alarmpanels':
+      case 'fire_alarm':
+        return 'fire_alarm';
+      case 'smokedetector':
+      case 'smokedetectors':
+        return 'smoke_detector';
+      case 'firetrolley':
+      case 'firetrolleys':
+        return 'fire_trolley';
+      case 'exitsign':
+      case 'exitsigns':
+      case 'emergencyexit':
+      case 'emergencyexits':
+        return 'exit_sign';
+      case 'emergencylight':
+      case 'emergencylighting':
+      case 'emergencylights':
+        return 'emergency_light';
+      case 'pasystem':
+      case 'pasystems':
+        return 'pa_system';
+      case 'windsock':
+      case 'windsocks':
+        return 'wind_sock';
+      case 'scbaunit':
+      case 'scbaunits':
+        return 'scba_unit';
+      case 'ambulance':
+      case 'ambulances':
+        return 'ambulance';
+      case 'firstaidkit':
+      case 'firstaid':
+      case 'firstaidkits':
+        return 'first_aid_kit';
+      case 'safetyshower':
+      case 'emergencyshower':
+      case 'emergencyshowers':
+      case 'chemicalshower':
+      case 'chemicalshowers':
+        return 'safety_shower';
+      case 'eyewashstation':
+      case 'eyewash':
+      case 'eyewashstations':
+        return 'eyewash_station';
+      case 'spillkit':
+      case 'spillkits':
+        return 'spill_kit';
+      case 'ppestation':
+      case 'ppecabinets':
+      case 'ppecabinet':
+      case 'ppecabs':
+      case 'ppestations':
+        return 'ppe_station';
+      case 'suppressionsystem':
+      case 'co2system':
+      case 'co2systems':
+        return 'suppression_system';
+      case 'signage':
+      case 'signages':
+        return 'signage';
+      case 'emergencycomm':
+      case 'emergencycomms':
+        return 'emergency_comm';
+      case 'fireblanket':
+      case 'fireblankets':
+        return 'fire_blanket';
+      case 'musterpoint':
+      case 'musterpoints':
+        return 'muster_point';
+      case 'heatdetector':
+      case 'heatdetectors':
+        return 'heat_detector';
+      case 'codetector':
+      case 'codetectors':
+        return 'co_detector';
+      case 'firedoor':
+      case 'firedoors':
+        return 'fire_door';
+      default:
+        return code;
+    }
+  }
+
+  static Future<void> migrateModuleCodes(Database db) async {
+    final Map<String, String> migrations = {
+      'hosereel': 'hose_reel',
+      'sprinklers': 'sprinkler',
+      'splinkers': 'sprinkler',
+      'spill_kits': 'spill_kit',
+      'scba_units': 'scba_unit',
+      'ppe_cabinets': 'ppe_station',
+      'co2_system': 'suppression_system',
+      'fire_blankets': 'fire_blanket',
+      'muster_points': 'muster_point',
+      'alarm_panel': 'fire_alarm',
+      'emergency_exits': 'exit_sign',
+      'emergency_lighting': 'emergency_light',
+      'first_aid': 'first_aid_kit',
+      'emergency_shower': 'safety_shower',
+      'chemical_shower': 'safety_shower',
+      'chemical_showers': 'safety_shower',
+      'chemicalshower': 'safety_shower',
+      'eye_wash': 'eyewash_station',
+    };
+
+    for (final entry in migrations.entries) {
+      await db.update(
+        'module_records',
+        {'module_code': entry.value},
+        where: 'module_code = ?',
+        whereArgs: [entry.key],
+      );
+      await db.update(
+        'pending_module_sync',
+        {'module_code': entry.value},
+        where: 'module_code = ?',
+        whereArgs: [entry.key],
+      );
+    }
+  }
+
   static Future<Database> get database async {
     if (_db != null) return _db!;
     if (kIsWeb) {
@@ -56,6 +198,7 @@ class LocalDB {
         await db.execute('CREATE TABLE IF NOT EXISTS module_records (module_code TEXT, record_type TEXT, record_id TEXT, data TEXT, PRIMARY KEY (module_code, record_type, record_id))');
         await db.execute('CREATE TABLE IF NOT EXISTS pending_module_sync (event_id TEXT PRIMARY KEY, module_code TEXT, equipment_id TEXT, payload TEXT, isSynced INTEGER)');
         await db.execute('CREATE TABLE IF NOT EXISTS user_session (username TEXT PRIMARY KEY, password TEXT, token TEXT, role TEXT, last_login TEXT)');
+        await migrateModuleCodes(db);
       },
     );
   }
@@ -273,11 +416,12 @@ class LocalDB {
     if (kIsWeb) return;
     final db = await database;
     final batch = db.batch();
+    final normCode = normalizeModuleCode(moduleCode);
 
     batch.delete(
       'module_records',
       where: 'module_code = ? AND record_type = ?',
-      whereArgs: [moduleCode, recordType],
+      whereArgs: [normCode, recordType],
     );
 
     for (var i = 0; i < items.length; i++) {
@@ -291,7 +435,7 @@ class LocalDB {
       batch.insert(
         'module_records',
         {
-          'module_code': moduleCode,
+          'module_code': normCode,
           'record_type': recordType,
           'record_id': recordId,
           'data': jsonEncode(item),
@@ -310,6 +454,7 @@ class LocalDB {
   }) async {
     if (kIsWeb) return;
     final db = await database;
+    final normCode = normalizeModuleCode(moduleCode);
     final recordId = (item['id'] ??
             item['sos_code'] ??
             item['serial_number'] ??
@@ -319,7 +464,7 @@ class LocalDB {
     await db.insert(
       'module_records',
       {
-        'module_code': moduleCode,
+        'module_code': normCode,
         'record_type': recordType,
         'record_id': recordId,
         'data': jsonEncode(item),
@@ -339,10 +484,11 @@ class LocalDB {
     if (kIsWeb) return [];
     try {
       final db = await database;
+      final normCode = normalizeModuleCode(moduleCode);
       final result = await db.query(
         'module_records',
         where: 'module_code = ? AND record_type = ?',
-        whereArgs: [moduleCode, recordType],
+        whereArgs: [normCode, recordType],
       );
 
       return result
@@ -360,10 +506,11 @@ class LocalDB {
   }) async {
     if (kIsWeb) return;
     final db = await database;
+    final normCode = normalizeModuleCode(moduleCode);
     await db.insert(
       'module_records',
       {
-        'module_code': moduleCode,
+        'module_code': normCode,
         'record_type': recordType,
         'record_id': 'single',
         'data': jsonEncode(data),
@@ -379,10 +526,11 @@ class LocalDB {
     if (kIsWeb) return <String, dynamic>{};
     try {
       final db = await database;
+      final normCode = normalizeModuleCode(moduleCode);
       final result = await db.query(
         'module_records',
         where: 'module_code = ? AND record_type = ? AND record_id = ?',
-        whereArgs: [moduleCode, recordType, 'single'],
+        whereArgs: [normCode, recordType, 'single'],
         limit: 1,
       );
 
@@ -397,8 +545,9 @@ class LocalDB {
     required String moduleCode,
     required String query,
   }) async {
+    final normCode = normalizeModuleCode(moduleCode);
     final items = await getModuleRecords(
-      moduleCode: moduleCode,
+      moduleCode: normCode,
       recordType: 'equipment',
     );
     final trimmed = query.trim().toLowerCase();
@@ -427,11 +576,12 @@ class LocalDB {
   }) async {
     if (kIsWeb) return;
     final db = await database;
+    final normCode = normalizeModuleCode(moduleCode);
     await db.insert(
       'pending_module_sync',
       {
         'event_id': eventId,
-        'module_code': moduleCode,
+        'module_code': normCode,
         'equipment_id': equipmentId,
         'payload': jsonEncode(payload),
         'isSynced': 0,
@@ -445,10 +595,11 @@ class LocalDB {
   }) async {
     if (kIsWeb) return [];
     final db = await database;
+    final normCode = moduleCode != null ? normalizeModuleCode(moduleCode) : null;
     final result = await db.query(
       'pending_module_sync',
-      where: moduleCode == null ? 'isSynced = ?' : 'isSynced = ? AND module_code = ?',
-      whereArgs: moduleCode == null ? [0] : [0, moduleCode],
+      where: normCode == null ? 'isSynced = ?' : 'isSynced = ? AND module_code = ?',
+      whereArgs: normCode == null ? [0] : [0, normCode],
     );
 
     return result
@@ -472,10 +623,11 @@ class LocalDB {
     if (kIsWeb) return [];
     try {
       final db = await database;
+      final normCode = moduleCode != null ? normalizeModuleCode(moduleCode) : null;
       final result = await db.query(
         'pending_module_sync',
-        where: moduleCode == null ? null : 'module_code = ?',
-        whereArgs: moduleCode == null ? null : [moduleCode],
+        where: normCode == null ? null : 'module_code = ?',
+        whereArgs: normCode == null ? null : [normCode],
         orderBy: 'rowid ASC',
       );
       return result.map((row) => {
@@ -494,7 +646,8 @@ class LocalDB {
     required String equipmentId,
     String? moduleCode,
   }) async {
-    final items = await getAllModuleInspections(moduleCode: moduleCode);
+    final normCode = moduleCode != null ? normalizeModuleCode(moduleCode) : null;
+    final items = await getAllModuleInspections(moduleCode: normCode);
     final target = equipmentId.trim().toLowerCase();
 
     for (final item in items.reversed) {
@@ -571,10 +724,11 @@ class LocalDB {
   static Future<List<Map<String, dynamic>>> getModuleEquipmentDetails(String moduleCode) async {
     if (kIsWeb) return [];
     final db = await database;
+    final normCode = normalizeModuleCode(moduleCode);
     final result = await db.query(
       'module_records',
       where: 'module_code = ? AND record_type = ?',
-      whereArgs: [moduleCode, 'equipment'],
+      whereArgs: [normCode, 'equipment'],
     );
 
     return result.map((row) {
@@ -621,7 +775,7 @@ class LocalDB {
 
     if (fastResult.isNotEmpty) {
       return {
-        'module_code': fastResult.first['module_code'],
+        'module_code': normalizeModuleCode(fastResult.first['module_code'] as String),
         'data': jsonDecode(fastResult.first['data'] as String),
       };
     }
@@ -643,7 +797,7 @@ class LocalDB {
 
       if (values.contains(trimmed)) {
         return {
-          'module_code': row['module_code'],
+          'module_code': normalizeModuleCode(row['module_code'] as String),
           'data': data,
         };
       }
@@ -660,12 +814,13 @@ class LocalDB {
     try {
       final db = await database;
       final target = equipmentId.trim().toLowerCase();
+      final normCode = normalizeModuleCode(moduleCode);
 
       // 1. Find all matching records in module_records for this moduleCode and equipment
       final records = await db.query(
         'module_records',
         where: 'module_code = ?',
-        whereArgs: [moduleCode],
+        whereArgs: [normCode],
       );
 
       String? oldStatus;
@@ -726,7 +881,7 @@ class LocalDB {
           await txn.insert(
             'module_records',
             {
-              'module_code': moduleCode,
+              'module_code': normCode,
               'record_type': 'equipment',
               'record_id': eqRecordId,
               'data': updatedJson,
@@ -739,7 +894,7 @@ class LocalDB {
             await txn.delete(
               'module_records',
               where: 'module_code = ? AND record_type = ? AND record_id = ?',
-              whereArgs: [moduleCode, mappedOldRecordType, eqRecordId],
+              whereArgs: [normCode, mappedOldRecordType, eqRecordId],
             );
           }
 
@@ -747,7 +902,7 @@ class LocalDB {
           await txn.insert(
             'module_records',
             {
-              'module_code': moduleCode,
+              'module_code': normCode,
               'record_type': 'active',
               'record_id': eqRecordId,
               'data': updatedJson,
@@ -759,7 +914,7 @@ class LocalDB {
           final summaryResult = await txn.query(
             'module_records',
             where: 'module_code = ? AND record_type = ? AND record_id = ?',
-            whereArgs: [moduleCode, 'summary', 'single'],
+            whereArgs: [normCode, 'summary', 'single'],
             limit: 1,
           );
 
@@ -797,7 +952,7 @@ class LocalDB {
             await txn.insert(
               'module_records',
               {
-                'module_code': moduleCode,
+                'module_code': normCode,
                 'record_type': 'summary',
                 'record_id': 'single',
                 'data': jsonEncode(summaryData),

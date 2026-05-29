@@ -36,7 +36,7 @@ class EquipmentRepository {
     }
 
     if (apiCallSucceeded && apiMatch != null) {
-      final moduleCode = apiMatch['module_code']?.toString() ?? 'fire_extinguisher';
+      final moduleCode = LocalDB.normalizeModuleCode(apiMatch['module_code']?.toString() ?? 'fire_extinguisher');
       // Cache locally for offline availability next time
       if (moduleCode == 'fire_extinguisher') {
         await LocalDB.insert(searchId, apiMatch);

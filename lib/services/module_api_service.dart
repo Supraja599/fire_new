@@ -13,8 +13,8 @@ class ModuleApiService {
   const ModuleApiService({required this.moduleCode, required this.moduleId});
 
   // ── Pre-built instances for every module ──────────────────────────────────
-  static final extinguisher   = ModuleApiService(moduleCode: 'fire_extinguisher', moduleId: 30);
-  static final hoseReel       = ModuleApiService(moduleCode: 'hose_reel',         moduleId: 33);
+  static final extinguisher   = ModuleApiService(moduleCode: 'fire_extinguisher',  moduleId: 30);
+  static final hoseReel       = ModuleApiService(moduleCode: 'hose_reel',          moduleId: 33);
   static final sprinkler      = ModuleApiService(moduleCode: 'sprinkler',          moduleId: 31);
   static final hydrant        = ModuleApiService(moduleCode: 'hydrant',            moduleId: 34);
   static final alarmPanel     = ModuleApiService(moduleCode: 'fire_alarm',         moduleId: 35);
@@ -111,8 +111,11 @@ class ModuleApiService {
       }
       final decoded = _decodeBody(res);
       if (decoded is Map<String, dynamic>) {
+        if (decoded.containsKey("module_code") && decoded["module_code"] != null) {
+          decoded["module_code"] = LocalDB.normalizeModuleCode(decoded["module_code"].toString());
+        }
         final mc = decoded["module_code"]?.toString();
-        if (mc != null && mc != moduleCode) return null;
+        if (mc != null && mc != LocalDB.normalizeModuleCode(moduleCode)) return null;
         return decoded;
       }
       return null;

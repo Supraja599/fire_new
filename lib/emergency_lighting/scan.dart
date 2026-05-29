@@ -1,4 +1,6 @@
 
+import 'package:flutter/services.dart';
+import 'package:fire_new/utils/upper_case_text_formatter.dart';
 import '../utils/edit_helper.dart';
 import '../screens/equipment_history_page.dart';
 import 'package:flutter/material.dart';
@@ -159,6 +161,10 @@ class _EmergencyLightingScanPageState extends State<EmergencyLightingScanPage> {
                   children: [
                     TextField(
                       controller: idController,
+                      textCapitalization: TextCapitalization.characters,
+                      inputFormatters: [
+                        UpperCaseTextFormatter(),
+                      ],
                       onChanged: _onSearchChanged,
                       decoration: InputDecoration(
                         hintText: "Enter SOS ID",

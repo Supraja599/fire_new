@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+import 'package:fire_new/utils/upper_case_text_formatter.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -466,6 +468,10 @@ class _InspectionPageState extends State<InspectionPage> {
                   children: [
                     TextField(
                       controller: idController,
+                      textCapitalization: TextCapitalization.characters,
+                      inputFormatters: [
+                        UpperCaseTextFormatter(),
+                      ],
                       onChanged: _onSearchChanged,
                       decoration: InputDecoration(
                         hintText: "Enter SOS ID",

@@ -107,6 +107,9 @@ class ApiService {
           // Some APIs wrap in "item" or "data"
           final data = decoded.containsKey("item") ? decoded["item"] : (decoded.containsKey("data") ? decoded["data"] : decoded);
           if (data is Map<String, dynamic>) {
+            if (data.containsKey("module_code") && data["module_code"] != null) {
+              data["module_code"] = LocalDB.normalizeModuleCode(data["module_code"].toString());
+            }
             return data;
           }
         }
@@ -118,10 +121,18 @@ class ApiService {
       if (extRes.statusCode == 200) {
         final decoded = jsonDecode(extRes.body);
         if (decoded is Map && decoded.containsKey("item")) {
-          return Map<String, dynamic>.from(decoded["item"]);
+          final itemData = Map<String, dynamic>.from(decoded["item"]);
+          if (itemData.containsKey("module_code") && itemData["module_code"] != null) {
+            itemData["module_code"] = LocalDB.normalizeModuleCode(itemData["module_code"].toString());
+          }
+          return itemData;
         }
         if (decoded is Map) {
-          return Map<String, dynamic>.from(decoded);
+          final itemData = Map<String, dynamic>.from(decoded);
+          if (itemData.containsKey("module_code") && itemData["module_code"] != null) {
+            itemData["module_code"] = LocalDB.normalizeModuleCode(itemData["module_code"].toString());
+          }
+          return itemData;
         }
       }
 
@@ -144,6 +155,9 @@ class ApiService {
       if (decoded is Map<String, dynamic>) {
         final data = decoded.containsKey("item") ? decoded["item"] : (decoded.containsKey("data") ? decoded["data"] : decoded);
         if (data is Map<String, dynamic>) {
+          if (data.containsKey("module_code") && data["module_code"] != null) {
+            data["module_code"] = LocalDB.normalizeModuleCode(data["module_code"].toString());
+          }
           return data;
         }
       }
@@ -155,10 +169,18 @@ class ApiService {
     if (extRes.statusCode == 200) {
       final decoded = jsonDecode(extRes.body);
       if (decoded is Map && decoded.containsKey("item")) {
-        return Map<String, dynamic>.from(decoded["item"]);
+        final itemData = Map<String, dynamic>.from(decoded["item"]);
+        if (itemData.containsKey("module_code") && itemData["module_code"] != null) {
+          itemData["module_code"] = LocalDB.normalizeModuleCode(itemData["module_code"].toString());
+        }
+        return itemData;
       }
       if (decoded is Map) {
-        return Map<String, dynamic>.from(decoded);
+        final itemData = Map<String, dynamic>.from(decoded);
+        if (itemData.containsKey("module_code") && itemData["module_code"] != null) {
+          itemData["module_code"] = LocalDB.normalizeModuleCode(itemData["module_code"].toString());
+        }
+        return itemData;
       }
     }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:fire_new/local_db.dart';
 import 'package:fire_new/services/apiservice.dart';
@@ -82,7 +83,7 @@ class _GlobalScannerPageState extends State<GlobalScannerPage> with SingleTicker
       final match = await locator<EquipmentRepository>().getEquipment(searchId);
       
       if (match != null) {
-        final moduleCode = match['module_code']?.toString() ?? 'fire_extinguisher';
+        final moduleCode = LocalDB.normalizeModuleCode(match['module_code']?.toString() ?? 'fire_extinguisher');
         _navigateToModule(moduleCode, searchId);
         return;
       }
@@ -204,6 +205,8 @@ class _GlobalScannerPageState extends State<GlobalScannerPage> with SingleTicker
     final bgDark = const Color(0xFF0B0F19);
     final cardBg = const Color(0xFF1E293B);
 
+    final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       backgroundColor: bgDark,
       extendBodyBehindAppBar: true,
@@ -257,76 +260,78 @@ class _GlobalScannerPageState extends State<GlobalScannerPage> with SingleTicker
               child: SafeArea(
                 child: Column(
                   children: [
-                    const Spacer(),
-                    
-                    // Center scanner target box
-                    Center(
-                      child: Container(
-                        width: 270,
-                        height: 270,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: Colors.white24, width: 2),
-                        ),
-                        child: Stack(
-                          children: [
-                            // Glowing border corner accents
-                            Positioned(
-                              top: -2, left: -2,
-                              child: _buildCornerAccent(top: true, left: true),
-                            ),
-                            Positioned(
-                              top: -2, right: -2,
-                              child: _buildCornerAccent(top: true, left: false),
-                            ),
-                            Positioned(
-                              bottom: -2, left: -2,
-                              child: _buildCornerAccent(top: false, left: true),
-                            ),
-                            Positioned(
-                              bottom: -2, right: -2,
-                              child: _buildCornerAccent(top: false, left: false),
-                            ),
+                    if (!keyboardOpen) ...[
+                      const Spacer(),
+                      
+                      // Center scanner target box
+                      Center(
+                        child: Container(
+                          width: 270,
+                          height: 270,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: Colors.white24, width: 2),
+                          ),
+                          child: Stack(
+                            children: [
+                              // Glowing border corner accents
+                              Positioned(
+                                top: -2, left: -2,
+                                child: _buildCornerAccent(top: true, left: true),
+                              ),
+                              Positioned(
+                                top: -2, right: -2,
+                                child: _buildCornerAccent(top: true, left: false),
+                              ),
+                              Positioned(
+                                bottom: -2, left: -2,
+                                child: _buildCornerAccent(top: false, left: true),
+                              ),
+                              Positioned(
+                                bottom: -2, right: -2,
+                                child: _buildCornerAccent(top: false, left: false),
+                              ),
 
-                            // Laser scanning line animation
-                            AnimatedBuilder(
-                              animation: _laserController,
-                              builder: (context, child) {
-                                return Positioned(
-                                  top: _laserController.value * 260 + 5,
-                                  left: 10,
-                                  right: 10,
-                                  child: Container(
-                                    height: 3.5,
-                                    decoration: BoxDecoration(
-                                      color: Colors.redAccent,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.red.withOpacity(0.8),
-                                          blurRadius: 8,
-                                          spreadRadius: 2,
-                                        ),
-                                      ],
-                                      borderRadius: BorderRadius.circular(10),
+                              // Laser scanning line animation
+                              AnimatedBuilder(
+                                animation: _laserController,
+                                builder: (context, child) {
+                                  return Positioned(
+                                    top: _laserController.value * 260 + 5,
+                                    left: 10,
+                                    right: 10,
+                                    child: Container(
+                                      height: 3.5,
+                                      decoration: BoxDecoration(
+                                        color: Colors.redAccent,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.red.withOpacity(0.8),
+                                            blurRadius: 8,
+                                            spreadRadius: 2,
+                                          ),
+                                        ],
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Scan any equipment barcode / QR code to inspect",
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                      
+                      const SizedBox(height: 20),
+                      const Text(
+                        "Scan any equipment barcode / QR code to inspect",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
+                    ],
                     const Spacer(),
 
                     // 3. Bottom Card for Manual Entering & Error messages
@@ -388,6 +393,10 @@ class _GlobalScannerPageState extends State<GlobalScannerPage> with SingleTicker
                               Expanded(
                                 child: TextField(
                                   controller: idController,
+                                  textCapitalization: TextCapitalization.characters,
+                                  inputFormatters: [
+                                    UpperCaseTextFormatter(),
+                                  ],
                                   style: const TextStyle(color: Colors.white, fontSize: 14),
                                   decoration: InputDecoration(
                                     hintText: "Enter SOS Code or ID",
@@ -529,6 +538,16 @@ class _GlobalScannerPageState extends State<GlobalScannerPage> with SingleTicker
           ),
         ],
       ),
+    );
+  }
+}
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
     );
   }
 }

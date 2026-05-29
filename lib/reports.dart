@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fire_new/utils/web_download_helper.dart';
 import 'package:fire_new/common/report_utils.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart';
+import 'package:fire_new/utils/upper_case_text_formatter.dart';
 import 'package:intl/intl.dart';
 import 'package:hive/hive.dart';
 import 'services/apiservice.dart';
@@ -463,6 +464,10 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
             _sectionHeader("Equipment Details", Icons.qr_code_scanner_rounded, _kAccent),
             TextField(
               controller: sosController,
+              textCapitalization: TextCapitalization.characters,
+              inputFormatters: [
+                UpperCaseTextFormatter(),
+              ],
               decoration: _inputDecoration("SOS Number / Equipment ID", Icons.qr_code_rounded),
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),

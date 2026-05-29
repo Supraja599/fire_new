@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fire_new/utils/upper_case_text_formatter.dart';
 
 class EquipmentListPage extends StatefulWidget {
   final String title;
@@ -67,6 +69,10 @@ class _EquipmentListPageState extends State<EquipmentListPage> {
             child: TextField(
               controller: searchController,
               onChanged: _filter,
+              textCapitalization: TextCapitalization.characters,
+              inputFormatters: [
+                UpperCaseTextFormatter(),
+              ],
               decoration: InputDecoration(
                 hintText: "Search by SOS ID, Location or Zone...",
                 prefixIcon: Icon(Icons.search, color: widget.color),
