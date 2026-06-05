@@ -11,8 +11,8 @@ class StatusCountStrip extends StatelessWidget {
     final s = summary ?? {};
     int upcoming = (s["upcoming"] ?? s["upcoming_units"] ?? 0) as int;
     int active = (s["active_units"] ?? s["active"] ?? s["active_loops"] ?? 0) as int;
-    int service = (s["needs_service"] ?? s[""] ?? 0) as int;
-    int inspection = (s["due_inspection"] ?? s["due_inspection_uneeds_service_unitsnits"] ?? s["due_inspection_loops"] ?? 0) as int;
+    int service = (s["needs_service"] ?? s["needs_service_units"] ?? 0) as int;
+    int inspection = (s["due_inspection"] ?? s["due_inspection_units"] ?? s["due_inspection_loops"] ?? 0) as int;
     int expired = (s["expired"] ?? s["expired_units"] ?? s["expired_loops"] ?? 0) as int;
 
     s.forEach((key, val) {
