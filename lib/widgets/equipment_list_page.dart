@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fire_new/utils/upper_case_text_formatter.dart';
+import 'package:fire_new/utils/map_flatten.dart';
 
 class EquipmentListPage extends StatefulWidget {
   final String title;
@@ -181,77 +182,58 @@ class _EquipmentListPageState extends State<EquipmentListPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
+      builder: (sheetCtx) {
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(sheetCtx).size.height * 0.85,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Pinned header — always visible regardless of scroll
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 4, 0),
+                child: Row(
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40, height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(sheetCtx),
+                    ),
+                  ],
+                ),
+              ),
+              const Text(
+                "Equipment Details",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              const Divider(),
+              // Scrollable content below
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                  child: Column(
+                    children: [
+                      ...buildDetailRows(item),
+                    ],
                   ),
                 ),
-                const Text(
-                  "Equipment Details",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20),
-                ...item.entries.map((entry) {
-                  // Skip nested details maps for now or format them
-                  if (entry.value is Map) {
-                    final subMap = entry.value as Map;
-                    return Column(
-                      children: subMap.entries.map((subEntry) {
-                        return _buildDetailRow(subEntry.key.toString(), subEntry.value.toString());
-                      }).toList(),
-                    );
-                  }
-                  return _buildDetailRow(entry.key, entry.value.toString());
-                }).toList(),
-                const SizedBox(height: 20),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
-    if (value == "null" || value.isEmpty) value = "-";
-    // Beautify labels (e.g., location_name -> Location Name)
-    final formattedLabel = label.split('_').map((word) {
-      if (word.isEmpty) return "";
-      return word[0].toUpperCase() + word.substring(1);
-    }).join(' ');
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 4,
-            child: Text(
-              formattedLabel,
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black54),
-            ),
-          ),
-          Expanded(
-            flex: 6,
-            child: Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

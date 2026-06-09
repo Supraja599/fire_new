@@ -10,6 +10,7 @@ import 'package:fire_new/guided_capture_wizard.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'checklist.dart';
 import '../local_db.dart';
+import 'package:fire_new/utils/map_flatten.dart';
 
 class HoseReelScanPage extends StatefulWidget {
   const HoseReelScanPage({super.key});
@@ -334,21 +335,7 @@ Widget build(BuildContext context) {
                       style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red),
                     ),
                     const Divider(height: 30),
-                    ...item!.entries.map((e) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 4,
-                            child: Text(
-                              e.key.toUpperCase(),
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey),
-                            ),
-                          ),
-                          Expanded(flex: 6, child: Text(e.value?.toString() ?? "-")),
-                        ],
-                      ),
-                    )).toList(),
+                    ...buildDetailRows(item!),
                   ],
                 ),
               ),

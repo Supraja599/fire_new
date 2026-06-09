@@ -9,6 +9,7 @@ import 'guided_capture_wizard.dart';
 import 'local_db.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'screens/equipment_history_page.dart';
+import 'package:fire_new/utils/map_flatten.dart';
 
 class InspectionPage extends StatefulWidget {
   final String? preScannedId;
@@ -43,7 +44,7 @@ class _InspectionPageState extends State<InspectionPage> {
   }
 
   Future<void> _loadAllEquipment() async {
-    final list = await LocalDB.getAllEquipmentGlobal();
+    final list = await LocalDB.getAllExtinguishers();
     setState(() => allEquipment = list);
   }
 
@@ -526,21 +527,7 @@ class _InspectionPageState extends State<InspectionPage> {
                       style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red),
                     ),
                     const Divider(height: 30),
-                    ...item!.entries.map((e) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 4,
-                            child: Text(
-                              e.key.toUpperCase(),
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey),
-                            ),
-                          ),
-                          Expanded(flex: 6, child: Text(e.value?.toString() ?? "-")),
-                        ],
-                      ),
-                    )).toList(),
+                    ...buildDetailRows(item!),
                   ],
                 ),
               ),

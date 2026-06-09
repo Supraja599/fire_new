@@ -11,6 +11,7 @@ import 'package:fire_new/guided_capture_wizard.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'checklist.dart';
 import 'package:fire_new/local_db.dart';
+import 'package:fire_new/utils/map_flatten.dart';
 
 class FireBlanketsInspectionPage extends StatefulWidget {
   final String? preScannedId;
@@ -274,13 +275,7 @@ Widget build(BuildContext context) {
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: const Color(0xFFD84315)),
                   ),
                   const Divider(height: 30),
-                  ...item!.entries.map((e) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(children: [
-                      Expanded(flex: 4, child: Text(e.key.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey))),
-                      Expanded(flex: 6, child: Text(e.value?.toString() ?? "-")),
-                    ]),
-                  )).toList(),
+                  ...buildDetailRows(item!),
                 ]),
               ),
             const SizedBox(height: 50),

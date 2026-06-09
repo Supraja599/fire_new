@@ -11,6 +11,7 @@ import 'package:fire_new/guided_capture_wizard.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../local_db.dart';
 import 'checklist.dart';
+import 'package:fire_new/utils/map_flatten.dart';
 class EmergencyExitsScanPage extends StatefulWidget {
   const EmergencyExitsScanPage({super.key});
   @override
@@ -254,21 +255,7 @@ class _EmergencyExitsScanPageState extends State<EmergencyExitsScanPage> {
                       style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red),
                     ),
                     const Divider(height: 30),
-                    ...item!.entries.map((e) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 4,
-                            child: Text(
-                              e.key.toUpperCase(),
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey),
-                            ),
-                          ),
-                          Expanded(flex: 6, child: Text(e.value?.toString() ?? "-")),
-                        ],
-                      ),
-                    )).toList(),
+                    ...buildDetailRows(item!),
                   ],
                 ),
               ),
