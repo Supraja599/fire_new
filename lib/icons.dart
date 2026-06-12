@@ -13,6 +13,7 @@ import 'package:fire_new/global_scanner.dart';
 import 'package:fire_new/screens/notifications_page.dart';
 import 'package:fire_new/screens/approval_queue_page.dart';
 import 'package:fire_new/screens/user_management_page.dart';
+import 'package:fire_new/screens/location_management_page.dart';
 
 import 'responsive.dart';
 import 'dashboard.dart';
@@ -227,7 +228,7 @@ class _TransparentImageState extends State<TransparentImage> {
         width: widget.width,
         height: widget.height,
         fit: widget.fit,
-        color: Colors.white.withOpacity(0.01),
+        color: Colors.white.withValues(alpha:0.01),
         colorBlendMode: BlendMode.dstIn,
       );
     }
@@ -246,7 +247,7 @@ class _TransparentImageState extends State<TransparentImage> {
               imageFilter: ui.ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
               child: ColorFiltered(
                 colorFilter: ColorFilter.mode(
-                  isDark ? Colors.white.withOpacity(0.28) : Colors.black.withOpacity(0.32),
+                  isDark ? Colors.white.withValues(alpha:0.28) : Colors.black.withValues(alpha:0.32),
                   BlendMode.srcIn,
                 ),
                 child: RawImage(
@@ -937,7 +938,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.08),
+                                    color: Colors.black.withValues(alpha:0.08),
                                     blurRadius: 5,
                                     offset: const Offset(0, 2),
                                   ),
@@ -1110,6 +1111,11 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                           MaterialPageRoute(builder: (_) => ApprovalQueuePage(isDark: isDark)),
                         );
                         _loadHealthData();
+                      } else if (value == 'locations') {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => LocationManagementPage(isDark: isDark)),
+                        );
                       } else if (value == 'user_directory') {
                         await Navigator.push(
                           context,
@@ -1153,7 +1159,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.12),
+                                        color: Colors.black.withValues(alpha:0.12),
                                         blurRadius: 8,
                                         offset: const Offset(0, 3),
                                       ),
@@ -1277,6 +1283,23 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                         ),
                         if (role == 'admin' || role == 'superadmin')
                           PopupMenuItem(
+                            value: 'locations',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.location_on_rounded, color: Colors.red, size: 20),
+                                const SizedBox(width: 12),
+                                Text(
+                                  "Locations",
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white70 : Colors.black87,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (role == 'admin' || role == 'superadmin')
+                          PopupMenuItem(
                             value: 'user_directory',
                             child: Row(
                               children: [
@@ -1379,31 +1402,31 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                                 if (mod.health == -1) {
                                   // Loading state
                                   animatedBorderColor = isDark 
-                                      ? Colors.white.withOpacity(0.15) 
-                                      : Colors.black.withOpacity(0.08);
+                                      ? Colors.white.withValues(alpha:0.15) 
+                                      : Colors.black.withValues(alpha:0.08);
                                   borderWidth = 1.5;
                                   animatedBgColor = cardBg;
                                   animatedShadows = [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(isDark ? 0.25 : 0.05),
+                                      color: Colors.black.withValues(alpha:isDark ? 0.25 : 0.05),
                                       blurRadius: 8,
                                       offset: const Offset(0, 4),
                                     )
                                   ];
                                 } else {
                                   // Active states: Red, Amber, Green
-                                  animatedBorderColor = color.withOpacity(0.40 + (pulse * 0.60));
+                                  animatedBorderColor = color.withValues(alpha:0.40 + (pulse * 0.60));
                                   
                                   if (mod.status == 'red') {
                                     borderWidth = 2.2 + (pulse * 1.3);
                                     animatedBgColor = Color.lerp(
                                       cardBg,
-                                      color.withOpacity(isDark ? 0.35 : 0.22),
+                                      color.withValues(alpha:isDark ? 0.35 : 0.22),
                                       pulse,
                                     )!;
                                     animatedShadows = [
                                       BoxShadow(
-                                        color: color.withOpacity(0.20 + (pulse * 0.30)),
+                                        color: color.withValues(alpha:0.20 + (pulse * 0.30)),
                                         blurRadius: 8.0 + (pulse * 8.0),
                                         offset: const Offset(0, 4),
                                       )
@@ -1412,12 +1435,12 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                                     borderWidth = 1.8 + (pulse * 0.8);
                                     animatedBgColor = Color.lerp(
                                       cardBg,
-                                      color.withOpacity(isDark ? 0.28 : 0.17),
+                                      color.withValues(alpha:isDark ? 0.28 : 0.17),
                                       pulse,
                                     )!;
                                     animatedShadows = [
                                       BoxShadow(
-                                        color: color.withOpacity(0.15 + (pulse * 0.20)),
+                                        color: color.withValues(alpha:0.15 + (pulse * 0.20)),
                                         blurRadius: 6.0 + (pulse * 6.0),
                                         offset: const Offset(0, 4),
                                       )
@@ -1427,12 +1450,12 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                                     borderWidth = 1.5 + (pulse * 0.4);
                                     animatedBgColor = Color.lerp(
                                       cardBg,
-                                      color.withOpacity(isDark ? 0.22 : 0.13),
+                                      color.withValues(alpha:isDark ? 0.22 : 0.13),
                                       pulse,
                                     )!;
                                     animatedShadows = [
                                       BoxShadow(
-                                        color: color.withOpacity(0.10 + (pulse * 0.12)),
+                                        color: color.withValues(alpha:0.10 + (pulse * 0.12)),
                                         blurRadius: 5.0 + (pulse * 4.0),
                                         offset: const Offset(0, 4),
                                       )

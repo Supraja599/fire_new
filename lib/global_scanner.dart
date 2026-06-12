@@ -5,6 +5,7 @@ import 'package:fire_new/local_db.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'package:fire_new/services/equipment_repository.dart';
 import 'package:fire_new/services/service_locator.dart';
+import 'package:geolocator/geolocator.dart';
 import 'dart:ui';
 
 // Import all 26 inspection pages
@@ -69,7 +70,7 @@ class _GlobalScannerPageState extends State<GlobalScannerPage> with SingleTicker
   }
 
   // Universal lookup logic
-  Future<void> _handleSearch(String input) async {
+  Future<void> _handleSearch(String input, {bool isScan = false}) async {
     final searchId = input.trim();
     if (searchId.isEmpty) return;
 
@@ -83,6 +84,17 @@ class _GlobalScannerPageState extends State<GlobalScannerPage> with SingleTicker
       final match = await locator<EquipmentRepository>().getEquipment(searchId);
       
       if (match != null) {
+        if (isScan) {
+          // Run geofence check before navigating only if scanned via camera
+          final canProceed = await _checkGeofenceAndProceed(searchId);
+          if (!canProceed || !mounted) {
+            setState(() {
+              isLoading = false;
+            });
+            return;
+          }
+        }
+
         final moduleCode = LocalDB.normalizeModuleCode(match['module_code']?.toString() ?? 'fire_extinguisher');
         _navigateToModule(moduleCode, searchId);
         return;
@@ -100,6 +112,198 @@ class _GlobalScannerPageState extends State<GlobalScannerPage> with SingleTicker
       });
     }
   }
+
+  bool _geofenceChecking = false;
+
+  Future<bool> _checkGeofenceAndProceed(String sosCode) async {
+    if (_geofenceChecking) return false;
+    _geofenceChecking = true;
+    try {
+      LocationPermission perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
+        _geofenceChecking = false;
+        return true; // no permission — allow through
+      }
+
+      final pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      final result = await ApiService.checkScanLocation(
+        sosCode: sosCode,
+        latitude: pos.latitude,
+        longitude: pos.longitude,
+      );
+
+      if (result == null) {
+        _geofenceChecking = false;
+        return true; // API unreachable — allow through
+      }
+
+      // Unwrap nested response: some servers wrap in { data: {...} }
+      final Map<String, dynamic> payload =
+          (result['data'] is Map<String, dynamic>)
+              ? result['data'] as Map<String, dynamic>
+              : result;
+
+      final status = payload['status']?.toString().toLowerCase() ?? '';
+      final message = payload['message']?.toString() ?? '';
+
+      bool proceed = false;
+      if (status == 'outside') {
+        final msg = message.isNotEmpty ? message : "You are outside the authorized inspection zone.";
+        proceed = await _showOutOfRangeDialog(msg);
+      } else if (status == 'inside' || status == 'buffer') {
+        final msg = message.isNotEmpty ? message : "You are within the authorized inspection zone.";
+        proceed = await _showWithinRangeDialog(msg);
+      } else {
+        // e.g. status == 'no_location' or empty - allow silently
+        _geofenceChecking = false;
+        return true;
+      }
+
+      _geofenceChecking = false;
+      return proceed;
+    } catch (_) {
+      _geofenceChecking = false;
+      return true; // error — allow through
+    }
+  }
+
+  Future<bool> _showOutOfRangeDialog(String message) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.location_off_rounded, color: Colors.red.shade700, size: 26),
+            const SizedBox(width: 10),
+            const Text("Out of Location",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.red.shade200),
+              ),
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red.shade700,
+                  height: 1.4,
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            const Text(
+              "Do you want to proceed anyway?",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, height: 1.5),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Proceed Anyway",
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
+  Future<bool> _showWithinRangeDialog(String message) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.location_on_rounded, color: Colors.green.shade700, size: 26),
+            const SizedBox(width: 10),
+            const Text("Within Location",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.green.shade200),
+              ),
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.green.shade700,
+                  height: 1.4,
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            const Text(
+              "You can proceed with the inspection.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, height: 1.5),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Proceed",
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
+
 
   void _navigateToModule(String moduleCode, String equipmentId) {
     Widget page;
@@ -246,7 +450,7 @@ class _GlobalScannerPageState extends State<GlobalScannerPage> with SingleTicker
                 if (capture.barcodes.isNotEmpty && !isLoading) {
                   final code = capture.barcodes.first.rawValue;
                   if (code != null && code.trim().isNotEmpty) {
-                    _handleSearch(code);
+                    _handleSearch(code, isScan: true);
                   }
                 }
               },

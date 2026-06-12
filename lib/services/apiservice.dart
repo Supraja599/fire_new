@@ -693,6 +693,133 @@ class ApiService {
     }
   }
 
+  static Future<List<Map<String, dynamic>>> getCompanies() async {
+    return _getList("$baseUrl/list/companies");
+  }
+
+  static Future<List<Map<String, dynamic>>> getLocations({String? companyId}) async {
+    final query = companyId != null ? '?company_id=$companyId' : '';
+    return _getList("$baseUrl/admin/locations$query");
+  }
+
+  static Future<bool> createLocation({
+    required String companyId,
+    required String locationName,
+    required double latitude,
+    required double longitude,
+    required double geofenceRadiusMeters,
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse("$baseUrl/admin/locations"),
+        headers: headers,
+        body: jsonEncode({
+          "company_id": companyId,
+          "location_name": locationName,
+          "latitude": latitude,
+          "longitude": longitude,
+          "geofence_radius_meters": geofenceRadiusMeters,
+        }),
+      ).timeout(const Duration(seconds: 10));
+      return res.statusCode == 200 || res.statusCode == 201;
+    } catch (e) {
+      print("CREATE LOCATION ERROR: $e");
+      return false;
+    }
+  }
+
+  static Future<bool> updateLocation(String id, Map<String, dynamic> data) async {
+    try {
+      final res = await http.patch(
+        Uri.parse("$baseUrl/admin/locations/$id"),
+        headers: headers,
+        body: jsonEncode(data),
+      ).timeout(const Duration(seconds: 10));
+      return res.statusCode == 200;
+    } catch (e) {
+      print("UPDATE LOCATION ERROR: $e");
+      return false;
+    }
+  }
+
+  static Future<bool> deleteLocation(String id) async {
+    try {
+      final res = await http.delete(
+        Uri.parse("$baseUrl/admin/locations/$id"),
+        headers: headers,
+      ).timeout(const Duration(seconds: 10));
+      return res.statusCode == 200;
+    } catch (e) {
+      print("DELETE LOCATION ERROR: $e");
+      return false;
+    }
+  }
+
+  static Future<bool> assignEquipmentLocation(String sosCode, String locationId) async {
+    try {
+      final res = await http.patch(
+        Uri.parse("$baseUrl/admin/equipment/$sosCode/location"),
+        headers: headers,
+        body: jsonEncode({"location_id": locationId}),
+      ).timeout(const Duration(seconds: 10));
+      return res.statusCode == 200;
+    } catch (e) {
+      print("ASSIGN EQUIPMENT LOCATION ERROR: $e");
+      return false;
+    }
+  }
+
+  static Future<Map<String, dynamic>> bulkAssignEquipmentLocations(
+      List<Map<String, String>> assignments) async {
+    try {
+      final res = await http.post(
+        Uri.parse("$baseUrl/admin/equipment/assign-locations"),
+        headers: headers,
+        body: jsonEncode(assignments),
+      ).timeout(const Duration(seconds: 15));
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        try {
+          final decoded = jsonDecode(res.body);
+          if (decoded is Map<String, dynamic>) {
+            return {"success": true, ...decoded};
+          }
+        } catch (_) {}
+        return {"success": true};
+      }
+      return {"success": false, "message": "Server error ${res.statusCode}"};
+    } catch (e) {
+      print("BULK ASSIGN LOCATION ERROR: $e");
+      return {"success": false, "message": e.toString()};
+    }
+  }
+
+  // No auth — called from mobile after scanning
+  static Future<Map<String, dynamic>?> checkScanLocation({
+    required String sosCode,
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse("$baseUrl/scan/check-location"),
+        headers: {"Content-Type": "application/json", "Accept": "application/json"},
+        body: jsonEncode({
+          "sos_code": sosCode,
+          "latitude": latitude,
+          "longitude": longitude,
+        }),
+      ).timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded is Map<String, dynamic>) return decoded;
+      }
+      return null;
+    } catch (e) {
+      print("CHECK SCAN LOCATION ERROR: $e");
+      return null;
+    }
+  }
+
   static Future<Map<String, dynamic>?> getAdminUser(String userId) async {
     try {
       final url = Uri.parse("$baseUrl/admin/users/$userId");
