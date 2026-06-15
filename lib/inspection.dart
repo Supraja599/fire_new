@@ -47,7 +47,13 @@ class _InspectionPageState extends State<InspectionPage> {
   }
 
   Future<void> _loadAllEquipment() async {
-    final list = await LocalDB.getAllExtinguishers();
+    var list = await LocalDB.getAllExtinguishers();
+    if (list.isEmpty) {
+      try {
+        await ApiService.syncAllExtinguishersToLocal();
+        list = await LocalDB.getAllExtinguishers();
+      } catch (_) {}
+    }
     setState(() => allEquipment = list);
   }
 

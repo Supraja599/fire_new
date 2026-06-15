@@ -1,4 +1,4 @@
-﻿import 'package:fire_new/widgets/generic_plant_health_page.dart';
+import 'package:fire_new/widgets/generic_plant_health_page.dart';
 import 'package:fire_new/widgets/generic_analytics_page.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:fire_new/widgets/status_count_strip.dart';
@@ -36,6 +36,7 @@ class _FireExtinguisherDashboardState extends State<FireExtinguisherDashboard> {
 
   Future<void> _load() async {
     try {
+      await ApiService.syncModuleData();
       final s = await api.getSummary();
       if (mounted) {
         setState(() {
