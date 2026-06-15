@@ -192,7 +192,7 @@ class _WindSockScanPageState extends State<WindSockScanPage> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: suggestions.length,
-                        itemBuilder: (c, i) => ListTile(
+                        itemBuilder: (c, i) => Material(color: Colors.transparent, child: ListTile(
                           dense: true,
                           title: Text(suggestions[i]["sos_code"] ?? suggestions[i]["equipment_id"] ?? suggestions[i]["id"] ?? suggestions[i]["serial_number"] ?? "-"),
                           subtitle: Text(suggestions[i]["location_name"] ?? "-", style: const TextStyle(fontSize: 10)),
@@ -200,7 +200,7 @@ class _WindSockScanPageState extends State<WindSockScanPage> {
                             idController.text = suggestions[i]["sos_code"] ?? suggestions[i]["equipment_id"] ?? suggestions[i]["id"] ?? suggestions[i]["serial_number"] ?? "";
                             _fetchDetails(idController.text);
                           },
-                        ),
+                        )),
                       ),
                   ],
                 ),

@@ -20,7 +20,7 @@ void main() async {
   // Route Flutter Framework errors to global handler
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
-    AppExceptionHandler.handleError(details.exception, stackTrace: details.stack);
+    // Framework errors (layout/assertion warnings) are printed to the console and should not show UI error SnackBars to users.
   };
 
   // Route asynchronous errors to global handler
@@ -156,8 +156,10 @@ class _LoginPageState extends State<LoginPage>
         
         final role = result["user"]["role"] ?? "User";
         final userId = result["user"]["id"]?.toString() ?? '';
+        final companyId = result["user"]["company_id"]?.toString() ?? '28';
         await box.put('role', role);
         await box.put('userId', userId);
+        await box.put('companyId', companyId);
         
         // Fetch assigned modules from /admin/users/{id} immediately on login
         List<Map<String, dynamic>> userModules = [];

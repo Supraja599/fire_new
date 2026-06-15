@@ -443,15 +443,27 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
         
         // 3. Execute GPS verification
         ProximityResult? locationResult;
-        if (widget.selectedEquipment != null) {
-          double? lat = double.tryParse((widget.selectedEquipment!["latitude"] ?? widget.selectedEquipment!["lat"]).toString());
-          double? lng = double.tryParse((widget.selectedEquipment!["longitude"] ?? widget.selectedEquipment!["lng"]).toString());
+        final eq = widget.selectedEquipment;
+        if (eq != null) {
+          double? lat;
+          double? lng;
+          double maxAllowedDistance = 10.0;
+          if (eq.containsKey("geofence") && eq["geofence"] is Map) {
+            final gf = eq["geofence"] as Map;
+            lat = double.tryParse((gf["stored_latitude"] ?? "").toString());
+            lng = double.tryParse((gf["stored_longitude"] ?? "").toString());
+            maxAllowedDistance = double.tryParse((gf["geofence_radius_meters"] ?? "").toString()) ?? 10.0;
+          } else {
+            lat = double.tryParse((eq["latitude"] ?? eq["lat"] ?? eq["stored_latitude"] ?? "").toString());
+            lng = double.tryParse((eq["longitude"] ?? eq["lng"] ?? eq["stored_longitude"] ?? "").toString());
+            maxAllowedDistance = double.tryParse((eq["geofence_radius_meters"] ?? eq["geofence_radius"] ?? "").toString()) ?? 10.0;
+          }
           
           if (lat != null && lng != null) {
             locationResult = await LocationService.verifyProximity(
               targetLat: lat,
               targetLng: lng,
-              maxAllowedDistanceMeters: 100.0,
+              maxAllowedDistanceMeters: maxAllowedDistance,
               context: context,
             );
           }

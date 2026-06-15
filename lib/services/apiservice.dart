@@ -1,13 +1,47 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as origin_http;
 import 'package:hive/hive.dart';
 import '../local_db.dart';
+import 'error_handler.dart';
+import '../main.dart';
 
 class ApiService {
   static const String baseUrl = "https://ehs.garrev.com/app1/v1";
 
   // 🔐 Store token (set after login)
   static String? token;
+
+  // 🚪 Force logout and redirect to login page when token is invalid
+  static void handleUnauthorized() async {
+    token = null;
+    try {
+      if (Hive.isBoxOpen('inspectionBox')) {
+        final box = Hive.box('inspectionBox');
+        await box.delete('token');
+      }
+    } catch (_) {}
+
+    final context = AppExceptionHandler.navigatorKey.currentContext;
+    if (context != null) {
+      // Show snackbar notifying session expiration
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Session expired. Please log in again."),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 4),
+        ),
+      );
+      
+      // Redirect to login page
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+        (route) => false,
+      );
+    }
+  }
 
   // ================= COMMON HEADERS =================
   static Map<String, String> get headers {
@@ -26,7 +60,7 @@ class ApiService {
   static Future<Map<String, dynamic>?> login(String username, String password) async {
     try {
       final url = Uri.parse("$baseUrl/auth/login");
-      final res = await http.post(
+      final res = await origin_http.post(
         url,
         headers: headers,
         body: jsonEncode({
@@ -34,7 +68,7 @@ class ApiService {
           "password": password.trim(),
         }),
       ).timeout(const Duration(seconds: 10)); // Increased to 10s for reliability
-
+ 
       if (res.statusCode == 200) {
         final decoded = jsonDecode(res.body);
         if (decoded is Map<String, dynamic>) {
@@ -46,7 +80,7 @@ class ApiService {
         return null;
       } else {
         print("LOGIN SERVER ERROR: ${res.statusCode} - ${res.body}");
-        throw http.ClientException("Server returned status code ${res.statusCode}");
+        throw origin_http.ClientException("Server returned status code ${res.statusCode}");
       }
       return null;
     } catch (e) {
@@ -841,5 +875,31 @@ class ApiService {
       print("GET ADMIN USER ERROR: $e");
       return null;
     }
+  }
+}
+
+class http {
+  static Future<origin_http.Response> get(Uri url, {Map<String, String>? headers}) async {
+    final res = await origin_http.get(url, headers: headers);
+    if (res.statusCode == 401) ApiService.handleUnauthorized();
+    return res;
+  }
+
+  static Future<origin_http.Response> post(Uri url, {Map<String, String>? headers, Object? body, Encoding? encoding}) async {
+    final res = await origin_http.post(url, headers: headers, body: body, encoding: encoding);
+    if (res.statusCode == 401) ApiService.handleUnauthorized();
+    return res;
+  }
+
+  static Future<origin_http.Response> patch(Uri url, {Map<String, String>? headers, Object? body, Encoding? encoding}) async {
+    final res = await origin_http.patch(url, headers: headers, body: body, encoding: encoding);
+    if (res.statusCode == 401) ApiService.handleUnauthorized();
+    return res;
+  }
+
+  static Future<origin_http.Response> delete(Uri url, {Map<String, String>? headers, Object? body, Encoding? encoding}) async {
+    final res = await origin_http.delete(url, headers: headers, body: body, encoding: encoding);
+    if (res.statusCode == 401) ApiService.handleUnauthorized();
+    return res;
   }
 }

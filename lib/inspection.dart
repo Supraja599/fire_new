@@ -11,6 +11,7 @@ import 'local_db.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'screens/equipment_history_page.dart';
 import 'package:fire_new/utils/map_flatten.dart';
+import 'package:fire_new/services/location_service.dart';
 
 class InspectionPage extends StatefulWidget {
   final String? preScannedId;
@@ -108,8 +109,22 @@ class _InspectionPageState extends State<InspectionPage> {
   }
 
   Future<void> openNavigation() async {
-    const double lat = 17.5064803;
-    const double lng = 78.3554442;
+    double? lat;
+    double? lng;
+    if (item != null) {
+      if (item!.containsKey("geofence") && item!["geofence"] is Map) {
+        final gf = item!["geofence"] as Map;
+        lat = double.tryParse((gf["stored_latitude"] ?? "").toString());
+        lng = double.tryParse((gf["stored_longitude"] ?? "").toString());
+      } else {
+        lat = double.tryParse((item!["latitude"] ?? item!["lat"] ?? item!["stored_latitude"] ?? "").toString());
+        lng = double.tryParse((item!["longitude"] ?? item!["lng"] ?? item!["stored_longitude"] ?? "").toString());
+      }
+    }
+    // Fallback if no item selected or coordinates not configured
+    lat ??= 17.5021988;
+    lng ??= 78.3530868;
+
     final Uri uri = Uri.parse("geo:$lat,$lng?q=$lat,$lng");
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
@@ -122,190 +137,16 @@ class _InspectionPageState extends State<InspectionPage> {
     if (_geofenceChecking) return false;
     _geofenceChecking = true;
     try {
-      LocationPermission perm = await Geolocator.checkPermission();
-      if (perm == LocationPermission.denied) {
-        perm = await Geolocator.requestPermission();
-      }
-      if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
-        _geofenceChecking = false;
-        return true; // no permission — allow through
-      }
-
-      final pos = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      final result = await ApiService.checkScanLocation(
+      final proceed = await LocationService.checkGeofenceAndShowDialog(
+        context: context,
         sosCode: sosCode,
-        latitude: pos.latitude,
-        longitude: pos.longitude,
       );
-
-      if (result == null) {
-        _geofenceChecking = false;
-        return true; // API unreachable — allow through
-      }
-
-      // Unwrap nested response: some servers wrap in { data: {...} }
-      final Map<String, dynamic> payload =
-          (result['data'] is Map<String, dynamic>)
-              ? result['data'] as Map<String, dynamic>
-              : result;
-
-      final Object? rawStatus = payload['status'];
-      final status = rawStatus != null ? rawStatus.toString().toLowerCase() : '';
-      final Object? rawMessage = payload['message'];
-      final message = rawMessage != null ? rawMessage.toString() : '';
-
-      bool proceed = false;
-      if (status == 'outside') {
-        final msg = message.isNotEmpty ? message : "You are outside the authorized inspection zone.";
-        proceed = await _showOutOfRangeDialog(msg);
-      } else if (status == 'inside' || status == 'buffer') {
-        final msg = message.isNotEmpty ? message : "You are within the authorized inspection zone.";
-        proceed = await _showWithinRangeDialog(msg);
-      } else {
-        // e.g. status == 'no_location' or empty - allow silently
-        _geofenceChecking = false;
-        return true;
-      }
-
       _geofenceChecking = false;
       return proceed;
     } catch (_) {
       _geofenceChecking = false;
-      return true; // error — allow through
+      return true; // error fallback - allow through
     }
-  }
-
-  Future<bool> _showOutOfRangeDialog(String message) async {
-    final result = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Icon(Icons.location_off_rounded, color: Colors.red.shade700, size: 26),
-            const SizedBox(width: 10),
-            const Text("Out of Location",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.red.shade200),
-              ),
-              child: Text(
-                message,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.red.shade700,
-                  height: 1.4,
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
-            const Text(
-              "Do you want to proceed anyway?",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, height: 1.5),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Proceed Anyway",
-                style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-    return result ?? false;
-  }
-
-  Future<bool> _showWithinRangeDialog(String message) async {
-    final result = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Icon(Icons.location_on_rounded, color: Colors.green.shade700, size: 26),
-            const SizedBox(width: 10),
-            const Text("Within Location",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.green.shade200),
-              ),
-              child: Text(
-                message,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.green.shade700,
-                  height: 1.4,
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
-            const Text(
-              "You can proceed with the inspection.",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, height: 1.5),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Proceed",
-                style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-    return result ?? false;
   }
 
 
@@ -705,7 +546,7 @@ class _InspectionPageState extends State<InspectionPage> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: suggestions.length,
-                        itemBuilder: (c, i) => ListTile(
+                        itemBuilder: (c, i) => Material(color: Colors.transparent, child: ListTile(
                           dense: true,
                           title: Text(suggestions[i]["sos_code"] ?? suggestions[i]["equipment_id"] ?? suggestions[i]["id"] ?? suggestions[i]["serial_number"] ?? "-"),
                           subtitle: Text(suggestions[i]["location_name"] ?? "-", style: const TextStyle(fontSize: 10)),
@@ -713,7 +554,7 @@ class _InspectionPageState extends State<InspectionPage> {
                             idController.text = suggestions[i]["sos_code"] ?? suggestions[i]["equipment_id"] ?? suggestions[i]["id"] ?? suggestions[i]["serial_number"] ?? "";
                             _onFetchTapped(idController.text);
                           },
-                        ),
+                        )),
                       ),
                   ],
                 ),

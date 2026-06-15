@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fire_new/services/apiservice.dart';
+import 'package:hive/hive.dart';
 
 class LocationManagementPage extends StatefulWidget {
   final bool isDark;
@@ -39,7 +40,8 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
   Future<void> _loadData() async {
     setState(() => _loading = true);
     try {
-      const companyId = '29';
+      final box = Hive.box('inspectionBox');
+      final companyId = box.get('companyId', defaultValue: '28').toString();
       final locations = await ApiService.getLocations(companyId: companyId);
 
       setState(() {
@@ -532,72 +534,75 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
                                   ),
                                 ],
                               ),
-                              child: ListTile(
-                                onTap: () => _showAssignSheet(loc),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                                leading: Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFD50000).withValues(alpha:0.1),
-                                    shape: BoxShape.circle,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: ListTile(
+                                  onTap: () => _showAssignSheet(loc),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                                  leading: Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFD50000).withValues(alpha:0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.location_on_rounded,
+                                        color: Color(0xFFD50000)),
                                   ),
-                                  child: const Icon(Icons.location_on_rounded,
-                                      color: Color(0xFFD50000)),
-                                ),
-                                title: Text(
-                                  name,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: textColor),
-                                ),
-                                subtitle: Padding(
-                                  padding: const EdgeInsets.only(top: 4),
-                                  child: Text(
-                                    "Lat: $lat  •  Lng: $lng\nRadius: ${radius}m",
+                                  title: Text(
+                                    name,
                                     style: TextStyle(
-                                        color: subColor, fontSize: 12, height: 1.6),
+                                        fontWeight: FontWeight.bold,
+                                        color: textColor),
                                   ),
-                                ),
-                                isThreeLine: true,
-                                trailing: () {
-                                  final locId = (loc['id'] ?? loc['location_id'])?.toString();
-                                  if (locId == null) return null;
-                                  return IconButton(
-                                    icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-                                    onPressed: () async {
-                                      final confirm = await showDialog<bool>(
-                                        context: context,
-                                        builder: (ctx) => AlertDialog(
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                          title: const Text("Delete Location"),
-                                          content: Text('Remove "$name"?'),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(ctx, false),
-                                              child: const Text("Cancel"),
-                                            ),
-                                            ElevatedButton(
-                                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                              onPressed: () => Navigator.pop(ctx, true),
-                                              child: const Text("Delete", style: TextStyle(color: Colors.white)),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                      if (confirm == true) {
-                                        final ok = await ApiService.deleteLocation(locId);
-                                        if (ok) {
-                                          _loadData();
-                                        } else if (mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text("Failed to delete location"), backgroundColor: Colors.red),
-                                          );
+                                  subtitle: Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: Text(
+                                      "Lat: $lat  •  Lng: $lng\nRadius: ${radius}m",
+                                      style: TextStyle(
+                                          color: subColor, fontSize: 12, height: 1.6),
+                                    ),
+                                  ),
+                                  isThreeLine: true,
+                                  trailing: () {
+                                    final locId = (loc['id'] ?? loc['location_id'])?.toString();
+                                    if (locId == null) return null;
+                                    return IconButton(
+                                      icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+                                      onPressed: () async {
+                                        final confirm = await showDialog<bool>(
+                                          context: context,
+                                          builder: (ctx) => AlertDialog(
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                            title: const Text("Delete Location"),
+                                            content: Text('Remove "$name"?'),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(ctx, false),
+                                                child: const Text("Cancel"),
+                                              ),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                                onPressed: () => Navigator.pop(ctx, true),
+                                                child: const Text("Delete", style: TextStyle(color: Colors.white)),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                        if (confirm == true) {
+                                          final ok = await ApiService.deleteLocation(locId);
+                                          if (ok) {
+                                            _loadData();
+                                          } else if (mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text("Failed to delete location"), backgroundColor: Colors.red),
+                                            );
+                                          }
                                         }
-                                      }
-                                    },
-                                  );
-                                }(),
+                                      },
+                                    );
+                                  }(),
+                                ),
                               ),
                             );
                           },

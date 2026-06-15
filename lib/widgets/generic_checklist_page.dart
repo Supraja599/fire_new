@@ -99,8 +99,21 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
     // --- GEOLOCATION PROXIMITY CHECK ---
     final eq = widget.selectedEquipment;
     if (eq != null) {
-      final lat = double.tryParse((eq["latitude"] ?? eq["lat"] ?? "").toString());
-      final lng = double.tryParse((eq["longitude"] ?? eq["lng"] ?? "").toString());
+      double? lat;
+      double? lng;
+      double maxAllowedDistance = 10.0;
+
+      if (eq.containsKey("geofence") && eq["geofence"] is Map) {
+        final gf = eq["geofence"] as Map;
+        lat = double.tryParse((gf["stored_latitude"] ?? "").toString());
+        lng = double.tryParse((gf["stored_longitude"] ?? "").toString());
+        maxAllowedDistance = double.tryParse((gf["geofence_radius_meters"] ?? "").toString()) ?? 10.0;
+      } else {
+        lat = double.tryParse((eq["latitude"] ?? eq["lat"] ?? eq["stored_latitude"] ?? "").toString());
+        lng = double.tryParse((eq["longitude"] ?? eq["lng"] ?? eq["stored_longitude"] ?? "").toString());
+        maxAllowedDistance = double.tryParse((eq["geofence_radius_meters"] ?? eq["geofence_radius"] ?? "").toString()) ?? 10.0;
+      }
+
       if (lat != null && lng != null) {
         if (mounted) showDialog(
           context: context,
@@ -114,7 +127,9 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
           ),
         );
         final result = await LocationService.verifyProximity(
-          targetLat: lat, targetLng: lng, maxAllowedDistanceMeters: 100.0,
+          targetLat: lat,
+          targetLng: lng,
+          maxAllowedDistanceMeters: maxAllowedDistance,
         );
         if (mounted) Navigator.pop(context);
         if (!result.success || !result.withinRange) {
@@ -129,7 +144,7 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
               content: Text(
                 result.withinRange
                     ? (result.errorMessage ?? "Location error")
-                    : "You are ${result.distanceMeters?.toStringAsFixed(1) ?? '?'} m away.\nMust be within 100 m of the equipment.",
+                    : "You are ${result.distanceMeters?.toStringAsFixed(1) ?? '?'} m away.\nMust be within ${maxAllowedDistance.toStringAsFixed(0)} m of the equipment.",
               ),
               actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
             ),

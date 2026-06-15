@@ -1281,23 +1281,22 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                             ],
                           ),
                         ),
-                        if (role == 'admin' || role == 'superadmin')
-                          PopupMenuItem(
-                            value: 'locations',
-                            child: Row(
-                              children: [
-                                const Icon(Icons.location_on_rounded, color: Colors.red, size: 20),
-                                const SizedBox(width: 12),
-                                Text(
-                                  "Locations",
-                                  style: TextStyle(
-                                    color: isDark ? Colors.white70 : Colors.black87,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                        PopupMenuItem(
+                          value: 'locations',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.location_on_rounded, color: Colors.red, size: 20),
+                              const SizedBox(width: 12),
+                              Text(
+                                "Locations",
+                                style: TextStyle(
+                                  color: isDark ? Colors.white70 : Colors.black87,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
+                        ),
                         if (role == 'admin' || role == 'superadmin')
                           PopupMenuItem(
                             value: 'user_directory',

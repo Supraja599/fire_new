@@ -53,6 +53,15 @@ class AppExceptionHandler {
     }
     debugPrint("----------------------------------------");
 
+    // Ignore assertions, Flutter framework warnings, or layout errors in the UI
+    if (error is AssertionError || error is FlutterError) {
+      return;
+    }
+    final errStr = error.toString().toLowerCase();
+    if (errStr.contains('assertion') || errStr.contains('rendering') || errStr.contains('layout') || errStr.contains('listtile')) {
+      return;
+    }
+
     final message = formatError(error);
     final ctx = context ?? navigatorKey.currentContext;
 

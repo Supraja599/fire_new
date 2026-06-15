@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:fire_new/guided_capture_wizard.dart';
 
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:fire_new/services/location_service.dart';
 import 'checklist.dart';
 import 'package:fire_new/services/module_api_service.dart';
 import 'package:fire_new/local_db.dart';
@@ -217,10 +218,13 @@ Widget build(BuildContext context) {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(22),
                   child: MobileScanner(
-                    onDetect: (c) {
+                    onDetect: (c) async {
                       if (c.barcodes.isNotEmpty) {
-                        idController.text = c.barcodes.first.rawValue ?? "";
-                        fetchDetails(idController.text);
+                        final raw = c.barcodes.first.rawValue ?? "";
+                        final canProceed = await LocationService.checkGeofenceAndShowDialog(context: context, sosCode: raw);
+                        if (!canProceed || !mounted) return;
+                        idController.text = raw;
+                        fetchDetails(raw);
                       }
                     },
                   ),
@@ -308,7 +312,7 @@ Widget build(BuildContext context) {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: filteredEquipment.length,
-                        itemBuilder: (c, i) => ListTile(
+                        itemBuilder: (c, i) => Material(color: Colors.transparent, child: ListTile(
                           dense: true,
                           title: Text(filteredEquipment[i]["sos_code"] ?? filteredEquipment[i]["equipment_id"] ?? filteredEquipment[i]["id"] ?? filteredEquipment[i]["serial_number"] ?? "-"),
                           subtitle: Text(filteredEquipment[i]["location_name"] ?? "-", style: const TextStyle(fontSize: 10)),
@@ -316,7 +320,7 @@ Widget build(BuildContext context) {
                             idController.text = filteredEquipment[i]["sos_code"] ?? filteredEquipment[i]["equipment_id"] ?? filteredEquipment[i]["id"] ?? filteredEquipment[i]["serial_number"] ?? "";
                             fetchDetails(idController.text);
                           },
-                        ),
+                        )),
                       ),
                   ],
                 ),
