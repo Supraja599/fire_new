@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:fire_new/local_db.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'package:hive/hive.dart';
@@ -39,6 +40,8 @@ class ModuleApiService {
   static final heatDetector   = ModuleApiService(moduleCode: 'heat_detector',      moduleId: 37);
   static final coDetector     = ModuleApiService(moduleCode: 'co_detector',        moduleId: 40);
   static final fireDoor       = ModuleApiService(moduleCode: 'fire_door',          moduleId: 43);
+  static final sandBucket     = ModuleApiService(moduleCode: 'sand_bucket',        moduleId: 63);
+
 
   // ── Headers ───────────────────────────────────────────────────────────────
   Map<String, String> get headers {
@@ -191,6 +194,77 @@ class ModuleApiService {
       print("POST CHECKLIST ITEM ERROR ($moduleCode): $e");
       return null;
     }
+  }
+
+  // ── Pre-check (photo slot requirements with sample images) ───────────────
+  Future<Map<String, dynamic>> getPreCheck() =>
+      _getMap("$_base/modules/$moduleCode/pre-check", "pre_check");
+
+  /// POSTs a pre-check inspection with 4 photos as multipart/form-data.
+  /// Returns true on 200/201, false on any error (non-blocking — caller should fire-and-forget).
+  static Future<bool> submitPreCheck({
+    required String equipmentId,
+    required String equipmentType,
+    required String inspectorName,
+    required List<String> imagePaths,
+  }) async {
+    const base = "https://ehs.garrev.com/app1/v1";
+    try {
+      final box = Hive.isBoxOpen('inspectionBox') ? Hive.box<dynamic>('inspectionBox') : null;
+      final token = ApiService.token ?? box?.get('token')?.toString();
+
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse("$base/inspections/pre-check"),
+      );
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      request.fields['equipment_id'] = equipmentId;
+      request.fields['equipment_type'] = equipmentType;
+      request.fields['inspector_name'] = inspectorName;
+
+      for (int i = 0; i < imagePaths.length; i++) {
+        final file = File(imagePaths[i]);
+        if (await file.exists()) {
+          request.files.add(await http.MultipartFile.fromPath(
+            'image_${i + 1}',
+            imagePaths[i],
+          ));
+        }
+      }
+
+      final streamed = await request.send().timeout(const Duration(seconds: 30));
+      return streamed.statusCode == 200 || streamed.statusCode == 201;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Fetches the ordered photo requirements (slot, label, desc, sample_image_url)
+  /// for a given module code. Returns empty list on any error.
+  static Future<List<Map<String, dynamic>>> fetchPreCheckRequirements(String moduleCode) async {
+    const base = "https://ehs.garrev.com/app1/v1";
+    try {
+      final box = Hive.isBoxOpen('inspectionBox') ? Hive.box<dynamic>('inspectionBox') : null;
+      final token = ApiService.token ?? box?.get('token')?.toString();
+      final hdrs = <String, String>{
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        if (token != null && token.isNotEmpty) "Authorization": "Bearer $token",
+      };
+      final res = await http.get(
+        Uri.parse("$base/modules/$moduleCode/pre-check"),
+        headers: hdrs,
+      ).timeout(const Duration(seconds: 10));
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (data is Map && data["requirements"] is List) {
+          return List<Map<String, dynamic>>.from(data["requirements"]);
+        }
+      }
+    } catch (_) {}
+    return [];
   }
 
   // ── Sync all ──────────────────────────────────────────────────────────────

@@ -1,11 +1,11 @@
 {
-    "name": "fire_new",
-    "short_name": "fire_new",
+    "name": "FireSphere",
+    "short_name": "FireSphere",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "FireSphere EHS Platform.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

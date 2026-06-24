@@ -5,8 +5,10 @@ import 'dart:math';
 import 'dart:convert';
 import 'package:fire_new/services/location_service.dart';
 import 'package:fire_new/services/image_integrity_service.dart';
+import 'package:fire_new/services/module_api_service.dart';
 class GuidedCaptureWizardPage extends StatefulWidget {
   static List<String>? latestCapturedImagesBase64;
+  static List<String>? latestCapturedImagePaths;
   final String? equipmentId;
   final Map<String, dynamic>? selectedEquipment;
   final String? equipmentImage;
@@ -65,6 +67,9 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
   String _eqName = "Safety Asset";
 
   late final List<StepInstruction> _steps;
+
+  // Slot-index → full image URL fetched from the pre-check API
+  Map<int, String> _preCheckImageUrls = {};
 
   // Maps moduleCode → canonical keyword used by the anatomy engine.
   static const Map<String, String> _moduleKeywords = {
@@ -367,6 +372,8 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
         ],
       ),
     ];
+
+    _loadPreCheckImages();
   }
 
   Future<void> _captureCurrentStep() async {
@@ -539,6 +546,97 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
     }
   }
 
+  // Maps asset filename fragment → module code (used when moduleCode isn't explicitly passed)
+  static const Map<String, String> _assetToModule = {
+    'hosereel':     'hose_reel',
+    'extinguisher': 'fire_extinguisher',
+    'sprinkler':    'sprinkler',
+    'hydrant':      'hydrant',
+    'alarm':        'fire_alarm',
+    'smoke':        'smoke_detector',
+    'heat':         'heat_detector',
+    'co2':          'suppression_system',
+    'shower':       'safety_shower',
+    'eyewash':      'eyewash_station',
+    'blanket':      'fire_blanket',
+    'ppe':          'ppe_station',
+    'spill':        'spill_kit',
+    'trolley':      'fire_trolley',
+    'ambulance':    'ambulance',
+    'fire_door':    'fire_door',
+    'exit':         'exit_sign',
+    'muster':       'muster_point',
+    'emergency_l':  'emergency_light',
+    'scba':         'scba_unit',
+    'firstaid':     'first_aid_kit',
+    'first_aid':    'first_aid_kit',
+    'comm':         'emergency_comm',
+    'pa_sys':       'pa_system',
+    'wind':         'wind_sock',
+    'signage':      'signage',
+    'sand':         'sand_bucket',
+    'co_det':       'co_detector',
+  };
+
+  String _resolveModuleKey() {
+    // 1. Explicit param
+    final fromWidget = widget.moduleCode?.toLowerCase().trim() ?? '';
+    if (fromWidget.isNotEmpty) return fromWidget;
+    // 2. Selected equipment data
+    final fromEq = widget.selectedEquipment?['module_code']?.toString().toLowerCase().trim() ?? '';
+    if (fromEq.isNotEmpty) return fromEq;
+    // 3. Asset filename
+    final imgLower = (widget.equipmentImage ?? '').toLowerCase();
+    for (final entry in _assetToModule.entries) {
+      if (imgLower.contains(entry.key)) return entry.value;
+    }
+    return '';
+  }
+
+  Future<void> _loadPreCheckImages() async {
+    final moduleKey = _resolveModuleKey();
+    if (moduleKey.isEmpty) return;
+    try {
+      final requirements = await ModuleApiService.fetchPreCheckRequirements(moduleKey);
+      if (!mounted) return;
+      const imageBase = "https://ehs.garrev.com";
+      final Map<int, String> urls = {};
+      for (final req in requirements) {
+        final slot = req["slot"];
+        final rawUrl = req["sample_image_url"]?.toString() ?? '';
+        if (slot is int && rawUrl.isNotEmpty) {
+          final stepIndex = slot - 1;
+          if (stepIndex >= 0 && stepIndex < _steps.length) {
+            urls[stepIndex] = rawUrl.startsWith('http') ? rawUrl : '$imageBase$rawUrl';
+          }
+        }
+      }
+      if (urls.isNotEmpty && mounted) {
+        setState(() => _preCheckImageUrls = urls);
+      }
+    } catch (_) {}
+  }
+
+  Widget _buildRefImage(int stepIndex, String asset, {BoxFit fit = BoxFit.contain, double? height, double? width}) {
+    final url = _preCheckImageUrls[stepIndex];
+    if (url != null && url.isNotEmpty) {
+      return Image.network(
+        url,
+        height: height,
+        width: width,
+        fit: fit,
+        errorBuilder: (c, e, s) => const Icon(Icons.image_not_supported, color: Colors.white24),
+      );
+    }
+    return Image.asset(
+      asset,
+      height: height,
+      width: width,
+      fit: fit,
+      errorBuilder: (c, e, s) => const Icon(Icons.image_not_supported, color: Colors.white24),
+    );
+  }
+
   bool get _isWizardComplete {
     return _capturedImages.length == _steps.length && 
            _capturedImages.values.every((img) => img != null);
@@ -553,15 +651,17 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
 
     try {
       final List<String> base64Images = [];
+      final List<String> filePaths = [];
       for (int i = 0; i < _steps.length; i++) {
         final File? file = _capturedImages[i];
         if (file != null && await file.exists()) {
           final bytes = await file.readAsBytes();
-          final base64Str = base64Encode(bytes);
-          base64Images.add(base64Str);
+          base64Images.add(base64Encode(bytes));
+          filePaths.add(file.path);
         }
       }
       GuidedCaptureWizardPage.latestCapturedImagesBase64 = base64Images;
+      GuidedCaptureWizardPage.latestCapturedImagePaths = filePaths;
     } catch (e) {
       debugPrint("Error encoding images to base64: $e");
     } finally {
@@ -726,14 +826,11 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                       Container(
                                         color: Colors.black26,
                                         child: Opacity(
-                                          opacity: 0.35,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Image.asset(
-                                              stepAsset,
-                                              fit: BoxFit.contain,
-                                              errorBuilder: (c, e, s) => const Icon(Icons.image_not_supported, color: Colors.white10),
-                                            ),
+                                          // API images shown at full opacity; local placeholders stay dimmed
+                                          opacity: _preCheckImageUrls.containsKey(i) ? 1.0 : 0.35,
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(12),
+                                            child: _buildRefImage(i, stepAsset, fit: BoxFit.cover),
                                           ),
                                         ),
                                       ),
@@ -923,13 +1020,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                                 shape: BoxShape.circle,
                                                 border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.2)),
                                               ),
-                                              child: Image.asset(
-                                                activeStep.referenceAsset,
-                                                height: 65,
-                                                width: 65,
-                                                fit: BoxFit.contain,
-                                                errorBuilder: (c, e, s) => const Icon(Icons.image, color: Colors.white24),
-                                              ),
+                                              child: _buildRefImage(_currentStepIndex, activeStep.referenceAsset, height: 65, width: 65, fit: BoxFit.contain),
                                             ),
                                           ),
                                           IgnorePointer(
@@ -959,11 +1050,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                           Center(
                                             child: Padding(
                                               padding: const EdgeInsets.all(12.0),
-                                              child: Image.asset(
-                                                activeStep.referenceAsset,
-                                                fit: BoxFit.contain,
-                                                errorBuilder: (c, e, s) => const Icon(Icons.image, color: Colors.white24),
-                                              ),
+                                              child: _buildRefImage(_currentStepIndex, activeStep.referenceAsset, fit: BoxFit.contain),
                                             ),
                                           ),
                                           Center(
@@ -1017,13 +1104,8 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                             child: Padding(
                                               padding: const EdgeInsets.all(14.0),
                                               child: Transform.scale(
-                                                // Magnify generic equipment icon 1.8x to simulate Macro Closeup of core feature!
-                                                scale: activeStep.referenceAsset.contains('instructions') ? 1.0 : 1.8,
-                                                child: Image.asset(
-                                                  activeStep.referenceAsset,
-                                                  fit: BoxFit.contain,
-                                                  errorBuilder: (c, e, s) => const Icon(Icons.image, color: Colors.white24),
-                                                ),
+                                                scale: _preCheckImageUrls[_currentStepIndex] != null ? 1.0 : (activeStep.referenceAsset.contains('instructions') ? 1.0 : 1.8),
+                                                child: _buildRefImage(_currentStepIndex, activeStep.referenceAsset, fit: BoxFit.contain),
                                               ),
                                             ),
                                           ),
@@ -1094,13 +1176,8 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
                                             child: Padding(
                                               padding: const EdgeInsets.all(12.0),
                                               child: Transform.scale(
-                                                // Scale down specific equipment to 0.85x to fit in surroundings map!
-                                                scale: activeStep.referenceAsset.contains('instructions') ? 1.0 : 0.85,
-                                                child: Image.asset(
-                                                  activeStep.referenceAsset,
-                                                  fit: BoxFit.contain,
-                                                  errorBuilder: (c, e, s) => const Icon(Icons.image, color: Colors.white24),
-                                                ),
+                                                scale: _preCheckImageUrls[_currentStepIndex] != null ? 1.0 : (activeStep.referenceAsset.contains('instructions') ? 1.0 : 0.85),
+                                                child: _buildRefImage(_currentStepIndex, activeStep.referenceAsset, fit: BoxFit.contain),
                                               ),
                                             ),
                                           ),

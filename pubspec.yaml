@@ -135,6 +135,8 @@ flutter:
     - assets/fire_door.webp
     - assets/dashboard_icons/
     - assets/eltrive_logo.webp
+    - assets/sand_bucket.png
+
 
 
   # The following line ensures that the Material Icons font is

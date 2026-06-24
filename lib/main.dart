@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: AppExceptionHandler.navigatorKey,
       debugShowCheckedModeBanner: false,
-      title: 'SOS Emergency Platform',
+      title: 'FireSphere',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.red,
@@ -253,7 +253,7 @@ class _LoginPageState extends State<LoginPage>
                         size: 90, color: Colors.white),
                     const SizedBox(height: 10),
                     Text(
-                      "SOS EMERGENCY PLATFORM",
+                      "FIRESPHERE",
                       textAlign: TextAlign.center, // Center text
                       style: TextStyle(
                         color: Colors.white,

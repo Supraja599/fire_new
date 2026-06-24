@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:hive/hive.dart';
 import '../services/location_service.dart';
 import '../services/equipment_repository.dart';
+import '../services/module_api_service.dart';
 import '../services/service_locator.dart';
 import '../guided_capture_wizard.dart';
 
@@ -45,6 +46,7 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
   bool _loading = true;
   bool _saving  = false;
   List<String>? _capturedImages;
+  List<String>? _capturedImagePaths;
 
   @override
   void initState() {
@@ -52,6 +54,8 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
     // Retrieve and immediately clear Wizard images from cache
     _capturedImages = GuidedCaptureWizardPage.latestCapturedImagesBase64;
     GuidedCaptureWizardPage.latestCapturedImagesBase64 = null;
+    _capturedImagePaths = GuidedCaptureWizardPage.latestCapturedImagePaths;
+    GuidedCaptureWizardPage.latestCapturedImagePaths = null;
 
     // Auto-populate equipment ID: prefer selectedEquipment (from scan), else equipmentId param
     if (widget.selectedEquipment != null) {
@@ -378,6 +382,16 @@ class _GenericChecklistPageState extends State<GenericChecklistPage> {
       answers: payloadAnswers,
       images: _capturedImages ?? [],
     );
+
+    // Fire pre-check photo upload (multipart) — non-blocking, does not affect checklist result
+    if (_capturedImagePaths != null && _capturedImagePaths!.isNotEmpty) {
+      ModuleApiService.submitPreCheck(
+        equipmentId: id,
+        equipmentType: widget.moduleCode,
+        inspectorName: inspector,
+        imagePaths: _capturedImagePaths!,
+      ).catchError((_) => false);
+    }
     if (!mounted) return;
     setState(() => _saving = false);
     ScaffoldMessenger.of(context).showSnackBar(

@@ -108,6 +108,10 @@ class LocalDB {
       case 'firedoor':
       case 'firedoors':
         return 'fire_door';
+      case 'sandbucket':
+      case 'sandbuckets':
+      case 'sand_bucket':
+        return 'sand_bucket';
       default:
         return code;
     }
@@ -133,6 +137,7 @@ class LocalDB {
       'chemical_showers': 'safety_shower',
       'chemicalshower': 'safety_shower',
       'eye_wash': 'eyewash_station',
+      'sand_buckets': 'sand_bucket',
     };
 
     for (final entry in migrations.entries) {

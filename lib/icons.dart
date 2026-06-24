@@ -42,6 +42,7 @@ import 'muster_points/dashboard.dart';
 import 'heat_detector/dashboard.dart';
 import 'co_detector/dashboard.dart';
 import 'fire_door/dashboard.dart';
+import 'sand_bucket/dashboard.dart';
 
 // Import API services for health fetching
 import 'services/apiservice.dart';
@@ -818,6 +819,14 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
         page: const FireDoorDashboard(),
         fetchSummary: () => ModuleApiService.fireDoor.getSummary(),
       ),
+      ModuleItem(
+        name: 'Sand Buckets',
+        image: 'assets/sand_bucket.png',
+        moduleCode: 'sand_bucket',
+        moduleId: 63,
+        page: const SandBucketDashboard(),
+        fetchSummary: () => ModuleApiService.sandBucket.getSummary(),
+      ),
     ];
   }
 
@@ -956,7 +965,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                             const SizedBox(width: 8),
                             Flexible(
                               child: Text(
-                                "ELTRIVE SAFETY",
+                                "FIRESPHERE",
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                                 style: TextStyle(
@@ -1139,7 +1148,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                             backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
                             title: Text(
-                              "Eltrive Safety Active Matrix",
+                              "FireSphere Active Matrix",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: isDark ? Colors.white : Colors.black87,
@@ -1183,7 +1192,7 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
                                 ),
                                 const SizedBox(height: 10),
                                 Text(
-                                  "Designed to monitor, inspect, and synchronize the safety infrastructure of Eltrive plants.",
+                                  "Designed to monitor, inspect, and synchronize the safety infrastructure of FireSphere facilities.",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 12,
