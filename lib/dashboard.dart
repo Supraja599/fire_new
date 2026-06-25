@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fire_new/widgets/blinking_badge.dart';
 import 'package:fire_new/widgets/health_score_widget.dart';
 import 'package:fire_new/widgets/status_count_strip.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'inspection.dart';
 import 'analytics.dart';
 import 'maintenance.dart';
@@ -23,6 +24,46 @@ class _DashboardPageState extends State<DashboardPage> {
   int needsService = 0, dueInspection = 0, expired = 0;
   bool isLoading = true;
   Map<String, dynamic>? summaryData;
+
+  void _triggerTestNotification() {
+    Future.delayed(const Duration(seconds: 3), () async {
+      final localNotifications = FlutterLocalNotificationsPlugin();
+      
+      const channel = AndroidNotificationChannel(
+        'high_importance_channel',
+        'High Importance Notifications',
+        description: 'This channel is used for important notifications.',
+        importance: Importance.max,
+        playSound: true,
+      );
+
+      await localNotifications.show(
+        id: 999,
+        title: 'Check Fire Safety Score!',
+        body: 'Your fire safety score is updated. Tap to open compliance board.',
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            channel.id,
+            channel.name,
+            channelDescription: channel.description,
+            icon: '@mipmap/ic_launcher',
+            importance: Importance.max,
+            priority: Priority.high,
+            playSound: true,
+          ),
+        ),
+        payload: 'test_score_click',
+      );
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Notification scheduled in 3s. Minimize the app now to test!'),
+        duration: Duration(seconds: 3),
+        backgroundColor: primaryRed,
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -125,6 +166,12 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                           const SizedBox(width: 8),
                           HealthScoreWidget(health: health),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            onPressed: _triggerTestNotification,
+                            icon: const Icon(Icons.notification_add_rounded, color: primaryRed, size: 28),
+                            tooltip: "Test Notification",
+                          ),
                         ],
                       ),
                     ),

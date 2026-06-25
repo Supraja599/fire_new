@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "935614800236",
+    "project_id": "firesphere-e3425",
+    "storage_bucket": "firesphere-e3425.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:935614800236:android:d2812e597634a4e3ac9349",
+        "android_client_info": {
+          "package_name": "com.eltrive.fireapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqydDWMQi77iWMRpJMhJuKt7FXb03ToGw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

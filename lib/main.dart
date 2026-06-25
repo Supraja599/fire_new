@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'signup.dart';
 import 'icons.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -10,9 +11,12 @@ import 'sync_service.dart';
 import 'local_db.dart';
 import 'services/service_locator.dart';
 import 'services/error_handler.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  await NotificationService.initialize();
 
   // Setup Dependency Injection Locator
   setupServiceLocator();

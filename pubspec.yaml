@@ -64,6 +64,9 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: 0.20.2
+  firebase_core: ^4.11.0
+  firebase_messaging: ^16.4.1
+  flutter_local_notifications: ^22.0.1
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -92,6 +95,7 @@ flutter:
 
 
   assets:
+    - assets/fire_logo.png
     - assets/instructions_front.webp
     - assets/instructions_scan.webp
     - assets/instructions_valve.webp

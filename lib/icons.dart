@@ -906,6 +906,45 @@ class _IconsPageState extends State<IconsPage> with TickerProviderStateMixin {
     final themeBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
 
+    if (isLoading) {
+      return Scaffold(
+        backgroundColor: themeBg,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/fire_logo.png',
+                width: 150,
+                height: 150,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(
+                    Icons.local_fire_department_rounded,
+                    size: 110,
+                    color: Color(0xFFD50000),
+                  );
+                },
+              ),
+              const SizedBox(height: 35),
+              const CircularProgressIndicator(
+                color: Color(0xFFD50000),
+              ),
+              const SizedBox(height: 15),
+              Text(
+                "Loading system dashboard...",
+                style: TextStyle(
+                  color: isDark ? Colors.white70 : Colors.grey[700],
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: themeBg,
       body: SafeArea(
