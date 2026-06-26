@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - FireSphere</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #D50000;
+            --primary-light: #FFEBEE;
+            --primary-dark: #9A0000;
+            --text-main: #2D3748;
+            --text-muted: #718096;
+            --bg-main: #F7FAFC;
+            --bg-card: #FFFFFF;
+            --border-color: #E2E8F0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(213, 0, 0, 0.15);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin: 0;
+            font-weight: 300;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: -40px auto 60px auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            padding: 40px;
+            border: 1px solid var(--border-color);
+        }
+
+        .meta-date {
+            display: inline-block;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: #1A202C;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 8px;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 20px;
+            background-color: var(--primary);
+            border-radius: 3px;
+        }
+
+        p {
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+            color: var(--text-main);
+        }
+
+        ul {
+            padding-left: 0;
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+            color: var(--text-main);
+        }
+
+        li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .highlight-box {
+            background-color: #FFF8F8;
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            margin: 25px 0;
+        }
+
+        .highlight-box p {
+            margin: 0;
+            font-style: italic;
+        }
+
+        .contact-info {
+            background-color: #F8FAFC;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .contact-info p {
+            margin: 8px 0;
+        }
+
+        .contact-info strong {
+            color: #1A202C;
+            width: 100px;
+            display: inline-block;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 40px 15px;
+            }
+            .header h1 {
+                font-size: 2rem;
+            }
+            .card {
+                padding: 25px;
+            }
+            .container {
+                margin-top: -20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>FireSphere</h1>
+        <p>Safety & Equipment Management App</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="meta-date">Last Updated: June 26, 2026</div>
+
+            <p>Welcome to <strong>FireSphere</strong>. We are fully committed to protecting your personal privacy. This Privacy Policy details how we collect, process, secure, and share your information when you use our mobile application (the "App") designed for fire safety, equipment tracking, and emergency alerts.</p>
+
+            <div class="highlight-box">
+                <p>By using the FireSphere application, you agree to the collection and use of information in accordance with this policy.</p>
+            </div>
+
+            <h2>1. Information We Collect</h2>
+            <p>To provide high-quality safety logging, equipment audit tracking, and real-time alerts, we access and collect specific information:</p>
+            <ul>
+                <li><strong>Location Coordinates:</strong> The App requests access to your device's precise and coarse location (<code>ACCESS_FINE_LOCATION</code> and <code>ACCESS_COARSE_LOCATION</code>). This allows us to log the precise physical locations of safety equipment (such as fire extinguishers, sand buckets, etc.) during safety audits, inspections, and emergency incidents.</li>
+                <li><strong>Account Credentials:</strong> We collect your login details (email, password, name, and/or system role) to securely authenticate your access and configure appropriate user views.</li>
+                <li><strong>Notification Permission:</strong> We ask for your permission to deliver push notifications (<code>POST_NOTIFICATIONS</code>) to send you real-time emergency hazard notices and inspection checklist reminders.</li>
+                <li><strong>Data Synchronization:</strong> The App accesses the internet to keep local offline safety databases (SQLite and Hive) synchronized with our secure cloud servers.</li>
+            </ul>
+
+            <h2>2. How We Use the Information</h2>
+            <p>The information we collect is strictly used to:</p>
+            <ul>
+                <li>Create and manage equipment audit logs.</li>
+                <li>Enable geo-tagged inspection records for verify safety equipment placements.</li>
+                <li>Send instantaneous safety alerts and notify response teams.</li>
+                <li>Optimize app performance and sync offline data seamlessly.</li>
+            </ul>
+
+            <h2>3. Information Sharing and Disclosure</h2>
+            <p>Your privacy is important to us. We do not sell, rent, or distribute your personal or location data to any third-party advertisers. We only share information to:</p>
+            <ul>
+                <li><strong>Firebase & Infrastructure:</strong> We use Google Firebase for data hosting, user authentication, and notification delivery under Google's privacy policies.</li>
+                <li><strong>Legal Compliance:</strong> We may share data to comply with valid legal processes, national regulations, or in urgent situations to protect public safety.</li>
+            </ul>
+
+            <h2>4. Security of Data</h2>
+            <p>We use standard industry practices, including local database encryption, secure HTTPS connections, and authenticated cloud rules to keep your inspection data and account profiles safe.</p>
+
+            <h2>5. Control Over Your Permissions</h2>
+            <p>You can enable or disable location services and push notifications at any time through your mobile device’s system settings. Please note that disabling location permissions may prevent you from logging safety equipment audit locations.</p>
+
+            <h2>6. Contact Us</h2>
+            <p>For questions about this policy, data removal requests, or support, please get in touch with us:</p>
+            
+            <div class="contact-info">
+                <p><strong>Email:</strong> support@eltrive.com</p>
+                <p><strong>Website:</strong> <a href="https://www.eltrive.com" target="_blank" style="color: var(--primary); text-decoration: none;">www.eltrive.com</a></p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2026 FireSphere. All rights reserved. | <a href="#">Back to top</a></p>
+        </div>
+    </div>
+
+</body>
+</html>
