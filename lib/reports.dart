@@ -70,8 +70,7 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
     try {
       final box = Hive.isBoxOpen('inspectionBox') ? Hive.box<dynamic>('inspectionBox') : null;
       if (box != null) {
-        final hiveEqId = box.get('last_equipment_id_fire_extinguisher')?.toString() ??
-                         box.get('last_equipment_id')?.toString();
+        final hiveEqId = box.get('last_equipment_id_fire_extinguisher')?.toString();
         final hiveInspector = box.get('last_inspector_name_fire_extinguisher')?.toString() ??
                              box.get('last_inspector_name')?.toString();
         if (hiveEqId != null && hiveEqId.isNotEmpty) {
@@ -87,15 +86,16 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
         }
       }
 
-      // Search ALL modules, not just fire_extinguisher
-      final pendingList = await LocalDB.getAllModuleInspections();
+      // Search ONLY fire_extinguisher inspections
+      final pendingList = await LocalDB.getAllModuleInspections(moduleCode: 'fire_extinguisher');
       if (pendingList.isNotEmpty) {
         final last = pendingList.last;
         final payload = last['payload'] as Map<String, dynamic>?;
         if (mounted) {
           setState(() {
             sosController.text = last['equipment_id']?.toString() ?? '';
-            inspectorNameController.text = payload?['inspector_name']?.toString() ?? '';
+            inspectorNameController.text = payload?['inspector_name']?.toString() ??
+                                           box?.get('last_inspector_name')?.toString() ?? '';
           });
         }
       }

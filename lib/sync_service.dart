@@ -24,6 +24,12 @@ class SyncService {
   static Future<void> syncData() async {
     if (_isSyncing) return;
 
+    final results = await Connectivity().checkConnectivity();
+    if (results.isEmpty || results.first == ConnectivityResult.none) {
+      print("Offline: Skipping background sync.");
+      return;
+    }
+
     _isSyncing = true;
 
     try {

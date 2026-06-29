@@ -83,8 +83,7 @@ class _ModuleReportsPageState extends State<ModuleReportsPage>
     try {
       final box = Hive.isBoxOpen('inspectionBox') ? Hive.box<dynamic>('inspectionBox') : null;
       if (box != null) {
-        final hiveEqId = box.get('last_equipment_id_${widget.moduleCode}')?.toString() ??
-                         box.get('last_equipment_id')?.toString();
+        final hiveEqId = box.get('last_equipment_id_${widget.moduleCode}')?.toString();
         final hiveInspector = box.get('last_inspector_name_${widget.moduleCode}')?.toString() ??
                              box.get('last_inspector_name')?.toString();
         if (hiveEqId != null && hiveEqId.isNotEmpty) {
@@ -104,7 +103,8 @@ class _ModuleReportsPageState extends State<ModuleReportsPage>
         final payload = last['payload'] as Map<String, dynamic>?;
         setState(() {
           sosController.text = last['equipment_id']?.toString() ?? '';
-          inspectorNameController.text = payload?['inspector_name']?.toString() ?? '';
+          inspectorNameController.text = payload?['inspector_name']?.toString() ?? 
+                                         box?.get('last_inspector_name')?.toString() ?? '';
         });
       }
     } catch (_) {}

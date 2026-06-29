@@ -184,7 +184,17 @@ class _LoginPageState extends State<LoginPage>
             userModules = List<Map<String, dynamic>>.from(loginModules);
           }
         }
-        await box.put('modules', userModules);
+        if (userModules.isNotEmpty) {
+          await box.put('modules', userModules);
+        } else {
+          final existing = box.get('modules');
+          if (existing is List) {
+            userModules = List<Map<String, dynamic>>.from(existing);
+          }
+        }
+        
+        // Trigger background sync immediately to populate offline cache for modules
+        SyncService.syncData();
 
         if (mounted) {
           Navigator.pushReplacement(

@@ -6,9 +6,12 @@ import 'dart:convert';
 import 'package:fire_new/services/location_service.dart';
 import 'package:fire_new/services/image_integrity_service.dart';
 import 'package:fire_new/services/module_api_service.dart';
+import 'package:fire_new/services/defect_detection_service.dart';
+
 class GuidedCaptureWizardPage extends StatefulWidget {
   static List<String>? latestCapturedImagesBase64;
   static List<String>? latestCapturedImagePaths;
+  static List<DefectDetectionResult>? latestDefectResults;
   final String? equipmentId;
   final Map<String, dynamic>? selectedEquipment;
   final String? equipmentImage;
@@ -57,6 +60,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
   final Map<int, File?> _capturedImages = {};
   final Map<int, ProximityResult?> _locationVerifications = {};
   final Map<int, Map<String, dynamic>> _telemetryCache = {};
+  final Map<int, DefectDetectionResult?> _defectChecks = {};
   
   bool _isCapturing = false;
   bool _isAnalyzing = false;
@@ -134,6 +138,7 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
   @override
   void initState() {
     super.initState();
+    DefectDetectionService.init();
 
     final String img = widget.equipmentImage ?? 'assets/extinguisher.webp';
     final bool isHoseReel = img.contains('hosereel');
@@ -445,7 +450,68 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
           return; // BLOCK ALL FURTHER FLOW!
         }
 
-        // 2. Execute AI "Orientation & Focus" simulation delay for realism
+        // 2. Run local on-device TFLite defect detection
+        final defectResult = await DefectDetectionService.analyzeImage(file.path);
+        _defectChecks[_currentStepIndex] = defectResult;
+
+        if (defectResult.isDefective) {
+          if (mounted) {
+            setState(() {
+              _isAnalyzing = false;
+            });
+            await showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (ctx) => AlertDialog(
+                backgroundColor: const Color(0xFF1E293B),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(color: Colors.amber, width: 1.5),
+                ),
+                title: Row(
+                  children: const [
+                    Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 24),
+                    SizedBox(width: 10),
+                    Text(
+                      "POTENTIAL DEFECT DETECTED",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 0.5),
+                    ),
+                  ],
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "The local AI scanner detected a potential issue: \"${defectResult.label}\" (${(defectResult.confidence * 100).toStringAsFixed(1)}% confidence).",
+                      style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      "Please inspect the equipment carefully and make sure to flag this on the checklist if it is indeed defective.",
+                      style: TextStyle(color: Colors.amber, fontSize: 12, height: 1.4),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: TextButton.styleFrom(foregroundColor: Colors.amber),
+                    child: const Text(
+                      "PROCEED",
+                      style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                    ),
+                  ),
+                ],
+              ),
+            );
+            setState(() {
+              _isAnalyzing = true;
+            });
+          }
+        }
+
+        // 3. Execute AI "Orientation & Focus" simulation delay for realism
         await Future.delayed(const Duration(milliseconds: 800));
         
         // 3. Execute GPS verification
@@ -662,6 +728,15 @@ class _GuidedCaptureWizardPageState extends State<GuidedCaptureWizardPage> {
       }
       GuidedCaptureWizardPage.latestCapturedImagesBase64 = base64Images;
       GuidedCaptureWizardPage.latestCapturedImagePaths = filePaths;
+
+      final List<DefectDetectionResult> defectResults = [];
+      for (int i = 0; i < _steps.length; i++) {
+        final result = _defectChecks[i];
+        if (result != null) {
+          defectResults.add(result);
+        }
+      }
+      GuidedCaptureWizardPage.latestDefectResults = defectResults;
     } catch (e) {
       debugPrint("Error encoding images to base64: $e");
     } finally {

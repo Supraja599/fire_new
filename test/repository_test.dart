@@ -16,7 +16,7 @@ void main() {
     databaseFactory = databaseFactoryFfi;
 
     // 2. Initialize Hive
-    Hive.init('.');
+    Hive.init('test_hive_repository');
     await Hive.openBox('inspectionBox');
   });
 

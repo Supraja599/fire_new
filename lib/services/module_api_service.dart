@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fire_new/local_db.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'package:hive/hive.dart';
@@ -72,6 +73,10 @@ class ModuleApiService {
 
   Future<List<Map<String, dynamic>>> _getList(String url, String type) async {
     try {
+      final results = await Connectivity().checkConnectivity();
+      if (results.isEmpty || results.first == ConnectivityResult.none) {
+        return LocalDB.getModuleRecords(moduleCode: moduleCode, recordType: type);
+      }
       final res   = await http.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 10));
       final items = _readList(_decodeBody(res));
       await LocalDB.saveModuleRecords(moduleCode: moduleCode, recordType: type, items: items);
@@ -83,6 +88,10 @@ class ModuleApiService {
 
   Future<Map<String, dynamic>> _getMap(String url, String type) async {
     try {
+      final results = await Connectivity().checkConnectivity();
+      if (results.isEmpty || results.first == ConnectivityResult.none) {
+        return LocalDB.getModuleMap(moduleCode: moduleCode, recordType: type);
+      }
       final res     = await http.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 10));
       final decoded = _decodeBody(res);
       final data    = decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
@@ -107,6 +116,10 @@ class ModuleApiService {
     final q = query.trim();
     if (q.isEmpty) return null;
     try {
+      final results = await Connectivity().checkConnectivity();
+      if (results.isEmpty || results.first == ConnectivityResult.none) {
+        return LocalDB.findModuleEquipment(moduleCode: moduleCode, query: q);
+      }
       final res = await http.get(Uri.parse("$_base/equipment/$q"), headers: headers)
           .timeout(const Duration(seconds: 10));
       if (res.statusCode == 404) {

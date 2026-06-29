@@ -13,7 +13,7 @@ import 'package:fire_new/main.dart';
 void main() {
   setUpAll(() async {
     // Initialize a temporary Hive path for testing
-    Hive.init('.');
+    Hive.init('test_hive_widget');
     await Hive.openBox('inspectionBox');
   });
 
@@ -27,7 +27,7 @@ void main() {
 
     // Verify that the login screen title and sub-titles are displayed.
     expect(find.text('SYSTEM LOGIN'), findsOneWidget);
-    expect(find.text('SOS EMERGENCY PLATFORM'), findsOneWidget);
+    expect(find.text('FIRESPHERE'), findsOneWidget);
     expect(find.text('Enter Username'), findsOneWidget);
     expect(find.text('Enter Password'), findsOneWidget);
   });

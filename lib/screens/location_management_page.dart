@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fire_new/services/apiservice.dart';
 import 'package:hive/hive.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LocationManagementPage extends StatefulWidget {
   final bool isDark;
@@ -20,6 +22,7 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
   final _latCtrl = TextEditingController();
   final _lngCtrl = TextEditingController();
   final _radiusCtrl = TextEditingController();
+  final _sosCtrl = TextEditingController();
   bool _submitting = false;
 
   @override
@@ -34,6 +37,7 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
     _latCtrl.dispose();
     _lngCtrl.dispose();
     _radiusCtrl.dispose();
+    _sosCtrl.dispose();
     super.dispose();
   }
 
@@ -235,7 +239,7 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
     );
   }
 
-  Future<void> _submit() async {
+  Future<void> _submit(bool autoGeocode) async {
     if (!_formKey.currentState!.validate()) return;
     if (_companyId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -246,12 +250,17 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
 
     setState(() => _submitting = true);
 
+    final latText = _latCtrl.text.trim();
+    final lngText = _lngCtrl.text.trim();
+
     final ok = await ApiService.createLocation(
       companyId: _companyId!,
       locationName: _nameCtrl.text.trim(),
-      latitude: double.parse(_latCtrl.text.trim()),
-      longitude: double.parse(_lngCtrl.text.trim()),
+      latitude: latText.isNotEmpty ? double.tryParse(latText) : null,
+      longitude: lngText.isNotEmpty ? double.tryParse(lngText) : null,
       geofenceRadiusMeters: double.parse(_radiusCtrl.text.trim()),
+      autoGeocode: autoGeocode,
+      sosCode: _sosCtrl.text.trim().isNotEmpty ? _sosCtrl.text.trim() : null,
     );
 
     setState(() => _submitting = false);
@@ -263,6 +272,7 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
       _latCtrl.clear();
       _lngCtrl.clear();
       _radiusCtrl.clear();
+      _sosCtrl.clear();
       Navigator.pop(context); // close sheet
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -282,164 +292,238 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
   }
 
   void _showAddSheet() {
+    bool localAutoGeocode = true;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (sheetCtx) => Container(
-        decoration: BoxDecoration(
-          color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 16,
-          bottom: MediaQuery.of(sheetCtx).viewInsets.bottom + 24,
-        ),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Sheet handle + title row
-              Row(
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Container(
+          decoration: BoxDecoration(
+            color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 16,
+            bottom: MediaQuery.of(sheetCtx).viewInsets.bottom + 24,
+          ),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(2),
+                  // Sheet handle + title row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
                         ),
                       ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(sheetCtx),
+                        color: widget.isDark ? Colors.white70 : Colors.black54,
+                      ),
+                    ],
+                  ),
+                  Text(
+                    "Add New Location",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: widget.isDark ? Colors.white : Colors.black87,
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(sheetCtx),
-                    color: widget.isDark ? Colors.white70 : Colors.black54,
+                  const SizedBox(height: 16),
+
+                  // Location Name
+                  TextFormField(
+                    controller: _nameCtrl,
+                    style: TextStyle(color: widget.isDark ? Colors.white : Colors.black87),
+                    decoration: InputDecoration(
+                      labelText: "Location Name (Address)",
+                      prefixIcon: const Icon(Icons.label_rounded, color: Color(0xFFD50000)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    validator: (v) =>
+                        v == null || v.trim().isEmpty ? "Location name is required" : null,
+                  ),
+                  const SizedBox(height: 12),
+
+                  // SOS Code (Optional)
+                  TextFormField(
+                    controller: _sosCtrl,
+                    textCapitalization: TextCapitalization.characters,
+                    style: TextStyle(color: widget.isDark ? Colors.white : Colors.black87),
+                    decoration: InputDecoration(
+                      labelText: "SOS Code / Equipment ID (Optional)",
+                      prefixIcon: const Icon(Icons.qr_code_rounded, color: Color(0xFFD50000)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Switch for Auto Geocode
+                  SwitchListTile(
+                    title: Text(
+                      "Auto Geocode Address",
+                      style: TextStyle(
+                        color: widget.isDark ? Colors.white : Colors.black87,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Text(
+                      "Let the server resolve coordinates from address",
+                      style: TextStyle(
+                        color: widget.isDark ? Colors.white54 : Colors.grey.shade600,
+                        fontSize: 11,
+                      ),
+                    ),
+                    value: localAutoGeocode,
+                    activeColor: const Color(0xFFD50000),
+                    onChanged: (val) {
+                      setSheetState(() {
+                        localAutoGeocode = val;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Latitude + Longitude side by side
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _latCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true, signed: true),
+                          style: TextStyle(color: widget.isDark ? Colors.white : Colors.black87),
+                          decoration: InputDecoration(
+                            labelText: "Latitude" + (localAutoGeocode ? " (Optional)" : ""),
+                            prefixIcon: const Icon(Icons.my_location_rounded, color: Color(0xFFD50000)),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          validator: (v) {
+                            if (localAutoGeocode) return null;
+                            if (v == null || v.trim().isEmpty) return "Required";
+                            if (double.tryParse(v.trim()) == null) return "Invalid";
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _lngCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true, signed: true),
+                          style: TextStyle(color: widget.isDark ? Colors.white : Colors.black87),
+                          decoration: InputDecoration(
+                            labelText: "Longitude" + (localAutoGeocode ? " (Optional)" : ""),
+                            prefixIcon: const Icon(Icons.explore_rounded, color: Color(0xFFD50000)),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          validator: (v) {
+                            if (localAutoGeocode) return null;
+                            if (v == null || v.trim().isEmpty) return "Required";
+                            if (double.tryParse(v.trim()) == null) return "Invalid";
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Get current coordinates button
+                  TextButton.icon(
+                    onPressed: () async {
+                      try {
+                        final pos = await Geolocator.getCurrentPosition(
+                          desiredAccuracy: LocationAccuracy.high,
+                          timeLimit: const Duration(seconds: 8),
+                        );
+                        _latCtrl.text = pos.latitude.toString();
+                        _lngCtrl.text = pos.longitude.toString();
+                        setSheetState(() {
+                          localAutoGeocode = false; // Turn off auto-geocode since we fetched directly
+                        });
+                      } catch (e) {
+                        ScaffoldMessenger.of(sheetCtx).showSnackBar(
+                          SnackBar(content: Text("Failed to get location: $e"), backgroundColor: Colors.red),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.gps_fixed_rounded, color: Color(0xFFD50000)),
+                    label: const Text(
+                      "Fill Current GPS Coordinates",
+                      style: TextStyle(color: Color(0xFFD50000), fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Geofence Radius
+                  TextFormField(
+                    controller: _radiusCtrl,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(color: widget.isDark ? Colors.white : Colors.black87),
+                    decoration: InputDecoration(
+                      labelText: "Geofence Radius (meters)",
+                      prefixIcon: const Icon(Icons.radar_rounded, color: Color(0xFFD50000)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return "Required";
+                      final n = double.tryParse(v.trim());
+                      if (n == null || n <= 0) return "Enter a valid positive number";
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Submit button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFD50000),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      icon: _submitting
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2),
+                            )
+                          : const Icon(Icons.add_location_alt_rounded,
+                              color: Colors.white),
+                      label: Text(
+                        _submitting ? "Saving..." : "ADD LOCATION",
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                      ),
+                      onPressed: _submitting ? null : () => _submit(localAutoGeocode),
+                    ),
                   ),
                 ],
               ),
-              Text(
-                "Add New Location",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: widget.isDark ? Colors.white : Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Location Name
-              TextFormField(
-                controller: _nameCtrl,
-                style: TextStyle(color: widget.isDark ? Colors.white : Colors.black87),
-                decoration: InputDecoration(
-                  labelText: "Location Name",
-                  prefixIcon: const Icon(Icons.label_rounded, color: Color(0xFFD50000)),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? "Location name is required" : null,
-              ),
-              const SizedBox(height: 12),
-
-              // Latitude + Longitude side by side
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _latCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true, signed: true),
-                      style: TextStyle(color: widget.isDark ? Colors.white : Colors.black87),
-                      decoration: InputDecoration(
-                        labelText: "Latitude",
-                        prefixIcon: const Icon(Icons.my_location_rounded, color: Color(0xFFD50000)),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) return "Required";
-                        if (double.tryParse(v.trim()) == null) return "Invalid number";
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _lngCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true, signed: true),
-                      style: TextStyle(color: widget.isDark ? Colors.white : Colors.black87),
-                      decoration: InputDecoration(
-                        labelText: "Longitude",
-                        prefixIcon: const Icon(Icons.explore_rounded, color: Color(0xFFD50000)),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) return "Required";
-                        if (double.tryParse(v.trim()) == null) return "Invalid number";
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Geofence Radius
-              TextFormField(
-                controller: _radiusCtrl,
-                keyboardType: TextInputType.number,
-                style: TextStyle(color: widget.isDark ? Colors.white : Colors.black87),
-                decoration: InputDecoration(
-                  labelText: "Geofence Radius (meters)",
-                  prefixIcon: const Icon(Icons.radar_rounded, color: Color(0xFFD50000)),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return "Required";
-                  final n = double.tryParse(v.trim());
-                  if (n == null || n <= 0) return "Enter a valid positive number";
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-
-              // Submit button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD50000),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                  icon: _submitting
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Icon(Icons.add_location_alt_rounded,
-                          color: Colors.white),
-                  label: Text(
-                    _submitting ? "Saving..." : "ADD LOCATION",
-                    style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
-                  ),
-                  onPressed: _submitting ? null : _submit,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -483,7 +567,6 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
           ? const Center(child: CircularProgressIndicator(color: Color(0xFFD50000)))
           : Column(
               children: [
-                // Locations list
                 Expanded(
                   child: _locations.isEmpty
                       ? Center(
@@ -520,6 +603,8 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
                             final radius =
                                 loc['geofence_radius_meters']?.toString() ??
                                     '—';
+                            final assignedEq = loc['assigned_equipment_id']?.toString() ?? loc['sos_code']?.toString() ?? '';
+
                             return Container(
                               margin: const EdgeInsets.only(bottom: 12),
                               decoration: BoxDecoration(
@@ -528,7 +613,7 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black
-                                        .withValues(alpha:widget.isDark ? 0.3 : 0.05),
+                                        .withValues(alpha: widget.isDark ? 0.3 : 0.05),
                                     blurRadius: 10,
                                     offset: const Offset(0, 3),
                                   ),
@@ -543,7 +628,7 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
                                   leading: Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFD50000).withValues(alpha:0.1),
+                                      color: const Color(0xFFD50000).withValues(alpha: 0.1),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(Icons.location_on_rounded,
@@ -557,51 +642,96 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
                                   ),
                                   subtitle: Padding(
                                     padding: const EdgeInsets.only(top: 4),
-                                    child: Text(
-                                      "Lat: $lat  •  Lng: $lng\nRadius: ${radius}m",
-                                      style: TextStyle(
-                                          color: subColor, fontSize: 12, height: 1.6),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Lat: $lat  •  Lng: $lng",
+                                          style: TextStyle(color: subColor, fontSize: 12),
+                                        ),
+                                        Text(
+                                          "Radius: ${radius}m",
+                                          style: TextStyle(color: subColor, fontSize: 12),
+                                        ),
+                                        if (assignedEq.isNotEmpty)
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 4),
+                                            child: Row(
+                                              children: [
+                                                const Icon(Icons.qr_code_2_rounded, size: 14, color: Color(0xFFD50000)),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  "Assigned Equipment: $assignedEq",
+                                                  style: const TextStyle(
+                                                      fontWeight: FontWeight.w600,
+                                                      fontSize: 12,
+                                                      color: Color(0xFFD50000)),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                      ],
                                     ),
                                   ),
                                   isThreeLine: true,
-                                  trailing: () {
-                                    final locId = (loc['id'] ?? loc['location_id'])?.toString();
-                                    if (locId == null) return null;
-                                    return IconButton(
-                                      icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-                                      onPressed: () async {
-                                        final confirm = await showDialog<bool>(
-                                          context: context,
-                                          builder: (ctx) => AlertDialog(
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                            title: const Text("Delete Location"),
-                                            content: Text('Remove "$name"?'),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () => Navigator.pop(ctx, false),
-                                                child: const Text("Cancel"),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (lat != '—' && lng != '—')
+                                        IconButton(
+                                          icon: const Icon(Icons.map_rounded, color: Color(0xFFD50000)),
+                                          tooltip: "Open Map",
+                                          onPressed: () async {
+                                            final url = Uri.parse("https://www.google.com/maps/search/?api=1&query=$lat,$lng");
+                                            if (await canLaunchUrl(url)) {
+                                              await launchUrl(url, mode: LaunchMode.externalApplication);
+                                            } else {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text("Could not open maps application")),
+                                              );
+                                            }
+                                          },
+                                        ),
+                                      () {
+                                        final locId = (loc['id'] ?? loc['location_id'])?.toString();
+                                        if (locId == null) return const SizedBox();
+                                        return IconButton(
+                                          icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+                                          onPressed: () async {
+                                            final confirm = await showDialog<bool>(
+                                              context: context,
+                                              builder: (ctx) => AlertDialog(
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                title: const Text("Delete Location"),
+                                                content: Text('Remove "$name"?'),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () => Navigator.pop(ctx, false),
+                                                    child: const Text("Cancel"),
+                                                  ),
+                                                  ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                                    onPressed: () => Navigator.pop(ctx, true),
+                                                    child: const Text("Delete", style: TextStyle(color: Colors.white)),
+                                                  ),
+                                                ],
                                               ),
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                                onPressed: () => Navigator.pop(ctx, true),
-                                                child: const Text("Delete", style: TextStyle(color: Colors.white)),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                        if (confirm == true) {
-                                          final ok = await ApiService.deleteLocation(locId);
-                                          if (ok) {
-                                            _loadData();
-                                          } else if (mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(content: Text("Failed to delete location"), backgroundColor: Colors.red),
                                             );
-                                          }
-                                        }
-                                      },
-                                    );
-                                  }(),
+                                            if (confirm == true) {
+                                              final ok = await ApiService.deleteLocation(locId);
+                                              if (ok) {
+                                                _loadData();
+                                              } else if (mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text("Failed to delete location"), backgroundColor: Colors.red),
+                                                );
+                                              }
+                                            }
+                                          },
+                                        );
+                                      }(),
+                                    ],
+                                  ),
                                 ),
                               ),
                             );

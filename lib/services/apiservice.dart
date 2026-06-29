@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as origin_http;
 import 'package:hive/hive.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../local_db.dart';
 import 'error_handler.dart';
 import '../main.dart';
@@ -59,6 +60,25 @@ class ApiService {
   // =========================================================
   static Future<Map<String, dynamic>?> login(String username, String password) async {
     try {
+      final results = await Connectivity().checkConnectivity();
+      if (results.isEmpty || results.first == ConnectivityResult.none) {
+        final cached = await LocalDB.getUserSession(username.trim());
+        if (cached != null) {
+          if (cached["password"] == password.trim()) {
+            token = cached["token"];
+            return {
+              "token": cached["token"],
+              "user": {
+                "role": cached["role"],
+                "username": cached["username"],
+                "id": "",
+              }
+            };
+          }
+        }
+        return null;
+      }
+
       final url = Uri.parse("$baseUrl/auth/login");
       final res = await origin_http.post(
         url,
@@ -73,6 +93,13 @@ class ApiService {
         final decoded = jsonDecode(res.body);
         if (decoded is Map<String, dynamic>) {
           token = decoded["token"];
+          // Save to SQLite user_session for offline fallback login
+          await LocalDB.saveUserSession(
+            username: username.trim(),
+            password: password.trim(),
+            token: decoded["token"]?.toString() ?? '',
+            role: decoded["user"]?["role"]?.toString() ?? 'User',
+          );
           return decoded;
         }
       } else if (res.statusCode == 400 || res.statusCode == 401 || res.statusCode == 403) {
@@ -96,17 +123,28 @@ class ApiService {
 
   static Future<List<Map<String, dynamic>>> getFireChecklist() async {
     try {
+      final results = await Connectivity().checkConnectivity();
+      if (results.isEmpty || results.first == ConnectivityResult.none) {
+        return await LocalDB.getModuleRecords(moduleCode: "fire_extinguisher", recordType: "checklist");
+      }
       final res = await http.get(Uri.parse(checklistUrl), headers: headers).timeout(const Duration(seconds: 10));
-      if (res.statusCode != 200) return [];
-      final decoded = jsonDecode(res.body);
-      if (decoded is List) return List<Map<String, dynamic>>.from(decoded);
-      if (decoded is Map && decoded["items"] is List) return List<Map<String, dynamic>>.from(decoded["items"]);
-      if (decoded is Map && decoded["data"] is List) return List<Map<String, dynamic>>.from(decoded["data"]);
-      if (decoded is Map && decoded["checklists"] is List) return List<Map<String, dynamic>>.from(decoded["checklists"]);
-      return [];
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        List<Map<String, dynamic>> items = [];
+        if (decoded is List) items = List<Map<String, dynamic>>.from(decoded);
+        else if (decoded is Map && decoded["items"] is List) items = List<Map<String, dynamic>>.from(decoded["items"]);
+        else if (decoded is Map && decoded["data"] is List) items = List<Map<String, dynamic>>.from(decoded["data"]);
+        else if (decoded is Map && decoded["checklists"] is List) items = List<Map<String, dynamic>>.from(decoded["checklists"]);
+        
+        if (items.isNotEmpty) {
+          await LocalDB.saveModuleRecords(moduleCode: "fire_extinguisher", recordType: "checklist", items: items);
+        }
+        return items;
+      }
+      return await LocalDB.getModuleRecords(moduleCode: "fire_extinguisher", recordType: "checklist");
     } catch (e) {
       print("CHECKLIST GET ERROR: $e");
-      return [];
+      return await LocalDB.getModuleRecords(moduleCode: "fire_extinguisher", recordType: "checklist");
     }
   }
 
@@ -230,6 +268,10 @@ class ApiService {
     if (cacheKey.contains('?')) cacheKey = cacheKey.split('?').first;
     
     try {
+      final results = await Connectivity().checkConnectivity();
+      if (results.isEmpty || results.first == ConnectivityResult.none) {
+        return await LocalDB.getModuleRecords(moduleCode: "fire_extinguisher", recordType: cacheKey);
+      }
       final res = await http.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 10));
       if (res.statusCode != 200) {
          return await LocalDB.getModuleRecords(moduleCode: "fire_extinguisher", recordType: cacheKey);
@@ -315,6 +357,10 @@ class ApiService {
 
   static Future<Map<String, dynamic>> getSummary() async {
     try {
+      final results = await Connectivity().checkConnectivity();
+      if (results.isEmpty || results.first == ConnectivityResult.none) {
+        return await LocalDB.getModuleMap(moduleCode: "fire_extinguisher", recordType: "summary");
+      }
       final res = await http.get(Uri.parse("$baseUrl/modules/30/summary"), headers: headers).timeout(const Duration(seconds: 5));
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body) as Map<String, dynamic>;
@@ -380,6 +426,10 @@ class ApiService {
   /// Server is always the authoritative source — works 10 days, 1 year, 10 years later.
   static Future<Map<String, dynamic>?> getLatestInspectionForEquipment(String sosCode) async {
     try {
+      final results = await Connectivity().checkConnectivity();
+      if (results.isEmpty || results.first == ConnectivityResult.none) {
+        return null;
+      }
       final res = await http.get(
         Uri.parse("$baseUrl/equipment/$sosCode/inspections/latest"),
         headers: headers,
@@ -739,20 +789,24 @@ class ApiService {
   static Future<bool> createLocation({
     required String companyId,
     required String locationName,
-    required double latitude,
-    required double longitude,
+    double? latitude,
+    double? longitude,
     required double geofenceRadiusMeters,
+    bool autoGeocode = true,
+    String? sosCode,
   }) async {
     try {
       final res = await http.post(
         Uri.parse("$baseUrl/admin/locations"),
         headers: headers,
         body: jsonEncode({
-          "company_id": companyId,
+          "company_id": int.tryParse(companyId) ?? companyId,
           "location_name": locationName,
           "latitude": latitude,
           "longitude": longitude,
           "geofence_radius_meters": geofenceRadiusMeters,
+          "auto_geocode": autoGeocode,
+          if (sosCode != null && sosCode.isNotEmpty) "sos_code": sosCode,
         }),
       ).timeout(const Duration(seconds: 10));
       return res.statusCode == 200 || res.statusCode == 201;

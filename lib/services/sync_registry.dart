@@ -30,6 +30,7 @@ class SyncRegistry {
     "heat_detector": () => ModuleApiService.heatDetector.syncModuleData(),
     "co_detector": () => ModuleApiService.coDetector.syncModuleData(),
     "fire_door": () => ModuleApiService.fireDoor.syncModuleData(),
+    "sand_bucket": () => ModuleApiService.sandBucket.syncModuleData(),
   };
 
   static Future<void> syncEverything() async {

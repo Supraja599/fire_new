@@ -60,6 +60,17 @@ android {
             isShrinkResources = true
         }
     }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
+
+    aaptOptions {
+        noCompress("tflite")
+        noCompress("lite")
+    }
 }
 
 flutter {
